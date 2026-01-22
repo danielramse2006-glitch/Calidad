@@ -1,0 +1,26 @@
+body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
+.bg-blue { background-color: #0080ff; color: white; min-height: 100vh; }
+header h1 { text-align: center; padding: 20px; text-transform: uppercase; letter-spacing: 2px; }
+
+.main-container { display: flex; padding: 20px; gap: 20px; }
+.side-menu { display: flex; flex-direction: column; gap: 12px; width: 220px; }
+.side-menu button { padding: 14px; font-weight: bold; cursor: pointer; background: #eee; border: 1px solid #999; border-radius: 5px; }
+
+.content { flex: 1; min-width: 0; }
+.table-wrapper { 
+    overflow-x: auto; 
+    background: white; /* Fondo blanco para visibilidad */
+    border-radius: 8px; 
+    padding: 10px;
+}
+
+table { width: 100%; min-width: 6000px; border-collapse: collapse; background: white; }
+th { background: #2c3e50; color: white; padding: 12px; text-align: left; position: sticky; top: 0; }
+td { border: 1px solid #ddd; padding: 10px; color: #333 !important; } /* Texto oscuro */
+tr:hover { background: #f2f2f2; }
+
+.btn-action { padding: 10px 20px; cursor: pointer; border-radius: 5px; border: 1px solid #999; }
+.btn-report-row { background: #27ae60; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+
+/* Modal */
+.modal-data div { margin-bottom: 5px; border-bottom: 1px solid #eee; padding: 2px; }

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8"><title>Actualizar PPAP</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="background:#ccc;">
+    <h2 style="text-align:center; padding:15px; background:#999; color:white;">Actualizar Registro</h2>
+    <div style="text-align:center; padding:10px;">
+        <input type="text" id="busNP" placeholder="Buscar N/P...">
+        <button id="btnBus" class="btn-action">BUSCAR</button>
+    </div>
+    <form id="form-upd" style="display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; padding:20px;">
+        </form>
+    <div style="text-align:center; padding:20px;">
+        <button id="btnUpdate" class="btn-action" style="background:#2980b9; color:white;">ACTUALIZAR</button>
+        <button onclick="location.href='index.html'" class="btn-action">CANCELAR</button>
+    </div>
+
+    <script type="module">
+        import { db, checkAuth } from './config.js';
+        import { collection, query, where, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        checkAuth('actualizar');
+        let currentId = null;
+
+        const campos = ["itemNum","estatus","programador","noParte","descripcion","razonCambio","area","liderCalidad","mercado","docEntregada","muestrasRec","ubicacion","fechaProg","proceso","updateField","comments","responsable","instrucciones","ppapType","customersImpacted","pqeLead","custComm","custAppStatus","pvDate","pvResult","v1","v2","v3","v4","v5","v6","v7","v8","v9","v10","v11","v12","v13","v14","v15","v16","v17","v18","suppStatus","valRun","sampHand","dimStat","fffRev","aarRev","overallStatus"];
+        const form = document.getElementById('form-upd');
+        campos.forEach(c => form.innerHTML += `<div><label style="font-size:10px;">${c}</label><input type="text" id="${c}" style="width:100%;"></div>`);
+
+        document.getElementById('btnBus').onclick = async () => {
+            const q = query(collection(db, "productos"), where("noParte", "==", document.getElementById('busNP').value));
+            const snap = await getDocs(q);
+            if(!snap.empty) {
+                currentId = snap.docs[0].id;
+                const d = snap.docs[0].data();
+                campos.forEach(c => document.getElementById(c).value = d[c] || '');
+                alert("Cargado");
+            } else alert("No encontrado");
+        };
+
+        document.getElementById('btnUpdate').onclick = async () => {
+            if(!currentId) return;
+            const data = {};
+            campos.forEach(c => data[c] = document.getElementById(c).value);
+            await updateDoc(doc(db, "productos", currentId), data);
+            alert("Actualizado!");
+        };
+    </script>
+</body>
+</html>

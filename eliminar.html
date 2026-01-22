@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8"><title>Eliminar PPAP</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="background:#f2dede;">
+    <h2 style="text-align:center; background:#c0392b; color:white; padding:15px;">Eliminar Registro</h2>
+    <div style="text-align:center; padding:20px;">
+        <input type="text" id="busNP" placeholder="N/P a eliminar...">
+        <button id="btnBus" class="btn-action">BUSCAR</button>
+        <div id="info" style="margin-top:20px; font-weight:bold;"></div>
+        <button id="btnDel" class="btn-action" style="background:#c0392b; color:white; margin-top:20px;">ELIMINAR PARA SIEMPRE</button>
+        <button onclick="location.href='index.html'" class="btn-action">CANCELAR</button>
+    </div>
+
+    <script type="module">
+        import { db, checkAuth } from './config.js';
+        import { collection, query, where, getDocs, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        checkAuth('eliminar');
+        let currentId = null;
+
+        document.getElementById('btnBus').onclick = async () => {
+            const q = query(collection(db, "productos"), where("noParte", "==", document.getElementById('busNP').value));
+            const snap = await getDocs(q);
+            if(!snap.empty) {
+                currentId = snap.docs[0].id;
+                document.getElementById('info').innerText = "Encontrado: " + snap.docs[0].data().descripcion;
+            } else alert("No encontrado");
+        };
+
+        document.getElementById('btnDel').onclick = async () => {
+            if(!currentId) return;
+            if(confirm("¿Seguro?")) {
+                await deleteDoc(doc(db, "productos", currentId));
+                alert("Eliminado"); location.reload();
+            }
+        };
+    </script>
+</body>
+</html>
