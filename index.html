@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Master Track - Index</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
 </head>
 <body class="bg-blue">
     <header><h1>PPAP Master Track System</h1></header>
@@ -13,7 +13,7 @@
             <button onclick="location.href='registro.html'">Registrar</button>
             <button onclick="location.href='actualizar.html'">Actualizar</button>
             <button onclick="location.href='eliminar.html'">Eliminar</button>
-            <button id="btnSalir" style="background: #c0392b; color: white; margin-top: 20px; border: 2px solid #962d22;">CERRAR SESIÓN</button>
+            <button id="btnSalir" style="background: #c0392b; color: white; margin-top: 20px; border:none; cursor:pointer; padding:14px; border-radius:8px;">CERRAR SESIÓN</button>
         </nav>
         <section class="content">
             <input type="text" id="mainSearch" placeholder="Buscar por Item # o No. Parte..." style="width:100%; padding:12px; margin-bottom:15px; border-radius:5px; border:none;">
@@ -27,20 +27,25 @@
     </div>
 
     <div id="modalReporte" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; overflow-y:auto;">
-        <div style="background:white; width:90%; max-width:800px; margin:20px auto; padding:20px; border-radius:10px; position:relative;">
-            <button onclick="document.getElementById('modalReporte').style.display='none'" style="position:absolute; top:10px; right:10px; padding:10px; background:red; color:white; border:none; cursor:pointer;">CERRAR X</button>
+        <div style="background:white; width:90%; max-width:800px; margin:20px auto; padding:20px; border-radius:10px;">
             
-            <div id="reporte-print-area" style="padding:20px; background:white;">
-                <h2 style="text-align:center; border-bottom:2px solid #333; color:black;">REPORTE TÉCNICO DE PIEZA</h2>
-                <div style="display:flex; gap:20px; flex-wrap:wrap; margin-top:20px;">
-                    <img id="rep-img" style="width:250px; height:250px; object-fit:cover; border:3px solid #333;">
-                    <div id="rep-data" style="flex:1; display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:12px; color:black;"></div>
+            <div id="reporte-print-area" style="padding:20px; background:white; color: black !important;">
+                <h2 style="text-align:center; border-bottom:2px solid #333; margin-bottom: 20px;">REPORTE TÉCNICO DE PIEZA</h2>
+                <div style="display:flex; gap:20px; flex-wrap:nowrap; align-items: flex-start;">
+                    <img id="rep-img" crossorigin="anonymous" style="width:250px; height:250px; object-fit:cover; border:2px solid #333;">
+                    <div id="rep-data" style="flex:1; display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:11px;">
+                        </div>
                 </div>
             </div>
 
-            <button id="btnDescargarPDF" style="margin-top:20px; width:100%; padding:15px; background:#2980b9; color:white; font-weight:bold; border:none; border-radius:5px; cursor:pointer;">
-                DESCARGAR REPORTE EN PDF
-            </button>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button id="btnDescargarPDF" style="flex:2; padding:15px; background:#2980b9; color:white; font-weight:bold; border:none; border-radius:5px; cursor:pointer;">
+                    DESCARGAR REPORTE EN PDF
+                </button>
+                <button onclick="document.getElementById('modalReporte').style.display='none'" style="flex:1; padding:15px; background:#7f8c8d; color:white; border:none; border-radius:5px; cursor:pointer;">
+                    CERRAR
+                </button>
+            </div>
         </div>
     </div>
 
@@ -48,64 +53,78 @@
         import { db, checkAuth } from './config.js';
         import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // VALIDACIÓN DE ENTRADA
+        // Verificación de seguridad
         const user = checkAuth();
         if(!user) throw new Error("Acceso denegado");
 
-        const campos = ["item #","estatus","programador","PPAP Part Number","Component Description","Razon de Cambio","PRP5/area","lider de Calidad"," OE/AFTERMARKET ","SE ENTREGO DOCUMENTACION","muestras Recibidas","ubicacion Fisica ","Fecha de Programacion","Proceso","update","comments","responsable","instrucciones especiales","ppapType","customersImpacted","pqeLead","custComm","custAppStatus","pvDate","pvResult","v1","v2","v3","v4","v5","v6","v7","v8","v9","v10","v11","v12","v13","v14","v15","v16","v17","v18","suppStatus","valRun","sampHand","dimStat","fffRev","aarRev","overallStatus"];
+        const campos = ["item #","estatus","programador","PPAP Part Number","Component Description","Razon de Cambio","PRP5/area","lider de Calidad","overallStatus"];
 
+        // Armar cabecera de la tabla
         const head = document.getElementById('table-head');
         campos.forEach(c => head.innerHTML += `<th>${c.toUpperCase()}</th>`);
-        head.innerHTML += `<th>REPORTE</th>`;
+        head.innerHTML += `<th>ACCIONES</th>`;
 
+        // Escuchar cambios en la base de datos
         onSnapshot(collection(db, "productos"), (snap) => {
             const tbody = document.getElementById('inventory-body');
             tbody.innerHTML = '';
             snap.forEach(doc => {
                 const p = doc.data();
                 const tr = document.createElement('tr');
+                
                 campos.forEach(c => {
-                    if(c === "item #") {
-                        tr.innerHTML += `<td><div class="hover-item">${p[c] || '-'} <img src="imagenes/${p[c]}.jpg" onerror="this.src='imagenes/sin_foto.jpg'"></div></td>`;
-                    } else {
-                        tr.innerHTML += `<td>${p[c] || '-'}</td>`;
-                    }
+                    tr.innerHTML += `<td>${p[c] || '-'}</td>`;
                 });
-                tr.innerHTML += `<td><button class="btn-report-row" style="background:#2ecc71; color:white; border:none; padding:5px; cursor:pointer;">VER</button></td>`;
-                tr.querySelector('.btn-report-row').onclick = () => mostrarReporte(p);
+
+                tr.innerHTML += `<td><button class="btn-ver" style="background:#27ae60; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;">VER REPORTE</button></td>`;
+                
+                tr.querySelector('.btn-ver').onclick = () => {
+                    const modal = document.getElementById('modalReporte');
+                    const img = document.getElementById('rep-img');
+                    const rData = document.getElementById('rep-data');
+                    
+                    // Limpiar y llenar datos
+                    rData.innerHTML = '';
+                    Object.entries(p).forEach(([key, val]) => {
+                        rData.innerHTML += `<div style="border-bottom:1px solid #eee; padding:2px;"><b>${key}:</b> ${val || '-'}</div>`;
+                    });
+
+                    // Cargar imagen
+                    img.src = `imagenes/${p["item #"]}.jpg`;
+                    img.onerror = () => img.src = 'imagenes/sin_foto.jpg';
+
+                    modal.style.display = 'block';
+                };
                 tbody.appendChild(tr);
             });
         });
 
-        function mostrarReporte(p) {
-            document.getElementById('modalReporte').style.display='block';
-            const img = document.getElementById('rep-img');
-            img.src = `imagenes/${p["item #"]}.jpg`; 
-            img.onerror = () => img.src = 'imagenes/sin_foto.jpg';
-            const rData = document.getElementById('rep-data'); 
-            rData.innerHTML = '';
-            campos.forEach(c => rData.innerHTML += `<div><b>${c.toUpperCase()}:</b> ${p[c]||'-'}</div>`);
-        }
-
-        // LÓGICA PDF
-        document.getElementById('btnDescargarPDF').onclick = () => {
+        // --- LÓGICA CORREGIDA DEL PDF ---
+        document.getElementById('btnDescargarPDF').onclick = function() {
             const element = document.getElementById('reporte-print-area');
             const opt = {
-                margin: 10,
-                filename: 'Reporte_Tecnico.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                margin:       [10, 10],
+                filename:     'Reporte_Tecnico.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { 
+                    scale: 2, 
+                    useCORS: true, // Importante para que salgan las fotos
+                    letterRendering: true
+                },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
-            html2pdf().set(opt).from(element).save();
+
+            // Ejecutar con promesa para capturar errores si los hay
+            html2pdf().set(opt).from(element).save().catch(err => {
+                console.error("Error al generar PDF:", err);
+                alert("Hubo un error al generar el PDF. Revisa la consola (F12).");
+            });
         };
 
-        // LÓGICA SALIR
+        // Salir del sistema
         document.getElementById('btnSalir').onclick = () => {
-            if(confirm("¿Estás seguro que deseas cerrar sesión?")) {
-                sessionStorage.clear();
-                window.location.href = "login.html";
-            }
+            sessionStorage.clear();
+            window.location.href = "login.html";
         };
     </script>
 </body>
