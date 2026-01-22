@@ -14,9 +14,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 
-export function checkAuth(permiso = null) {
+// FUNCIÓN DE SEGURIDAD OBLIGATORIA
+export function checkAuth() {
     const sesion = sessionStorage.getItem("currentUser");
-    // Si no hay sesión, redirige al login (puedes comentar la línea de abajo para pruebas)
-    if (!sesion) { console.warn("No hay sesión iniciada"); } 
-    return sesion ? JSON.parse(sesion) : { usuario: 'invitado' };
+    if (!sesion) { 
+        // Si no hay sesión, redirigir al login y detener todo
+        window.location.href = "login.html"; 
+        return null; 
+    }
+    return JSON.parse(sesion);
 }

@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8"><title>Master Track - Index</title>
+    <meta charset="UTF-8">
+    <title>Master Track - Index</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body class="bg-blue">
     <header><h1>PPAP Master Track System</h1></header>
@@ -11,6 +13,7 @@
             <button onclick="location.href='registro.html'">Registrar</button>
             <button onclick="location.href='actualizar.html'">Actualizar</button>
             <button onclick="location.href='eliminar.html'">Eliminar</button>
+            <button id="btnSalir" style="background: #c0392b; color: white; margin-top: 20px; border: 2px solid #962d22;">CERRAR SESIÓN</button>
         </nav>
         <section class="content">
             <input type="text" id="mainSearch" placeholder="Buscar por Item # o No. Parte..." style="width:100%; padding:12px; margin-bottom:15px; border-radius:5px; border:none;">
@@ -23,28 +26,31 @@
         </section>
     </div>
 
-    <div id="modalReporte" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999;">
-        <div style="background:white; width:90%; max-width:1000px; margin:2% auto; padding:20px; border-radius:10px; color:#000;">
-            <div id="printArea">
-                <h2 style="text-align:center; border-bottom:2px solid #333;">REPORTE TÉCNICO PPAP</h2>
-                <div style="display:flex; gap:20px;">
-                    <div style="flex:1;">
-                        <img id="rep-img" style="width:100%; border:1px solid #ccc;">
-                        <h4 id="rep-title-id" style="text-align:center; margin-top:5px;"></h4>
-                    </div>
-                    <div id="rep-data" class="modal-data" style="flex:2; display:grid; grid-template-columns:1fr 1fr; gap:5px; font-size:11px;"></div>
+    <div id="modalReporte" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; overflow-y:auto;">
+        <div style="background:white; width:90%; max-width:800px; margin:20px auto; padding:20px; border-radius:10px; position:relative;">
+            <button onclick="document.getElementById('modalReporte').style.display='none'" style="position:absolute; top:10px; right:10px; padding:10px; background:red; color:white; border:none; cursor:pointer;">CERRAR X</button>
+            
+            <div id="reporte-print-area" style="padding:20px; background:white;">
+                <h2 style="text-align:center; border-bottom:2px solid #333; color:black;">REPORTE TÉCNICO DE PIEZA</h2>
+                <div style="display:flex; gap:20px; flex-wrap:wrap; margin-top:20px;">
+                    <img id="rep-img" style="width:250px; height:250px; object-fit:cover; border:3px solid #333;">
+                    <div id="rep-data" style="flex:1; display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:12px; color:black;"></div>
                 </div>
             </div>
-            <button onclick="window.print()" class="btn-action">Imprimir</button>
-            <button onclick="document.getElementById('modalReporte').style.display='none'" class="btn-action">Cerrar</button>
+
+            <button id="btnDescargarPDF" style="margin-top:20px; width:100%; padding:15px; background:#2980b9; color:white; font-weight:bold; border:none; border-radius:5px; cursor:pointer;">
+                DESCARGAR REPORTE EN PDF
+            </button>
         </div>
     </div>
 
     <script type="module">
         import { db, checkAuth } from './config.js';
         import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        
-        checkAuth();
+
+        // VALIDACIÓN DE ENTRADA
+        const user = checkAuth();
+        if(!user) throw new Error("Acceso denegado");
 
         const campos = ["item #","estatus","programador","PPAP Part Number","Component Description","Razon de Cambio","PRP5/area","lider de Calidad"," OE/AFTERMARKET ","SE ENTREGO DOCUMENTACION","muestras Recibidas","ubicacion Fisica ","Fecha de Programacion","Proceso","update","comments","responsable","instrucciones especiales","ppapType","customersImpacted","pqeLead","custComm","custAppStatus","pvDate","pvResult","v1","v2","v3","v4","v5","v6","v7","v8","v9","v10","v11","v12","v13","v14","v15","v16","v17","v18","suppStatus","valRun","sampHand","dimStat","fffRev","aarRev","overallStatus"];
 
@@ -52,56 +58,54 @@
         campos.forEach(c => head.innerHTML += `<th>${c.toUpperCase()}</th>`);
         head.innerHTML += `<th>REPORTE</th>`;
 
-        let productos = []; 
-
         onSnapshot(collection(db, "productos"), (snap) => {
-            productos = [];
-            snap.forEach(doc => productos.push({id: doc.id, ...doc.data()}));
-            renderTable(productos);
-        });
-
-        function renderTable(lista) {
             const tbody = document.getElementById('inventory-body');
             tbody.innerHTML = '';
-            
-            lista.forEach(p => {
+            snap.forEach(doc => {
+                const p = doc.data();
                 const tr = document.createElement('tr');
                 campos.forEach(c => {
-                    if (c === "item #") {
-                        tr.innerHTML += `<td>
-                            <div class="hover-item">
-                                ${p[c] || '-'} 
-                                <img src="imagenes/${p[c]}.jpg" onerror="this.src='imagenes/sin_foto.jpg'">
-                            </div>
-                        </td>`;
+                    if(c === "item #") {
+                        tr.innerHTML += `<td><div class="hover-item">${p[c] || '-'} <img src="imagenes/${p[c]}.jpg" onerror="this.src='imagenes/sin_foto.jpg'"></div></td>`;
                     } else {
                         tr.innerHTML += `<td>${p[c] || '-'}</td>`;
                     }
                 });
-                tr.innerHTML += `<td><button class="btn-report-row">VER</button></td>`;
+                tr.innerHTML += `<td><button class="btn-report-row" style="background:#2ecc71; color:white; border:none; padding:5px; cursor:pointer;">VER</button></td>`;
                 tr.querySelector('.btn-report-row').onclick = () => mostrarReporte(p);
                 tbody.appendChild(tr);
             });
-        }
+        });
 
         function mostrarReporte(p) {
             document.getElementById('modalReporte').style.display='block';
             const img = document.getElementById('rep-img');
             img.src = `imagenes/${p["item #"]}.jpg`; 
             img.onerror = () => img.src = 'imagenes/sin_foto.jpg';
-            document.getElementById('rep-title-id').innerText = `Item #: ${p["item #"]}`;
             const rData = document.getElementById('rep-data'); 
             rData.innerHTML = '';
-            campos.forEach(c => rData.innerHTML += `<div><b>${c}:</b> ${p[c]||'-'}</div>`);
+            campos.forEach(c => rData.innerHTML += `<div><b>${c.toUpperCase()}:</b> ${p[c]||'-'}</div>`);
         }
 
-        document.getElementById('mainSearch').oninput = (e) => {
-            const term = e.target.value.toLowerCase();
-            const filtrados = productos.filter(p => 
-                (p["item #"] || '').toString().includes(term) ||
-                (p["PPAP Part Number"] || '').toLowerCase().includes(term)
-            );
-            renderTable(filtrados);
+        // LÓGICA PDF
+        document.getElementById('btnDescargarPDF').onclick = () => {
+            const element = document.getElementById('reporte-print-area');
+            const opt = {
+                margin: 10,
+                filename: 'Reporte_Tecnico.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        };
+
+        // LÓGICA SALIR
+        document.getElementById('btnSalir').onclick = () => {
+            if(confirm("¿Estás seguro que deseas cerrar sesión?")) {
+                sessionStorage.clear();
+                window.location.href = "login.html";
+            }
         };
     </script>
 </body>
