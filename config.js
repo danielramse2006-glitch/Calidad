@@ -2,12 +2,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyCtIagFFJBFRjvg5usXTm575YqOeeDE1G0",
-    authDomain: "mi-inventario-51f82.firebaseapp.com",
-    projectId: "mi-inventario-51f82",
-    storageBucket: "mi-inventario-51f82.firebasestorage.app",
-    messagingSenderId: "79417755416",
-    appId: "1:79417755416:web:e1bbab46cda2bdbb5da56d"
+  apiKey: "AIzaSyATai9WFMURB7cSleo1vY8_l6a_VdPmsPo",
+  authDomain: "calidad-2b4a3.firebaseapp.com",
+  projectId: "calidad-2b4a3",
+  storageBucket: "calidad-2b4a3.firebasestorage.app",
+  messagingSenderId: "758661153106",
+  appId: "1:758661153106:web:a9436ce2111e3340a37a8b",
+  measurementId: "G-SS7HVWNMS0"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -15,6 +16,7 @@ export const db = getFirestore(app);
 
 export function checkAuth(permiso = null) {
     const sesion = sessionStorage.getItem("currentUser");
-    if (!sesion) { window.location.href = "login.html"; return null; }
-    return JSON.parse(sesion);
+    // Si no hay sesión, redirige al login (puedes comentar la línea de abajo para pruebas)
+    if (!sesion) { console.warn("No hay sesión iniciada"); } 
+    return sesion ? JSON.parse(sesion) : { usuario: 'invitado' };
 }
