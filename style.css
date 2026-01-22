@@ -1,55 +1,50 @@
-body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
-.bg-blue { background-color: #0080ff; color: white; min-height: 100vh; }
-header h1 { text-align: center; padding: 20px; text-transform: uppercase; letter-spacing: 2px; }
-
-.main-container { display: flex; padding: 20px; gap: 20px; }
-.side-menu { display: flex; flex-direction: column; gap: 12px; width: 220px; }
-.side-menu button { padding: 14px; font-weight: bold; cursor: pointer; background: #eee; border: 1px solid #999; border-radius: 5px; }
-
-.content { flex: 1; min-width: 0; }
-.table-wrapper { 
-    overflow-x: auto; 
-    background: white; /* Fondo blanco para visibilidad */
-    border-radius: 8px; 
-    padding: 10px;
+/* --- CONFIGURACIÓN GENERAL --- */
+body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    margin: 0; padding: 0; 
+    background-color: #0080ff; 
 }
 
-table { width: 100%; min-width: 6000px; border-collapse: collapse; background: white; }
-th { background: #2c3e50; color: white; padding: 12px; text-align: left; position: sticky; top: 0; z-index: 10; }
-td { border: 1px solid #ddd; padding: 10px; color: #333 !important; } /* Texto oscuro */
+.bg-blue { min-height: 100vh; }
+
+header h1 { 
+    text-align: center; color: white; padding: 20px; margin: 0;
+    text-transform: uppercase; letter-spacing: 2px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+/* --- DISEÑO DE CONTENEDORES --- */
+.main-container { display: flex; padding: 20px; gap: 20px; }
+
+.side-menu { display: flex; flex-direction: column; gap: 12px; width: 220px; flex-shrink: 0; }
+.side-menu button { 
+    padding: 14px; font-weight: bold; cursor: pointer; background: white; 
+    border: none; border-radius: 8px; transition: 0.3s;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1); color: #2c3e50;
+}
+.side-menu button:hover { background: #ecf0f1; transform: translateX(5px); }
+
+/* --- TABLA CON SCROLL --- */
+.table-wrapper { 
+    overflow-x: auto; overflow-y: auto; background: white; 
+    border-radius: 10px; padding: 10px; max-height: 80vh; 
+}
+
+table { width: 100%; min-width: 7000px; border-collapse: collapse; }
+th { 
+    background: #2c3e50; color: white; padding: 12px; text-align: left; 
+    position: sticky; top: 0; z-index: 100; font-size: 12px;
+}
+td { border: 1px solid #ddd; padding: 10px; color: #333 !important; font-size: 13px; }
 tr:hover { background: #f2f2f2; }
 
-.btn-action { padding: 10px 20px; cursor: pointer; border-radius: 5px; border: 1px solid #999; }
+/* --- IMAGEN FLOTANTE (HOVER) --- */
+.hover-item { position: relative; cursor: pointer; color: #0056b3; font-weight: bold; }
+.hover-item img { 
+    display: none; position: absolute; z-index: 9999; width: 250px; 
+    border: 4px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.4); 
+    border-radius: 8px; left: 50px; top: -10px; background: white;
+}
+.hover-item:hover img { display: block; }
+
 .btn-report-row { background: #27ae60; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
-
-/* Modal */
-.modal-data div { margin-bottom: 5px; border-bottom: 1px solid #eee; padding: 2px; }
-
-/* --- NUEVO: ESTILOS PARA LA IMAGEN FLOTANTE (HOVER) --- */
-.hover-item {
-    position: relative;
-    cursor: pointer;
-    font-weight: bold;
-    color: #0056b3; /* Color azul para indicar que es interactivo */
-    text-decoration: underline;
-}
-
-/* La imagen oculta por defecto */
-.hover-item img {
-    display: none;          /* Invisible al inicio */
-    position: absolute;     /* Flota sobre el contenido */
-    z-index: 1000;          /* Se asegura que flote ENCIMA de todo */
-    top: -10px;             /* Ajuste vertical */
-    left: 50px;             /* Aparece a la derecha del número */
-    width: 200px;           /* Tamaño de la imagen flotante */
-    height: auto;
-    border: 3px solid white;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3); /* Sombra */
-    border-radius: 8px;
-    background: white;
-}
-
-/* Muestra la imagen cuando el mouse toca el número */
-.hover-item:hover img {
-    display: block;
-}

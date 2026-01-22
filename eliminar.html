@@ -1,39 +1,69 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8"><title>Eliminar PPAP</title>
+    <meta charset="UTF-8"><title>Eliminar Registro - Master Track</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body style="background:#f2dede;">
-    <h2 style="text-align:center; background:#c0392b; color:white; padding:15px;">Eliminar Registro</h2>
-    <div style="text-align:center; padding:20px;">
-        <input type="text" id="busNP" placeholder="N/P a eliminar...">
-        <button id="btnBus" class="btn-action">BUSCAR</button>
-        <div id="info" style="margin-top:20px; font-weight:bold;"></div>
-        <button id="btnDel" class="btn-action" style="background:#c0392b; color:white; margin-top:20px;">ELIMINAR PARA SIEMPRE</button>
-        <button onclick="location.href='index.html'" class="btn-action">CANCELAR</button>
+<body class="bg-blue">
+    <div style="padding:20px; max-width:600px; margin:auto; background:white; color:black; border-radius:10px; margin-top:50px;">
+        <h2 style="color:#c0392b;">Eliminar Registro PPAP</h2>
+        <p>Ingresa el <b>Item #</b> del registro que deseas borrar permanentemente.</p>
+        
+        <div style="margin-bottom:20px;">
+            <input type="text" id="searchDelete" placeholder="Ejemplo: 15" style="width:70%; padding:12px; border:1px solid #ccc;">
+            <button id="btnBuscarDel" style="padding:12px; width:25%; background:#2c3e50; color:white; border:none; border-radius:5px; cursor:pointer;">BUSCAR</button>
+        </div>
+
+        <div id="confirm-box" style="display:none; border:2px solid #c0392b; padding:15px; border-radius:8px; background:#f9f9f9;">
+            <p id="infoDelete"></p>
+            <button id="btnConfirmDelete" style="width:100%; padding:15px; background:#c0392b; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">CONFIRMAR ELIMINACIÓN PERMANENTE</button>
+        </div>
+
+        <button onclick="location.href='index.html'" style="width:100%; margin-top:20px; padding:10px; background:#bdc3c7; border:none; border-radius:5px; cursor:pointer;">VOLVER AL INICIO</button>
     </div>
 
     <script type="module">
         import { db, checkAuth } from './config.js';
         import { collection, query, where, getDocs, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        checkAuth('eliminar');
-        let currentId = null;
+        
+        checkAuth();
+        let docIdToDelete = null;
 
-        document.getElementById('btnBus').onclick = async () => {
-            const q = query(collection(db, "productos"), where("noParte", "==", document.getElementById('busNP').value));
+        document.getElementById('btnBuscarDel').onclick = async () => {
+            const itemNum = document.getElementById('searchDelete').value;
+            if(!itemNum) return alert("Escribe un número de Item");
+
+            const q = query(collection(db, "productos"), where("item #", "==", itemNum));
             const snap = await getDocs(q);
-            if(!snap.empty) {
-                currentId = snap.docs[0].id;
-                document.getElementById('info').innerText = "Encontrado: " + snap.docs[0].data().descripcion;
-            } else alert("No encontrado");
+
+            if(snap.empty) {
+                alert("No se encontró ningún registro con ese Item #");
+                document.getElementById('confirm-box').style.display = 'none';
+                return;
+            }
+
+            const docFound = snap.docs[0];
+            docIdToDelete = docFound.id;
+            const data = docFound.data();
+
+            document.getElementById('infoDelete').innerHTML = `
+                <b>¿Estás seguro?</b><br><br>
+                <b>Item #:</b> ${data["item #"]}<br>
+                <b>Parte:</b> ${data["PPAP Part Number"]}<br>
+                <b>Descripción:</b> ${data["Component Description"]}
+            `;
+            document.getElementById('confirm-box').style.display = 'block';
         };
 
-        document.getElementById('btnDel').onclick = async () => {
-            if(!currentId) return;
-            if(confirm("¿Seguro?")) {
-                await deleteDoc(doc(db, "productos", currentId));
-                alert("Eliminado"); location.reload();
+        document.getElementById('btnConfirmDelete').onclick = async () => {
+            if(confirm("Esta acción no se puede deshacer. ¿Borrar ahora?")) {
+                try {
+                    await deleteDoc(doc(db, "productos", docIdToDelete));
+                    alert("Registro eliminado con éxito.");
+                    location.href = 'index.html';
+                } catch(e) {
+                    alert("Error al intentar eliminar.");
+                }
             }
         };
     </script>
