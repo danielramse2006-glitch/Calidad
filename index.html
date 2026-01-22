@@ -14,7 +14,7 @@
             <button id="navAdmin" style="display:none; background:#f1c40f;" onclick="location.href='usuarios.html'">Usuarios</button>
         </nav>
         <section class="content">
-            <input type="text" id="mainSearch" placeholder="Buscar por N/P..." style="width:100%; padding:12px; margin-bottom:15px; border-radius:5px; border:none;">
+            <input type="text" id="mainSearch" placeholder="Buscar por Item # o N/P..." style="width:100%; padding:12px; margin-bottom:15px; border-radius:5px; border:none;">
             <div class="table-wrapper">
                 <table id="tabla-prod">
                     <thead><tr id="table-head"></tr></thead>
@@ -24,12 +24,15 @@
         </section>
     </div>
 
-    <div id="modalReporte" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:999;">
+    <div id="modalReporte" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999;">
         <div style="background:white; width:90%; max-width:1000px; margin:2% auto; padding:20px; border-radius:10px; color:#000;">
             <div id="printArea">
                 <h2 style="text-align:center; border-bottom:2px solid #333;">REPORTE TÉCNICO PPAP</h2>
                 <div style="display:flex; gap:20px;">
-                    <div style="flex:1;"><img id="rep-img" style="width:100%; border:1px solid #ccc;"></div>
+                    <div style="flex:1;">
+                        <img id="rep-img" style="width:100%; border:1px solid #ccc;">
+                        <h4 id="rep-title-id" style="text-align:center; margin-top:5px;"></h4>
+                    </div>
                     <div id="rep-data" class="modal-data" style="flex:2; display:grid; grid-template-columns:1fr 1fr; gap:5px; font-size:11px;"></div>
                 </div>
             </div>
@@ -45,29 +48,74 @@
         const user = checkAuth();
         if(user && user.usuario === 'admin') document.getElementById('navAdmin').style.display='block';
 
-        const campos = ["itemNum","estatus","programador","noParte","descripcion","razonCambio","area","liderCalidad","mercado","docEntregada","muestrasRec","ubicacion","fechaProg","proceso","updateField","comments","responsable","instrucciones","ppapType","customersImpacted","pqeLead","custComm","custAppStatus","pvDate","pvResult","v1","v2","v3","v4","v5","v6","v7","v8","v9","v10","v11","v12","v13","v14","v15","v16","v17","v18","suppStatus","valRun","sampHand","dimStat","fffRev","aarRev","overallStatus"];
+        const campos = ["item #","estatus","programador","PPAP Part Number","Component Description","Razon de Cambio","PRP5/area","lider de Calidad"," OE/AFTERMARKET ","SE ENTREGO DOCUMENTACION","muestras Recibidas","ubicacion Fisica ","Fecha de Programacion","Proceso","update","comments","responsable","instrucciones especiales","ppapType","customersImpacted","pqeLead","custComm","custAppStatus","pvDate","pvResult","v1","v2","v3","v4","v5","v6","v7","v8","v9","v10","v11","v12","v13","v14","v15","v16","v17","v18","suppStatus","valRun","sampHand","dimStat","fffRev","aarRev","overallStatus"];
 
         const head = document.getElementById('table-head');
         campos.forEach(c => head.innerHTML += `<th>${c.toUpperCase()}</th>`);
         head.innerHTML += `<th>REPORTE</th>`;
 
+        let productos = []; // Guardamos los productos en memoria para el buscador
+
         onSnapshot(collection(db, "productos"), (snap) => {
+            productos = [];
+            snap.forEach(doc => productos.push(doc.data()));
+            renderTable(productos);
+        });
+
+        function renderTable(lista) {
             const tbody = document.getElementById('inventory-body');
             tbody.innerHTML = '';
-            snap.forEach(doc => {
-                const p = doc.data();
+            
+            lista.forEach(p => {
                 const tr = document.createElement('tr');
-                campos.forEach(c => tr.innerHTML += `<td>${p[c] || '-'}</td>`);
+                
+                campos.forEach(c => {
+                    // --- MODIFICACIÓN: DETECTAR ITEM NUM PARA LA FOTO ---
+                    if (c === "itemNum") {
+                        tr.innerHTML += `<td>
+                            <div class="hover-item">
+                                ${p[c] || '-'} 
+                                <img src="imagenes/${p[c]}.jpg" onerror="this.src='imagenes/sin_foto.jpg'">
+                            </div>
+                        </td>`;
+                    } else {
+                        // Celdas normales
+                        tr.innerHTML += `<td>${p[c] || '-'}</td>`;
+                    }
+                });
+
                 tr.innerHTML += `<td><button class="btn-report-row">VER</button></td>`;
                 tr.querySelector('.btn-report-row').onclick = () => {
-                    document.getElementById('modalReporte').style.display='block';
-                    document.getElementById('rep-img').src = `imagenes/${p.noParte}.jpg`;
-                    const rData = document.getElementById('rep-data'); rData.innerHTML = '';
-                    campos.forEach(c => rData.innerHTML += `<div><b>${c}:</b> ${p[c]||'-'}</div>`);
+                    mostrarReporte(p);
                 };
                 tbody.appendChild(tr);
             });
-        });
+        }
+
+        function mostrarReporte(p) {
+            document.getElementById('modalReporte').style.display='block';
+            
+            // Cargar imagen por Item # también en el modal grande
+            const img = document.getElementById('rep-img');
+            img.src = `imagenes/${p.itemNum}.jpg`; 
+            img.onerror = () => img.src = 'imagenes/sin_foto.jpg'; // Si falla, pone la genérica
+            
+            document.getElementById('rep-title-id').innerText = `Item #: ${p.itemNum}`;
+
+            const rData = document.getElementById('rep-data'); 
+            rData.innerHTML = '';
+            campos.forEach(c => rData.innerHTML += `<div><b>${c}:</b> ${p[c]||'-'}</div>`);
+        }
+
+        // Buscador mejorado: busca por Item # o No. Parte
+        document.getElementById('mainSearch').oninput = (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtrados = productos.filter(p => 
+                (p.itemNum || '').toString().includes(term) ||
+                (p.noParte || '').toLowerCase().includes(term)
+            );
+            renderTable(filtrados);
+        };
     </script>
 </body>
 </html>
