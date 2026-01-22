@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8"><title>Gestión de Usuarios - PPAP</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="background:#f4f7f6;">
+    <h2 style="text-align:center; background:#f1c40f; color:#333; padding:20px; margin:0;">
+        Panel de Control: Administrar Usuarios
+    </h2>
+
+    <div class="main-container" style="justify-content:center;">
+        <div style="background:white; padding:30px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); width:100%; max-width:500px;">
+            <h3>Crear Nuevo Perfil</h3>
+            <p style="font-size:12px; color:#666;">Define el nombre de usuario, contraseña y qué acciones tiene permitido realizar en el sistema.</p>
+            
+            <div style="display:flex; flex-direction:column; gap:15px; margin-top:20px;">
+                <div>
+                    <label style="font-weight:bold;">Nombre de Usuario:</label>
+                    <input type="text" id="u" placeholder="Ej: calidad_reynosa" style="width:100%; padding:10px;">
+                </div>
+                <div>
+                    <label style="font-weight:bold;">Contraseña:</label>
+                    <input type="password" id="p" placeholder="Contraseña segura" style="width:100%; padding:10px;">
+                </div>
+
+                <div style="background:#f9f9f9; padding:15px; border-radius:5px; border:1px solid #ddd;">
+                    <label style="font-weight:bold; display:block; margin-bottom:10px;">Permisos asignados:</label>
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                        <label><input type="checkbox" id="pr"> Permitir Registrar nuevos PPAP</label>
+                        <label><input type="checkbox" id="pa"> Permitir Actualizar / Editar datos</label>
+                        <label><input type="checkbox" id="pd"> Permitir Eliminar registros</label>
+                    </div>
+                </div>
+
+                <div style="text-align:center; margin-top:10px; display:flex; flex-direction:column; gap:10px;">
+                    <button id="btnSave" class="btn-action" style="background:#27ae60; color:white; width:100%; padding:12px;">
+                        CREAR USUARIO
+                    </button>
+                    <button onclick="location.href='index.html'" class="btn-action" style="width:100%;">
+                        VOLVER AL INICIO
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+
+    <script type="module">
+        import { db, checkAuth } from './config.js';
+        import { collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Verificación de seguridad: solo el admin entra aquí
+        const user = checkAuth();
+        if(!user || user.usuario !== 'admin') {
+            alert("Acceso denegado. Solo el administrador puede gestionar usuarios.");
+            window.location.href = "index.html";
+        }
+
+        document.getElementById('btnSave').onclick = async () => {
+            const u = document.getElementById('u').value.trim();
+            const p = document.getElementById('p').value.trim();
+
+            if(!u || !p) return alert("Por favor, ingresa un usuario y una contraseña.");
+
+            // Verificar si el usuario ya existe para no duplicar
+            const q = query(collection(db, "usuarios"), where("usuario", "==", u));
+            const snap = await getDocs(q);
+            
+            if(!snap.empty) {
+                return alert("Este nombre de usuario ya está en uso. Elige otro.");
+            }
+
+            try {
+                await addDoc(collection(db, "usuarios"), {
+                    usuario: u,
+                    password: p,
+                    permisos: {
+                        registrar: document.getElementById('pr').checked,
+                        actualizar: document.getElementById('pa').checked,
+                        eliminar: document.getElementById('pd').checked
+                    }
+                });
+                alert("¡Usuario '" + u + "' creado con éxito!");
+                
+                // Limpiar formulario
+                document.getElementById('u').value = '';
+                document.getElementById('p').value = '';
+                document.getElementById('pr').checked = false;
+                document.getElementById('pa').checked = false;
+                document.getElementById('pd').checked = false;
+
+            } catch (error) {
+                console.error("Error al crear usuario:", error);
+                alert("Hubo un error al guardar en la base de datos.");
+            }
+        };
+    </script>
+</body>
+</html>
