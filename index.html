@@ -27,22 +27,36 @@
     </div>
 
     <div id="modalReporte" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; overflow-y:auto;">
-        <div style="background:white; width:90%; max-width:800px; margin:20px auto; padding:20px; border-radius:10px;">
+        <div style="background:white; width:95%; max-width:900px; margin:20px auto; padding:30px; border-radius:10px;">
             
-            <div id="reporte-print-area" style="padding:20px; background:white; color: black !important;">
-                <h2 style="text-align:center; border-bottom:2px solid #333; margin-bottom: 20px;">REPORTE TÉCNICO DE PIEZA</h2>
-                <div style="display:flex; gap:20px; flex-wrap:nowrap; align-items: flex-start;">
-                    <img id="rep-img" crossorigin="anonymous" style="width:250px; height:250px; object-fit:cover; border:2px solid #333;">
-                    <div id="rep-data" style="flex:1; display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:11px;">
-                        </div>
+            <div id="reporte-print-area" style="padding:10px; background:white; color: black !important; font-family: Arial, sans-serif;">
+                
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #2c3e50; padding-bottom:10px; margin-bottom:20px;">
+                    <h2 style="margin:0; color:#2c3e50;">REPORTE TÉCNICO PPAP</h2>
+                    <span style="font-weight:bold; color:#7f8c8d;">MASTER TRACK SYSTEM</span>
                 </div>
+
+                <div style="display:flex; gap:25px; margin-bottom:20px;">
+                    <div style="flex:0 0 250px;">
+                        <img id="rep-img" crossorigin="anonymous" style="width:100%; height:250px; object-fit:contain; border:1px solid #dee2e6; border-radius:5px; background:#f8f9fa;">
+                    </div>
+                    <div style="flex:1;">
+                        <h4 style="background:#2c3e50; color:white; padding:8px; margin:0 0 10px 0; border-radius:3px;">INFORMACIÓN GENERAL</h4>
+                        <div id="rep-data-main" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; font-size:12px;">
+                            </div>
+                    </div>
+                </div>
+
+                <h4 style="background:#2c3e50; color:white; padding:8px; margin:20px 0 10px 0; border-radius:3px;">ESTADO DE DOCUMENTACIÓN Y VALIDACIÓN</h4>
+                <div id="rep-data-ppap" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; font-size:10px;">
+                    </div>
             </div>
 
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <button id="btnDescargarPDF" style="flex:2; padding:15px; background:#2980b9; color:white; font-weight:bold; border:none; border-radius:5px; cursor:pointer;">
-                    DESCARGAR REPORTE EN PDF
+            <div style="display:flex; gap:15px; margin-top:30px; border-top:1px solid #eee; padding-top:20px;">
+                <button id="btnDescargarPDF" style="flex:2; padding:15px; background:#2980b9; color:white; font-weight:bold; border:none; border-radius:8px; cursor:pointer; font-size:16px;">
+                    📥 DESCARGAR REPORTE PDF
                 </button>
-                <button onclick="document.getElementById('modalReporte').style.display='none'" style="flex:1; padding:15px; background:#7f8c8d; color:white; border:none; border-radius:5px; cursor:pointer;">
+                <button onclick="document.getElementById('modalReporte').style.display='none'" style="flex:1; padding:15px; background:#e74c3c; color:white; border:none; border-radius:8px; cursor:pointer;">
                     CERRAR
                 </button>
             </div>
@@ -53,18 +67,16 @@
         import { db, checkAuth } from './config.js';
         import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Verificación de seguridad
         const user = checkAuth();
         if(!user) throw new Error("Acceso denegado");
 
-        const campos = ["Item #","Estatus","Programador","PPAP Part Number","Component Description","Razon de Cambio","PRP5/area","Lider de Calidad"," OE/AFTERMARKET ","Se entrego documentacion","Muestras Recibidas","Ubicacion Fisica ","Fecha de Programacion","Proceso","Update","Comments","Responsable","Instrucciones Especiales","PPAP Type OE / SM AFTER Market","PV Result","1-Design records","2-ECN document","3-Customer eng approval","4-Design FMEA","5-Process Flow Diagram","6-PFMEA","7-Control Plan","8-MSA Studies","9-Dimensional results","10-Material, performance test result","11-Initial Process Studies","12-Qualify Lab Documentation","13-Appereance Approval Report","14-Sample product","15-Checking Aids","16-Record of compliance","17-Bulk material checklist","18-PSW(Full or Interim)","Supplier PPAP package status","Validation run readiness","Samples on hand","Dimension status","FFF review status","AAR review status","overallStatus"];
+        const campos = ["Item #","Estatus","Programador","PPAP Part Number","Component Description","Razon de Cambio","PRP5/area","Lider de Calidad"," OE/AFTERMARKET ","Se entrego documentacion","Muestras Recibidas","Ubicacion Fisica ","Fecha de Programacion","Proceso","Update","Comments","Responsable","Instrucciones Especiales","PPAP Type OE / SM AFTER Market","PV Result","1-Design records","2-ECN document","3-Customer eng approval","4-Design FMEA","5-Process Flow Diagram","6-PFMEA","7-Control Plan","8-MSA Studies","9-Dimensional results","10-Material, performance test result","11-Initial Process Studies","12-Qualify Lab Documentation","13-Appereance Approval Report","14-Sample product","15-Checking Aids","16-Record de compliance","17-Bulk material checklist","18-PSW(Full or Interim)","Supplier PPAP package status","Validation run readiness","Samples on hand","Dimension status","FFF review status","AAR review status","PPAP overall status"];
         
-        // Armar cabecera de la tabla
+        // Armar cabecera de la tabla (Mostramos todos los campos)
         const head = document.getElementById('table-head');
         campos.forEach(c => head.innerHTML += `<th>${c.toUpperCase()}</th>`);
         head.innerHTML += `<th>ACCIONES</th>`;
 
-        // Escuchar cambios en la base de datos
         onSnapshot(collection(db, "productos"), (snap) => {
             const tbody = document.getElementById('inventory-body');
             tbody.innerHTML = '';
@@ -72,6 +84,7 @@
                 const p = doc.data();
                 const tr = document.createElement('tr');
                 
+                // Llenar filas de la tabla con todos los campos
                 campos.forEach(c => {
                     tr.innerHTML += `<td>${p[c] || '-'}</td>`;
                 });
@@ -81,15 +94,24 @@
                 tr.querySelector('.btn-ver').onclick = () => {
                     const modal = document.getElementById('modalReporte');
                     const img = document.getElementById('rep-img');
-                    const rData = document.getElementById('rep-data');
+                    const rDataMain = document.getElementById('rep-data-main');
+                    const rDataPpap = document.getElementById('rep-data-ppap');
                     
-                    // Limpiar y llenar datos
-                    rData.innerHTML = '';
-                    Object.entries(p).forEach(([key, val]) => {
-                        rData.innerHTML += `<div style="border-bottom:1px solid #eee; padding:2px;"><b>${key}:</b> ${val || '-'}</div>`;
+                    rDataMain.innerHTML = '';
+                    rDataPpap.innerHTML = '';
+
+                    campos.forEach((key, index) => {
+                        const val = p[key] || '-';
+                        const itemHtml = `<div style="border-bottom:1px solid #f1f1f1; padding:4px 0;">
+                                            <span style="color:#7f8c8d; font-weight:bold; display:block; font-size:9px; text-transform:uppercase;">${key}</span>
+                                            <span style="color:#2c3e50;">${val}</span>
+                                          </div>`;
+                        
+                        // Mejora: División lógica de la información en el reporte
+                        if(index < 14) rDataMain.innerHTML += itemHtml;
+                        else rDataPpap.innerHTML += itemHtml;
                     });
 
-                    // Cargar imagen
                     img.src = `imagenes/${p["Item #"]}.jpg`;
                     img.onerror = () => img.src = 'imagenes/sin_foto.jpg';
 
@@ -99,29 +121,19 @@
             });
         });
 
-        // --- LÓGICA CORREGIDA DEL PDF ---
+        // Lógica de descarga PDF
         document.getElementById('btnDescargarPDF').onclick = function() {
             const element = document.getElementById('reporte-print-area');
             const opt = {
                 margin:       [10, 10],
-                filename:     'Reporte_Tecnico.pdf',
+                filename:     'Reporte_Tecnico_PPAP.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { 
-                    scale: 2, 
-                    useCORS: true, // Importante para que salgan las fotos
-                    letterRendering: true
-                },
+                html2canvas:  { scale: 2, useCORS: true },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
-
-            // Ejecutar con promesa para capturar errores si los hay
-            html2pdf().set(opt).from(element).save().catch(err => {
-                console.error("Error al generar PDF:", err);
-                alert("Hubo un error al generar el PDF. Revisa la consola (F12).");
-            });
+            html2pdf().set(opt).from(element).save();
         };
 
-        // Salir del sistema
         document.getElementById('btnSalir').onclick = () => {
             sessionStorage.clear();
             window.location.href = "login.html";
