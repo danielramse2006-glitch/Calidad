@@ -33,7 +33,7 @@
             const itemNum = document.getElementById('searchDelete').value;
             if(!itemNum) return alert("Escribe un número de Item");
 
-            const q = query(collection(db, "productos"), where("item #", "==", itemNum));
+            const q = query(collection(db, "productos"), where("Item #", "==", itemNum));
             const snap = await getDocs(q);
 
             if(snap.empty) {
