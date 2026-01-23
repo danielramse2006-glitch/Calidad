@@ -26,7 +26,7 @@
 
         document.getElementById('btnBuscar').onclick = async () => {
             const itemBusca = document.getElementById('searchItem').value;
-            const q = query(collection(db, "productos"), where("item #", "==", itemBusca));
+            const q = query(collection(db, "productos"), where("Item #", "==", itemBusca));
             const snap = await getDocs(q);
             if(snap.empty) { alert("No se encontró ese Item #"); return; }
             
