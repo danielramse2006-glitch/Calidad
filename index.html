@@ -57,8 +57,8 @@
         const user = checkAuth();
         if(!user) throw new Error("Acceso denegado");
 
-        const campos = ["item #","estatus","programador","PPAP Part Number","Component Description","Razon de Cambio","PRP5/area","lider de Calidad","overallStatus"];
-
+        const campos = ["item #","estatus","programador","PPAP Part Number","Component Description","Razon de Cambio","PRP5/area","lider de Calidad"," OE/AFTERMARKET ","SE ENTREGO DOCUMENTACION","muestras Recibidas","ubicacion Fisica ","Fecha de Programacion","Proceso","update","comments","responsable","instrucciones especiales","ppapType","customersImpacted","pqeLead","custComm","custAppStatus","pvDate","pvResult","v1","v2","v3","v4","v5","v6","v7","v8","v9","v10","v11","v12","v13","v14","v15","v16","v17","v18","suppStatus","valRun","sampHand","dimStat","fffRev","aarRev","overallStatus"];
+        
         // Armar cabecera de la tabla
         const head = document.getElementById('table-head');
         campos.forEach(c => head.innerHTML += `<th>${c.toUpperCase()}</th>`);
