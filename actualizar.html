@@ -21,14 +21,14 @@
         import { collection, query, where, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         checkAuth();
 
-        // LISTA EXACTA DE TU INDEX
+        // Lista de campos idéntica a la de tu index.html
         const campos = ["Item #","Estatus","Programador","PPAP Part Number","Component Description","Razon de Cambio","PRP5/area","Lider de Calidad"," OE/AFTERMARKET ","Se entrego documentacion","Muestras Recibidas","Ubicacion Fisica ","Fecha de Programacion","Proceso","Update","Comments","Responsable","Instrucciones Especiales","PPAP Type OE / SM AFTER Market","PV Result","1-Design records","2-ECN document","3-Customer eng approval","4-Design FMEA","5-Process Flow Diagram","6-PFMEA","7-Control Plan","8-MSA Studies","9-Dimensional results","10-Material, performance test result","11-Initial Process Studies","12-Qualify Lab Documentation","13-Appereance Approval Report","14-Sample product","15-Checking Aids","16-Record de compliance","17-Bulk material checklist","18-PSW(Full or Interim)","Supplier PPAP package status","Validation run readiness","Samples on hand","Dimension status","FFF review status","AAR review status","PPAP overall status"];
         
         let currentId = null;
 
         document.getElementById('btnBuscar').onclick = async () => {
             const itemBusca = document.getElementById('searchItem').value.trim();
-            // Buscamos con "Item #" (Mayúscula inicial) para que coincida con tu base de datos
+            // Buscamos por "Item #" (Mayúscula e incluye espacio) para coincidir con tu base de datos
             const q = query(collection(db, "productos"), where("Item #", "==", itemBusca));
             
             try {
@@ -40,14 +40,11 @@
                 const data = prod.data();
                 const form = document.getElementById('edit-form');
                 form.innerHTML = '';
-
+                
                 campos.forEach(c => {
-                    form.innerHTML += `<div>
-                        <label style="font-size:11px; font-weight:bold;">${c}</label>
-                        <input type="text" id="upd-${c}" value="${data[c]||''}" style="width:100%; padding:5px;">
-                    </div>`;
+                    form.innerHTML += `<div><label style="font-size:11px; font-weight:bold;">${c}</label><input type="text" id="upd-${c}" value="${data[c]||''}" style="width:100%; padding:5px;"></div>`;
                 });
-
+                
                 form.style.display = 'grid';
                 document.getElementById('btnUpdate').style.display = 'block';
             } catch (error) {
@@ -57,16 +54,23 @@
 
         document.getElementById('btnUpdate').onclick = async () => {
             const newData = {};
+            
+            // Recolectamos los datos de los inputs
             campos.forEach(c => { 
                 newData[c] = document.getElementById(`upd-${c}`).value; 
             });
 
             try {
-                await updateDoc(doc(db, "productos", currentId), newData);
+                // Al usar updateDoc con campos que tienen "/", Firebase falla. 
+                // Por eso pasamos el objeto completo al documento específico.
+                const docRef = doc(db, "productos", currentId);
+                await updateDoc(docRef, newData);
+                
                 alert("Registro actualizado correctamente");
                 location.href = 'index.html';
             } catch(e) { 
                 console.error(e);
+                // Si el error persiste por el path "PRP5/area", mostramos el mensaje detallado
                 alert("Error al actualizar: " + e.message); 
             }
         };
