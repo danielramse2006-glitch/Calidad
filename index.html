@@ -17,7 +17,7 @@
         .preview-info-box h2 { margin: 0 0 10px 0; color: #3498db; border-bottom: 2px solid #3498db; display: inline-block; }
         .table-wrapper { max-height: 400px; overflow-y: auto; border: 1px solid #ddd; }
         
-        /* Botones ocultos por defecto para que la lógica de permisos los active */
+        /* Botones ocultos por defecto */
         #btnUsuarios, #btnHistorial, #btnRegistrar, #btnActualizar, #btnEliminar, #upload-container { 
             display: none; 
         }
@@ -95,10 +95,10 @@
         import { db, checkAuth } from './config.js';
         import { collection, onSnapshot, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // --- LÓGICA DE AUTENTICACIÓN Y PERMISOS ---
         const user = checkAuth();
         let currentItemSeleccionado = null;
 
+        // --- GESTIÓN DE PERMISOS ---
         if(user) {
             if(user.usuario === 'admin') {
                 document.getElementById('btnUsuarios').style.display = 'block';
@@ -108,7 +108,6 @@
                 document.getElementById('btnEliminar').style.display = 'block';
                 document.getElementById('upload-container').style.display = 'block';
             } else if(user.permisos) {
-                // Leer permisos tal cual se guardan en usuarios.html
                 if(user.permisos.registrar)   document.getElementById('btnRegistrar').style.display = 'block';
                 if(user.permisos.actualizar)  document.getElementById('btnActualizar').style.display = 'block';
                 if(user.permisos.eliminar)    document.getElementById('btnEliminar').style.display = 'block';
@@ -116,7 +115,6 @@
             }
         }
 
-        // --- CONFIGURACIÓN DRIVE ---
         const scriptURL = "https://script.google.com/macros/s/AKfycbz-zqhnPq-ZCVv1miDE8lF6WkKfTrw4KMj2ikRm8ZYkncyOpSG0VAqEkbfbnThTIdmb/exec";
         const campos = ["Item #","Estatus","Programador","PPAP Part Number","Component Description","Razon de Cambio","PRP5/area","Lider de Calidad"," OE/AFTERMARKET ","Se entrego documentacion","Muestras Recibidas","Ubicacion Fisica ","Fecha de Programacion","Proceso","Update","Comments","Responsable","Instrucciones Especiales","PPAP Type OE / SM AFTER Market","PV Result","1-Design records","2-ECN document","3-Customer eng approval","4-Design FMEA","5-Process Flow Diagram","6-PFMEA","7-Control Plan","8-MSA Studies","9-Dimensional results","10-Material, performance test result","11-Initial Process Studies","12-Qualify Lab Documentation","13-Appereance Approval Report","14-Sample product","15-Checking Aids","16-Record de compliance","17-Bulk material checklist","18-PSW(Full or Interim)","Supplier PPAP package status","Validation run readiness","Samples on hand","Dimension status","FFF review status","AAR review status","PPAP overall status"];
         
@@ -147,20 +145,20 @@
                     const imgPreview = document.getElementById('main-preview-img');
                     const statusDrive = document.getElementById('status-drive');
                     imgPreview.src = "imagenes/sin_foto.jpg";
-                    statusDrive.innerText = "Buscando en Drive...";
+                    statusDrive.innerText = "Buscando imagen...";
 
                     try {
                         const res = await fetch(`${scriptURL}?itemName=${itemID}`);
                         const data = await res.json();
                         if(data.result === "success") {
-                            // CORRECCIÓN URL DRIVE
-                            imgPreview.src = `http://googleusercontent.com/profile/picture/${data.id}`;
-                            statusDrive.innerText = "Foto de Drive";
+                            // USANDO LA URL QUE FUNCIONA (con el 0 antes)
+                            imgPreview.src = `https://lh3.googleusercontent.com/u/0/d/$${data.id}`;
+                            statusDrive.innerText = "Imagen de Drive cargada";
                         } else {
-                            statusDrive.innerText = "Sin foto en Drive";
+                            statusDrive.innerText = "Sin imagen en Drive";
                         }
                     } catch (e) { 
-                        statusDrive.innerText = "Error de conexión con Drive";
+                        statusDrive.innerText = "Error en Drive";
                         imgPreview.src = 'imagenes/sin_foto.jpg'; 
                     }
                 };
@@ -231,19 +229,15 @@
                     const data = await res.json();
                     if(data.result === "success") {
                         await addDoc(collection(db, "movimientos"), {
-                            usuario: user.usuario, 
-                            accion: "Subida de Imagen",
-                            detalle: `Item: ${currentItemSeleccionado["Item #"]}`, 
-                            fecha: serverTimestamp()
+                            usuario: user.usuario, accion: "Subida de Imagen",
+                            detalle: `Item: ${currentItemSeleccionado["Item #"]}`, fecha: serverTimestamp()
                         });
                         alert("¡Foto guardada!");
-                        document.getElementById('main-preview-img').src = `http://googleusercontent.com/profile/picture/${data.id}`;
+                        // USANDO LA URL QUE FUNCIONA (con el 0 antes)
+                        document.getElementById('main-preview-img').src = `https://lh3.googleusercontent.com/u/0/d/$${data.id}`;
                     }
-                } catch(e) { 
-                    alert("Error al conectar con Drive."); 
-                } finally {
-                    btn.innerText = "SUBIR A DRIVE"; btn.disabled = false; fileInput.value = "";
-                }
+                } catch(e) { alert("Error al conectar con Drive."); }
+                finally { btn.innerText = "SUBIR A DRIVE"; btn.disabled = false; fileInput.value = ""; }
             };
         };
 
