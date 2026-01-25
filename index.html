@@ -61,20 +61,30 @@
         </section>
     </div>
 
-    <div id="modalReporte" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; overflow-y:auto;">
-        <div style="background:white; width:90%; max-width:1000px; margin:20px auto; padding:20px; border-radius:8px;">
-            <div id="reporte-print-area" style="padding:20px; color:black;">
-                <h2 style="border-bottom:3px solid #2c3e50; padding-bottom:10px;">REPORTE TÉCNICO PPAP</h2>
-                <div style="display:flex; gap:20px;">
-                    <img id="rep-img" style="width:250px; height:250px; object-fit:contain; border:1px solid #ddd;">
-                    <div id="rep-data-main" style="flex:1; display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:12px;"></div>
+    <div id="modalReporte" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; overflow-y:auto;">
+        <div style="background:white; width:95%; max-width:850px; margin:20px auto; padding:10px; border-radius:8px;">
+            <div id="reporte-print-area" style="padding:30px; color:black; font-family: Arial, sans-serif;">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:4px solid #2c3e50; padding-bottom:10px; margin-bottom:15px;">
+                    <div>
+                        <h1 style="margin:0; color:#2c3e50; font-size:22px;">REPORTE TÉCNICO PPAP</h1>
+                        <p style="margin:0; color:#7f8c8d; font-size:11px; font-weight:bold;">MASTER TRACK SYSTEM</p>
+                    </div>
+                    <div id="rep-fecha" style="font-size:12px; font-weight:bold;"></div>
                 </div>
-                <h3 style="background:#2c3e50; color:white; padding:5px; margin-top:20px;">CHECKLIST DE DOCUMENTACIÓN</h3>
-                <div id="rep-data-ppap" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; font-size:11px;"></div>
+
+                <div style="display:flex; gap:20px;">
+                    <div style="flex: 0 0 250px; height: 250px; border: 1px solid #ddd; display:flex; align-items:center; justify-content:center; background:#f9f9f9;">
+                        <img id="rep-img-final" style="max-width:100%; max-height:100%; object-fit:contain;">
+                    </div>
+                    <div id="rep-data-main" style="flex:1; display:grid; grid-template-columns:1fr 1fr; gap:8px;"></div>
+                </div>
+
+                <h3 style="background:#2c3e50; color:white; padding:6px; margin-top:20px; font-size:14px;">CHECKLIST DE DOCUMENTACIÓN</h3>
+                <div id="rep-data-ppap" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; font-size:11px; background:#f8f9fa; padding:10px;"></div>
             </div>
-            <div style="margin-top:20px; display:flex; gap:10px;">
-                <button id="btnDescargarPDF" style="flex:1; padding:15px; background:#27ae60; color:white; border:none; cursor:pointer; font-weight:bold;">DESCARGAR PDF</button>
-                <button onclick="document.getElementById('modalReporte').style.display='none'" style="flex:1; padding:15px; background:#7f8c8d; color:white; border:none; cursor:pointer;">CERRAR</button>
+            <div style="margin:15px; display:flex; gap:10px;">
+                <button id="btnDescargarPDF" style="flex:2; padding:15px; background:#27ae60; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">📥 GUARDAR PDF (CARTA)</button>
+                <button onclick="document.getElementById('modalReporte').style.display='none'" style="flex:1; padding:15px; background:#e74c3c; color:white; border:none; border-radius:6px; cursor:pointer;">CERRAR</button>
             </div>
         </div>
     </div>
@@ -138,20 +148,20 @@
             });
         }
 
-        // --- FUNCIÓN DE REPORTE CORREGIDA ---
         window.abrirReporte = function(p) {
             const modal = document.getElementById('modalReporte');
             const rMain = document.getElementById('rep-data-main');
             const rPpap = document.getElementById('rep-data-ppap');
-            const img = document.getElementById('rep-img');
-
+            const imgReporte = document.getElementById('rep-img-final');
+            
+            document.getElementById('rep-fecha').innerText = "FECHA: " + new Date().toLocaleDateString();
+            imgReporte.src = document.getElementById('main-preview-img').src;
             rMain.innerHTML = ''; rPpap.innerHTML = '';
-            img.src = document.getElementById('main-preview-img').src;
 
             campos.forEach((key, index) => {
-                const html = `<div style="border-bottom:1px solid #eee;">
-                    <b style="font-size:9px; color:gray; display:block;">${key}</b>
-                    <span>${p[key] || '-'}</span>
+                const html = `<div style="border-bottom:1px solid #eee; padding:2px 0;">
+                    <b style="font-size:9px; color:#666; display:block; text-transform:uppercase;">${key}</b>
+                    <span style="font-size:13px; color:black;">${p[key] || '-'}</span>
                 </div>`;
                 if(index < 14) rMain.innerHTML += html;
                 else rPpap.innerHTML += html;
@@ -161,8 +171,40 @@
 
         document.getElementById('btnDescargarPDF').onclick = () => {
             const element = document.getElementById('reporte-print-area');
-            html2pdf().from(element).save('Reporte-PPAP.pdf');
+            const opt = {
+                margin: 10,
+                filename: 'Reporte_PPAP.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 3, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
         };
+
+        async function subirAFirebase(p) {
+            const fileInput = document.getElementById('fileDrive');
+            const file = fileInput.files[0];
+            if(!file) return alert("Selecciona una foto primero");
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = async () => {
+                const base64 = reader.result.split(',')[1];
+                const btn = document.getElementById('btnSubirDrive');
+                btn.innerText = "SUBIENDO..."; btn.disabled = true;
+                try {
+                    const res = await fetch(scriptURL, { method: "POST", body: JSON.stringify({ itemName: p["Item #"], imageB64: base64 }) });
+                    const data = await res.json();
+                    if(data.result === "success") {
+                        await addDoc(collection(db, "movimientos"), {
+                            usuario: user.usuario, accion: "Subida de Imagen",
+                            detalle: `Item: ${p["Item #"]}`, fecha: serverTimestamp()
+                        });
+                        alert("¡Foto guardada en Drive!");
+                        btn.innerText = "SUBIR A DRIVE"; btn.disabled = false; fileInput.value = "";
+                    }
+                } catch(e) { alert("Error al subir"); btn.disabled = false; }
+            };
+        }
 
         document.getElementById('mainSearch').oninput = (e) => {
             const t = e.target.value.toLowerCase();
