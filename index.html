@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
     <style>
-        /* --- ESTILOS DEL VISOR INFERIOR QUE ME PASASTE --- */
+        /* --- ESTILOS DEL VISOR INFERIOR --- */
         .bottom-preview {
             margin-top: 20px;
             background: white;
@@ -50,9 +50,7 @@
             border: 1px solid #ddd;
         }
 
-        /* Estilo para el botón de admin */
         #btnUsuarios { background: #f1c40f; color: #333; display: none; }
-        
         .loading-text { font-size: 10px; color: #3498db; font-style: italic; display: block; margin-top: 5px; }
     </style>
 </head>
@@ -88,7 +86,7 @@
                 <div class="preview-info-box">
                     <p style="text-transform: uppercase; font-size: 0.8em; font-weight: bold; color: #7f8c8d; margin-bottom: 5px;">Detalles del registro seleccionado:</p>
                     <h2 id="prod-name-display">Selecciona un registro</h2>
-                    <p id="prod-detail-display" style="font-size: 1.1em; line-height: 1.5;">Pasa el mouse sobre la tabla para ver la imagen y detalles rápidos.</p>
+                    <p id="prod-detail-display" style="font-size: 1.1em; line-height: 1.5;">Haz clic en una fila de la tabla para ver la imagen y detalles rápidos.</p>
                 </div>
             </div>
         </section>
@@ -125,7 +123,6 @@
         import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const user = checkAuth();
-        // Mostrar botón de usuarios solo si es admin
         if(user && user.usuario === 'admin') {
             document.getElementById('btnUsuarios').style.display = 'block';
         }
@@ -152,8 +149,8 @@
             lista.forEach(p => {
                 const tr = document.createElement('tr');
                 
-                // EVENTO MOUSE ENTER (VISOR)
-                tr.onmouseenter = async () => {
+                // CAMBIO: DE onmouseenter A onclick
+                tr.onclick = async () => {
                     const itemID = p["Item #"] || "sin_id";
                     const imgPreview = document.getElementById('main-preview-img');
                     const nameDisplay = document.getElementById('prod-name-display');
@@ -168,7 +165,6 @@
                         <b>Responsable:</b> ${p["Responsable"] || '-'}
                     `;
 
-                    // BUSCAR EN DRIVE AL PASAR EL MOUSE
                     statusDrive.innerText = "Buscando en Drive...";
                     try {
                         const res = await fetch(`${scriptURL}?itemName=${itemID}`);
@@ -187,7 +183,6 @@
                         statusDrive.innerText = "";
                     }
 
-                    // Función para el botón de subida
                     document.getElementById('btnSubirDrive').onclick = () => subirAFirebase(p);
                 };
 
@@ -199,7 +194,10 @@
                 const btn = document.createElement('button');
                 btn.innerText = "VER REPORTE";
                 btn.style = "background:#27ae60; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;";
-                btn.onclick = () => abrirReporte(p);
+                btn.onclick = (e) => {
+                    e.stopPropagation(); // Para que no se dispare el click de la fila al presionar el botón
+                    abrirReporte(p);
+                };
                 tdBtn.appendChild(btn);
                 tr.appendChild(tdBtn);
 
@@ -249,7 +247,6 @@
                 else rDataPpap.innerHTML += itemHtml;
             });
 
-            // Usamos la misma imagen que esté en el visor en ese momento
             img.src = document.getElementById('main-preview-img').src;
             modal.style.display = 'block';
         }

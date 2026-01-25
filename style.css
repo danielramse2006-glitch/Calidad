@@ -36,6 +36,9 @@ th {
     position: sticky; top: 0; z-index: 100; font-size: 12px;
 }
 td { border: 1px solid #ddd; padding: 10px; color: #333 !important; font-size: 13px; }
+
+/* CAMBIO: Se añade cursor pointer para indicar que es cliqueable */
+tr { cursor: pointer; }
 tr:hover { background: #f2f2f2; }
 
 /* --- IMAGEN FLOTANTE (HOVER) --- */
