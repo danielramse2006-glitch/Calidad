@@ -8,73 +8,54 @@
     <div style="padding:20px; max-width:600px; margin:auto; background:white; color:black; border-radius:10px; margin-top:50px;">
         <h2 style="color:#c0392b;">Eliminar Registro PPAP</h2>
         <p>Ingresa el <b>Item #</b> del registro que deseas borrar permanentemente.</p>
-        
         <div style="margin-bottom:20px;">
             <input type="text" id="searchDelete" placeholder="Ejemplo: 15" style="width:70%; padding:12px; border:1px solid #ccc; border-radius:5px;">
             <button id="btnBuscarDel" style="padding:12px; width:25%; background:#2c3e50; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">BUSCAR</button>
         </div>
-
         <div id="confirm-box" style="display:none; border:2px solid #c0392b; padding:15px; border-radius:8px; background:#f9f9f9;">
             <div id="infoDelete" style="margin-bottom:15px; font-size:14px; line-height:1.6;"></div>
             <button id="btnConfirmDelete" style="width:100%; padding:15px; background:#c0392b; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">CONFIRMAR ELIMINACIÓN PERMANENTE</button>
         </div>
-
         <button onclick="location.href='index.html'" style="width:100%; margin-top:20px; padding:10px; background:#bdc3c7; border:none; border-radius:5px; cursor:pointer;">VOLVER AL INICIO</button>
     </div>
 
     <script type="module">
         import { db, checkAuth } from './config.js';
-        import { collection, query, where, getDocs, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { collection, query, where, getDocs, doc, deleteDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         
-        checkAuth();
+        const user = checkAuth();
         let docIdToDelete = null;
+        let itemNumToDelete = null;
 
         document.getElementById('btnBuscarDel').onclick = async () => {
-            const itemNum = document.getElementById('searchDelete').value.trim();
-            if(!itemNum) return alert("Por favor, escribe un número de Item");
-
-            // Buscamos usando "Item #" exactamente como está en tu base de datos e index
-            const q = query(collection(db, "productos"), where("Item #", "==", itemNum));
-            
+            itemNumToDelete = document.getElementById('searchDelete').value.trim();
+            if(!itemNumToDelete) return alert("Por favor, escribe un número de Item");
+            const q = query(collection(db, "productos"), where("Item #", "==", itemNumToDelete));
             try {
                 const snap = await getDocs(q);
-
-                if(snap.empty) {
-                    alert("No se encontró ningún registro con ese Item #");
-                    document.getElementById('confirm-box').style.display = 'none';
-                    return;
-                }
-
+                if(snap.empty) { alert("No se encontró"); document.getElementById('confirm-box').style.display = 'none'; return; }
                 const docFound = snap.docs[0];
                 docIdToDelete = docFound.id;
                 const data = docFound.data();
-
-                // Mostramos la información usando las llaves correctas (Mayúsculas)
-                document.getElementById('infoDelete').innerHTML = `
-                    <p style="color:#c0392b; font-weight:bold; margin-top:0;">¿ESTÁS SEGURO DE ELIMINAR ESTE REGISTRO?</p>
-                    <hr>
-                    <b>Item #:</b> ${data["Item #"] || '-'}<br>
-                    <b>Parte:</b> ${data["PPAP Part Number"] || '-'}<br>
-                    <b>Descripción:</b> ${data["Component Description"] || '-'}<br>
-                    <b>Estatus:</b> ${data["Estatus"] || '-'}
-                `;
+                document.getElementById('infoDelete').innerHTML = `<p style="color:#c0392b; font-weight:bold;">¿ELIMINAR?</p><hr><b>Item #:</b> ${data["Item #"]}<br><b>Parte:</b> ${data["PPAP Part Number"]}`;
                 document.getElementById('confirm-box').style.display = 'block';
-            } catch (error) {
-                console.error("Error al buscar:", error);
-                alert("Ocurrió un error al buscar el registro.");
-            }
+            } catch (error) { alert("Error al buscar."); }
         };
 
         document.getElementById('btnConfirmDelete').onclick = async () => {
-            if(confirm("¡ATENCIÓN! Esta acción borrará todos los datos del reporte permanentemente. ¿Continuar?")) {
+            if(confirm("¡Esta acción es irreversible!")) {
                 try {
                     await deleteDoc(doc(db, "productos", docIdToDelete));
-                    alert("Registro eliminado con éxito.");
+                    // LOG DE ELIMINACIÓN
+                    await addDoc(collection(db, "movimientos"), {
+                        usuario: user.usuario,
+                        accion: "Eliminación",
+                        detalle: `Item: ${itemNumToDelete}`,
+                        fecha: serverTimestamp()
+                    });
+                    alert("Eliminado.");
                     location.href = 'index.html';
-                } catch(e) {
-                    console.error("Error al eliminar:", e);
-                    alert("Error al intentar eliminar el registro.");
-                }
+                } catch(e) { alert("Error al eliminar."); }
             }
         };
     </script>

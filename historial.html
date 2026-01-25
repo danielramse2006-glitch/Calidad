@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8"><title>Log de Movimientos - PPAP</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Estilos específicos para la tabla de historial */
+        .log-table { width:100%; min-width:700px; border-collapse: collapse; }
+        .log-table th { background:#2c3e50; color:white; padding:12px; border:1px solid #ddd; }
+        .log-table td { padding:10px; border:1px solid #ddd; font-size:13px; }
+        .log-table tr:nth-child(even) { background: #f2f2f2; }
+        .badge { padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold; color:white; }
+        .bg-login { background: #2ecc71; }
+        .bg-reg { background: #3498db; }
+        .bg-upd { background: #f39c12; }
+        .bg-del { background: #e74c3c; }
+        .bg-img { background: #9b59b6; }
+        .bg-usr { background: #34495e; }
+    </style>
+</head>
+<body style="background:#f4f7f6;">
+    <h2 style="text-align:center; background:#2c3e50; color:white; padding:20px; margin:0;">
+        Historial de Actividad del Sistema
+    </h2>
+
+    <div class="main-container" style="flex-direction: column; align-items: center; padding: 20px;">
+        <button onclick="location.href='index.html'" style="margin-bottom:20px; padding:10px 20px; cursor:pointer; border-radius:8px; border:none; background:#3498db; color:white; font-weight:bold;">
+            VOLVER AL INICIO
+        </button>
+
+        <div style="background:white; padding:20px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); width:100%; max-width:950px; overflow-x:auto;">
+            <table class="log-table">
+                <thead>
+                    <tr>
+                        <th>FECHA Y HORA</th>
+                        <th>USUARIO</th>
+                        <th>ACCIÓN</th>
+                        <th>DETALLE / ITEM</th>
+                    </tr>
+                </thead>
+                <tbody id="lista-movimientos" style="text-align:center;">
+                    <tr><td colspan="4">Cargando movimientos...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db, checkAuth } from './config.js';
+        import { collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const user = checkAuth();
+        // Solo el admin puede ver esto
+        if(!user || user.usuario !== 'admin') {
+            alert("Acceso denegado");
+            window.location.href = "index.html";
+        }
+
+        const tbody = document.getElementById('lista-movimientos');
+        const q = query(collection(db, "movimientos"), orderBy("fecha", "desc"));
+
+        onSnapshot(q, (snap) => {
+            tbody.innerHTML = '';
+            if(snap.empty) {
+                tbody.innerHTML = '<tr><td colspan="4">No hay registros aún.</td></tr>';
+                return;
+            }
+
+            snap.forEach(doc => {
+                const m = doc.data();
+                const f = m.fecha ? new Date(m.fecha.seconds * 1000).toLocaleString() : '---';
+                
+                // Asignar color según acción
+                let badgeClass = 'bg-usr';
+                const act = (m.accion || '').toLowerCase();
+                if(act.includes('inicio')) badgeClass = 'bg-login';
+                else if(act.includes('registro') || act.includes('nuevo')) badgeClass = 'bg-reg';
+                else if(act.includes('actualiz')) badgeClass = 'bg-upd';
+                else if(act.includes('elimin')) badgeClass = 'bg-del';
+                else if(act.includes('imagen') || act.includes('foto')) badgeClass = 'bg-img';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${f}</td>
+                        <td><b>${m.usuario}</b></td>
+                        <td><span class="badge ${badgeClass}">${m.accion}</span></td>
+                        <td style="color:#555;">${m.detalle || '-'}</td>
+                    </tr>
+                `;
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Login - PPAP Master Track</title>
+    <meta charset="UTF-8"><title>Login - PPAP Master Track</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body style="background:#2c3e50; display:flex; justify-content:center; align-items:center; height:100vh; margin:0;">
@@ -15,7 +14,7 @@
 
     <script type="module">
         import { db } from './config.js';
-        import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         sessionStorage.clear();
 
@@ -25,8 +24,21 @@
 
             if (!u || !p) return alert("Ingresa datos");
 
+            // Función interna para registrar log de login
+            const logLogin = async (usuario) => {
+                try {
+                    await addDoc(collection(db, "movimientos"), {
+                        usuario: usuario,
+                        accion: "Inicio de Sesión",
+                        detalle: "Acceso Exitoso",
+                        fecha: serverTimestamp()
+                    });
+                } catch(e) { console.error("Error log login", e); }
+            };
+
             if (u === "admin" && p === "#Reyn0sa#") {
                 sessionStorage.setItem("currentUser", JSON.stringify({ usuario: 'admin' }));
+                await logLogin('admin');
                 window.location.href = "index.html";
                 return;
             }
@@ -35,7 +47,9 @@
                 const q = query(collection(db, "usuarios"), where("usuario", "==", u), where("password", "==", p));
                 const snap = await getDocs(q);
                 if (!snap.empty) {
-                    sessionStorage.setItem("currentUser", JSON.stringify(snap.docs[0].data()));
+                    const userData = snap.docs[0].data();
+                    sessionStorage.setItem("currentUser", JSON.stringify(userData));
+                    await logLogin(userData.usuario);
                     window.location.href = "index.html";
                 } else {
                     alert("Usuario o contraseña incorrectos");

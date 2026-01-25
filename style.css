@@ -2,10 +2,14 @@
 body { 
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
     margin: 0; padding: 0; 
-    background-color: #0080ff; 
+    background-color: #f4f7f6; 
 }
 
-.bg-blue { min-height: 100vh; }
+.bg-blue { 
+    background-color: #0080ff; 
+    color: white; 
+    min-height: 100vh; 
+}
 
 header h1 { 
     text-align: center; color: white; padding: 20px; margin: 0;
@@ -17,6 +21,7 @@ header h1 {
 .main-container { display: flex; padding: 20px; gap: 20px; }
 
 .side-menu { display: flex; flex-direction: column; gap: 12px; width: 220px; flex-shrink: 0; }
+
 .side-menu button { 
     padding: 14px; font-weight: bold; cursor: pointer; background: white; 
     border: none; border-radius: 8px; transition: 0.3s;
@@ -24,30 +29,80 @@ header h1 {
 }
 .side-menu button:hover { background: #ecf0f1; transform: translateX(5px); }
 
+/* Estilo específico para el botón de Historial */
+#btnHistorial {
+    background: #9b59b6 !important; /* Morado */
+    color: white !important;
+}
+#btnHistorial:hover {
+    background: #8e44ad !important;
+}
+
+/* --- CUADRO DE CONTENIDO --- */
+.content { 
+    flex: 1; 
+    background: white; 
+    color: #333; 
+    padding: 30px; 
+    border-radius: 10px; 
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2); 
+}
+
 /* --- TABLA CON SCROLL --- */
 .table-wrapper { 
     overflow-x: auto; overflow-y: auto; background: white; 
     border-radius: 10px; padding: 10px; max-height: 80vh; 
+    border: 1px solid #ddd;
 }
 
 table { width: 100%; min-width: 7000px; border-collapse: collapse; }
+
+/* Para la tabla de historial (más pequeña) */
+.log-table { min-width: 800px !important; }
+
 th { 
     background: #2c3e50; color: white; padding: 12px; text-align: left; 
     position: sticky; top: 0; z-index: 100; font-size: 12px;
 }
+
 td { border: 1px solid #ddd; padding: 10px; color: #333 !important; font-size: 13px; }
 
-/* CAMBIO: Se añade cursor pointer para indicar que es cliqueable */
-tr { cursor: pointer; }
+/* Efecto de clic en filas */
+tr { cursor: pointer; transition: background 0.2s; }
 tr:hover { background: #f2f2f2; }
 
-/* --- IMAGEN FLOTANTE (HOVER) --- */
-.hover-item { position: relative; cursor: pointer; color: #0056b3; font-weight: bold; }
-.hover-item img { 
-    display: none; position: absolute; z-index: 9999; width: 250px; 
-    border: 4px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.4); 
-    border-radius: 8px; left: 50px; top: -10px; background: white;
+/* --- BADGES PARA EL HISTORIAL --- */
+.badge { 
+    padding: 4px 8px; 
+    border-radius: 4px; 
+    font-size: 11px; 
+    font-weight: bold; 
+    color: white; 
+    text-transform: uppercase;
 }
-.hover-item:hover img { display: block; }
+.bg-login { background: #2ecc71; } /* Verde para Login */
+.bg-reg { background: #3498db; }   /* Azul para Registro */
+.bg-upd { background: #f39c12; }   /* Naranja para Actualizar */
+.bg-del { background: #e74c3c; }   /* Rojo para Eliminar */
+.bg-img { background: #9b59b6; }   /* Morado para Imágenes */
+.bg-usr { background: #34495e; }   /* Gris oscuro para Usuarios */
 
-.btn-report-row { background: #27ae60; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+/* --- BOTONES VARIOS --- */
+.btn-report-row { 
+    background: #27ae60; color: white; border: none; 
+    padding: 5px 10px; border-radius: 4px; cursor: pointer; 
+}
+
+.btn-action { 
+    padding: 12px 30px; font-weight: bold; cursor: pointer; 
+    border-radius: 5px; border: 1px solid #999; 
+    background: #f0f0f0; transition: 0.2s;
+}
+.btn-action:hover { background: #e0e0e0; }
+
+/* Inputs generales */
+input, select, textarea { 
+    padding: 11px; border: 1px solid #ccc; border-radius: 5px; 
+    font-size: 14px; width: 100%; box-sizing: border-box; 
+}
+input:focus { outline: none; border-color: #3498db; }
