@@ -6,7 +6,6 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
     <style>
-        /* --- ESTILOS DEL VISOR INFERIOR --- */
         .bottom-preview {
             margin-top: 20px;
             background: white;
@@ -18,12 +17,7 @@
             gap: 30px;
             box-shadow: 0 -5px 25px rgba(0,0,0,0.1);
         }
-
-        .preview-image-box {
-            flex: 0 0 300px;
-            text-align: center;
-        }
-
+        .preview-image-box { flex: 0 0 300px; text-align: center; }
         #main-preview-img {
             max-width: 100%;
             max-height: 350px; 
@@ -31,27 +25,19 @@
             border-radius: 8px;
             border: 1px solid #eee;
         }
-
-        .preview-info-box {
-            flex: 1;
-            color: #2c3e50;
-        }
-
+        .preview-info-box { flex: 1; color: #2c3e50; }
         .preview-info-box h2 {
             margin: 0 0 10px 0;
             color: #3498db;
             border-bottom: 2px solid #3498db;
             display: inline-block;
         }
-
-        .table-wrapper {
-            max-height: 400px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-        }
-
+        .table-wrapper { max-height: 400px; overflow-y: auto; border: 1px solid #ddd; }
         #btnUsuarios { background: #f1c40f; color: #333; display: none; }
         .loading-text { font-size: 10px; color: #3498db; font-style: italic; display: block; margin-top: 5px; }
+        
+        /* Contenedor de subida oculto por defecto */
+        #upload-container { display: none; margin-top:10px; padding:5px; background:#f8f9fa; border-radius:5px; font-size:10px; }
     </style>
 </head>
 <body class="bg-blue">
@@ -78,7 +64,8 @@
                 <div class="preview-image-box">
                     <span id="status-drive" class="loading-text"></span>
                     <img id="main-preview-img" src="imagenes/sin_foto.jpg" alt="Vista previa">
-                    <div style="margin-top:10px; padding:5px; background:#f8f9fa; border-radius:5px; font-size:10px;">
+                    
+                    <div id="upload-container">
                         <input type="file" id="fileDrive" style="width:100%;">
                         <button id="btnSubirDrive" style="width:100%; margin-top:5px; background:#3498db; color:white; border:none; border-radius:3px; cursor:pointer;">SUBIR A DRIVE</button>
                     </div>
@@ -86,36 +73,10 @@
                 <div class="preview-info-box">
                     <p style="text-transform: uppercase; font-size: 0.8em; font-weight: bold; color: #7f8c8d; margin-bottom: 5px;">Detalles del registro seleccionado:</p>
                     <h2 id="prod-name-display">Selecciona un registro</h2>
-                    <p id="prod-detail-display" style="font-size: 1.1em; line-height: 1.5;">Haz clic en una fila de la tabla para ver la imagen y detalles rápidos.</p>
+                    <p id="prod-detail-display" style="font-size: 1.1em; line-height: 1.5;">Haz clic en una fila para ver detalles.</p>
                 </div>
             </div>
         </section>
-    </div>
-
-    <div id="modalReporte" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; overflow-y:auto;">
-        <div style="background:white; width:95%; max-width:900px; margin:20px auto; padding:30px; border-radius:10px;">
-            <div id="reporte-print-area" style="padding:10px; background:white; color: black !important; font-family: Arial, sans-serif;">
-                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #2c3e50; padding-bottom:10px; margin-bottom:20px;">
-                    <h2 style="margin:0; color:#2c3e50;">REPORTE TÉCNICO PPAP</h2>
-                    <span style="font-weight:bold; color:#7f8c8d;">MASTER TRACK SYSTEM</span>
-                </div>
-                <div style="display:flex; gap:25px; margin-bottom:20px;">
-                    <div style="flex:0 0 250px;">
-                        <img id="rep-img" crossorigin="anonymous" style="width:100%; height:250px; object-fit:contain; border:1px solid #dee2e6; border-radius:5px; background:#f8f9fa;">
-                    </div>
-                    <div style="flex:1;">
-                        <h4 style="background:#2c3e50; color:white; padding:8px; margin:0 0 10px 0; border-radius:3px;">INFORMACIÓN GENERAL</h4>
-                        <div id="rep-data-main" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; font-size:12px;"></div>
-                    </div>
-                </div>
-                <h4 style="background:#2c3e50; color:white; padding:8px; margin:20px 0 10px 0; border-radius:3px;">ESTADO DE DOCUMENTACIÓN Y VALIDACIÓN</h4>
-                <div id="rep-data-ppap" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; font-size:10px;"></div>
-            </div>
-            <div style="display:flex; gap:15px; margin-top:30px; border-top:1px solid #eee; padding-top:20px;">
-                <button id="btnDescargarPDF" style="flex:2; padding:15px; background:#2980b9; color:white; font-weight:bold; border:none; border-radius:8px; cursor:pointer; font-size:16px;">📥 DESCARGAR REPORTE PDF</button>
-                <button onclick="document.getElementById('modalReporte').style.display='none'" style="flex:1; padding:15px; background:#e74c3c; color:white; border:none; border-radius:8px; cursor:pointer;">CERRAR</button>
-            </div>
-        </div>
     </div>
 
     <script type="module">
@@ -123,8 +84,14 @@
         import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const user = checkAuth();
-        if(user && user.usuario === 'admin') {
-            document.getElementById('btnUsuarios').style.display = 'block';
+        
+        // --- CONTROL DE PERMISOS ---
+        if(user) {
+            if(user.usuario === 'admin') document.getElementById('btnUsuarios').style.display = 'block';
+            // Mostrar panel de subida solo si es admin o tiene el permiso específico
+            if(user.usuario === 'admin' || (user.permisos && user.permisos.subirDrive)) {
+                document.getElementById('upload-container').style.display = 'block';
+            }
         }
 
         const scriptURL = "https://script.google.com/macros/s/AKfycbxaEtN66UYbSOO57Wm9HPrjv7IyfzV8Q3cyZgvDKkKcC8PTohwGaLhznjI3AfP2VTLS/exec";
@@ -148,8 +115,8 @@
             tbody.innerHTML = '';
             lista.forEach(p => {
                 const tr = document.createElement('tr');
-                
-                // CAMBIO: DE onmouseenter A onclick
+                tr.style.cursor = "pointer";
+
                 tr.onclick = async () => {
                     const itemID = p["Item #"] || "sin_id";
                     const imgPreview = document.getElementById('main-preview-img');
@@ -178,12 +145,13 @@
                             statusDrive.innerText = "Local/Sin foto";
                         }
                     } catch (e) {
-                        imgPreview.src = `imagenes/${itemID}.jpg`;
-                        imgPreview.onerror = () => { imgPreview.src = 'imagenes/sin_foto.jpg'; };
+                        imgPreview.src = 'imagenes/sin_foto.jpg';
                         statusDrive.innerText = "";
                     }
 
-                    document.getElementById('btnSubirDrive').onclick = () => subirAFirebase(p);
+                    // Asignar el click al botón de subida si está visible
+                    const btnSubir = document.getElementById('btnSubirDrive');
+                    if(btnSubir) btnSubir.onclick = () => subirAFirebase(p);
                 };
 
                 campos.forEach(c => {
@@ -193,21 +161,19 @@
                 const tdBtn = document.createElement('td');
                 const btn = document.createElement('button');
                 btn.innerText = "VER REPORTE";
-                btn.style = "background:#27ae60; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;";
-                btn.onclick = (e) => {
-                    e.stopPropagation(); // Para que no se dispare el click de la fila al presionar el botón
-                    abrirReporte(p);
-                };
+                btn.className = "btn-report-row";
+                btn.onclick = (e) => { e.stopPropagation(); abrirReporte(p); };
                 tdBtn.appendChild(btn);
                 tr.appendChild(tdBtn);
-
                 tbody.appendChild(tr);
             });
         }
 
         async function subirAFirebase(p) {
-            const file = document.getElementById('fileDrive').files[0];
-            if(!file) return alert("Selecciona una foto");
+            const fileInput = document.getElementById('fileDrive');
+            const file = fileInput.files[0];
+            if(!file) return alert("Selecciona una foto primero");
+
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = async () => {
@@ -223,30 +189,28 @@
                     if(data.result === "success") {
                         alert("¡Foto guardada en Drive!");
                         btn.innerText = "SUBIR A DRIVE"; btn.disabled = false;
+                        fileInput.value = ""; // Limpiar input
                     }
                 } catch(e) { alert("Error al subir"); btn.disabled = false; }
             };
         }
 
+        // El resto de funciones (abrirReporte, búsqueda, etc.) se mantienen igual
         function abrirReporte(p) {
             const modal = document.getElementById('modalReporte');
             const img = document.getElementById('rep-img');
             const rDataMain = document.getElementById('rep-data-main');
             const rDataPpap = document.getElementById('rep-data-ppap');
-            
-            rDataMain.innerHTML = '';
-            rDataPpap.innerHTML = '';
-
+            rDataMain.innerHTML = ''; rDataPpap.innerHTML = '';
             campos.forEach((key, index) => {
                 const val = p[key] || '-';
-                const itemHtml = `<div style="border-bottom:1px solid #f1f1f1; padding:4px 0;">
-                                    <span style="color:#7f8c8d; font-weight:bold; display:block; font-size:9px; text-transform:uppercase;">${key}</span>
-                                    <span style="color:#2c3e50;">${val}</span>
-                                  </div>`;
-                if(index < 14) rDataMain.innerHTML += itemHtml;
-                else rDataPpap.innerHTML += itemHtml;
+                const html = `<div style="border-bottom:1px solid #f1f1f1; padding:4px 0;">
+                                <span style="color:#7f8c8d; font-weight:bold; display:block; font-size:9px; text-transform:uppercase;">${key}</span>
+                                <span style="color:#2c3e50;">${val}</span>
+                              </div>`;
+                if(index < 14) rDataMain.innerHTML += html;
+                else rDataPpap.innerHTML += html;
             });
-
             img.src = document.getElementById('main-preview-img').src;
             modal.style.display = 'block';
         }
@@ -258,16 +222,6 @@
                 (p["PPAP Part Number"] || '').toLowerCase().includes(t)
             );
             renderTable(filtrados);
-        };
-
-        document.getElementById('btnDescargarPDF').onclick = function() {
-            const element = document.getElementById('reporte-print-area');
-            html2pdf().set({
-                margin: [10, 10],
-                filename: 'Reporte_PPAP.pdf',
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            }).from(element).save();
         };
 
         document.getElementById('btnSalir').onclick = () => { sessionStorage.clear(); window.location.href = "login.html"; };
