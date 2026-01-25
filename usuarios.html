@@ -3,14 +3,40 @@
 <head>
     <meta charset="UTF-8"><title>Gestión de Usuarios - PPAP</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Estilos adicionales para la lista de usuarios */
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            background: #fff;
+            transition: 0.2s;
+        }
+        .user-item:hover { background: #f9f9f9; }
+        .user-info b { color: #2c3e50; font-size: 14px; }
+        .user-info p { margin: 0; font-size: 11px; color: #7f8c8d; }
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .btn-delete:hover { background: #c0392b; }
+    </style>
 </head>
 <body style="background:#f4f7f6;">
     <h2 style="text-align:center; background:#f1c40f; color:#333; padding:20px; margin:0;">
         Panel de Control: Administrar Usuarios
     </h2>
 
-    <div class="main-container" style="justify-content:center;">
-        <div style="background:white; padding:30px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); width:100%; max-width:500px;">
+    <div class="main-container" style="flex-direction: column; align-items: center;">
+        <div style="background:white; padding:30px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); width:100%; max-width:500px; margin-bottom: 30px;">
             <h3>Crear Nuevo Perfil</h3>
             <p style="font-size:12px; color:#666;">Define el nombre de usuario, contraseña y qué acciones tiene permitido realizar en el sistema.</p>
             
@@ -34,22 +60,27 @@
                 </div>
 
                 <div style="text-align:center; margin-top:10px; display:flex; flex-direction:column; gap:10px;">
-                    <button id="btnSave" class="btn-action" style="background:#27ae60; color:white; width:100%; padding:12px;">
+                    <button id="btnSave" class="btn-action" style="background:#27ae60; color:white; width:100%; padding:12px; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">
                         CREAR USUARIO
                     </button>
-                    <button onclick="location.href='index.html'" class="btn-action" style="width:100%;">
+                    <button onclick="location.href='index.html'" class="btn-action" style="width:100%; padding:10px; border:none; border-radius:8px; cursor:pointer;">
                         VOLVER AL INICIO
                     </button>
                 </div>
             </div>
         </div>
-    </div>
 
-    
+        <div style="background:white; padding:30px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); width:100%; max-width:500px;">
+            <h3>Usuarios Registrados</h3>
+            <div id="lista-usuarios-content" style="margin-top:20px; border: 1px solid #eee; border-radius: 8px; overflow: hidden;">
+                <p style="padding: 20px; text-align: center; color: #999;">Cargando usuarios...</p>
+            </div>
+        </div>
+    </div>
 
     <script type="module">
         import { db, checkAuth } from './config.js';
-        import { collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { collection, addDoc, query, where, getDocs, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // Verificación de seguridad: solo el admin entra aquí
         const user = checkAuth();
@@ -58,13 +89,13 @@
             window.location.href = "index.html";
         }
 
+        // --- FUNCIÓN PARA GUARDAR USUARIO ---
         document.getElementById('btnSave').onclick = async () => {
             const u = document.getElementById('u').value.trim();
             const p = document.getElementById('p').value.trim();
 
             if(!u || !p) return alert("Por favor, ingresa un usuario y una contraseña.");
 
-            // Verificar si el usuario ya existe para no duplicar
             const q = query(collection(db, "usuarios"), where("usuario", "==", u));
             const snap = await getDocs(q);
             
@@ -96,6 +127,50 @@
                 alert("Hubo un error al guardar en la base de datos.");
             }
         };
+
+        // --- FUNCIÓN PARA CARGAR Y MOSTRAR USUARIOS EN TIEMPO REAL ---
+        const listaContenedor = document.getElementById('lista-usuarios-content');
+
+        onSnapshot(collection(db, "usuarios"), (snap) => {
+            listaContenedor.innerHTML = ''; // Limpiar lista antes de recargar
+            
+            if (snap.empty) {
+                listaContenedor.innerHTML = '<p style="padding:20px; text-align:center; color:#999;">No hay usuarios registrados.</p>';
+                return;
+            }
+
+            snap.forEach((usuarioDoc) => {
+                const data = usuarioDoc.data();
+                const id = usuarioDoc.id;
+
+                // Evitar mostrar u ofrecer eliminar al propio admin actual por seguridad
+                if (data.usuario === 'admin') return;
+
+                const div = document.createElement('div');
+                div.className = 'user-item';
+                div.innerHTML = `
+                    <div class="user-info">
+                        <b>${data.usuario}</b>
+                        <p>Permisos: ${data.permisos.registrar ? 'Reg ' : ''}${data.permisos.actualizar ? 'Edit ' : ''}${data.permisos.eliminar ? 'Del' : ''}</p>
+                    </div>
+                    <button class="btn-delete" data-id="${id}">ELIMINAR</button>
+                `;
+                
+                // Evento para eliminar
+                div.querySelector('.btn-delete').onclick = async () => {
+                    if (confirm(`¿Estás seguro de que deseas eliminar al usuario "${data.usuario}"?`)) {
+                        try {
+                            await deleteDoc(doc(db, "usuarios", id));
+                            alert("Usuario eliminado.");
+                        } catch (e) {
+                            alert("Error al eliminar usuario.");
+                        }
+                    }
+                };
+
+                listaContenedor.appendChild(div);
+            });
+        });
     </script>
 </body>
 </html>
