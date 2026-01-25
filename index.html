@@ -6,21 +6,18 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
     <style>
-        /* Mantenemos tus estilos del visor gigante */
         .bottom-preview {
             margin-top: 20px; background: white; border-radius: 12px;
             border: 3px solid #3498db; padding: 20px; display: flex;
             align-items: center; gap: 30px; box-shadow: 0 -5px 25px rgba(0,0,0,0.1);
         }
         .preview-image-box { flex: 0 0 300px; text-align: center; }
-        #main-preview-img { max-width: 100%; max-height: 350px; object-fit: contain; border-radius: 8px; border: 1px solid #eee; background: #f9f9f9; }
-        .preview-info-box { flex: 1; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-        .info-card { background: #f8f9fa; padding: 8px; border-radius: 6px; border-left: 4px solid #3498db; }
-        .info-card label { display: block; font-size: 10px; color: #7f8c8d; font-weight: bold; text-transform: uppercase; }
-        .info-card span { font-size: 14px; color: #2c3e50; font-weight: bold; }
-        .loading-text { font-size: 11px; color: #3498db; font-style: italic; }
-        
-        /* Estilo para el botón de admin */
+        #main-preview-img { max-width: 100%; max-height: 350px; object-fit: contain; border-radius: 8px; border: 1px solid #eee; }
+        .preview-info-box { flex: 1; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        .info-card { background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #3498db; }
+        .info-card label { display: block; font-size: 11px; color: #7f8c8d; font-weight: bold; text-transform: uppercase; }
+        .info-card span { font-size: 16px; color: #2c3e50; font-weight: bold; }
+        .loading-text { font-size: 11px; color: #3498db; font-style: italic; margin-bottom: 5px; }
         #btnUsuarios { background: #f1c40f; color: #333; display: none; }
     </style>
 </head>
@@ -49,32 +46,37 @@
                     <img id="main-preview-img" src="imagenes/sin_foto.jpg">
                     <div style="margin-top:10px; padding:10px; background:#f1f1f1; border-radius:8px;">
                         <input type="file" id="fileDrive" accept="image/*" style="font-size:10px; width:100%;">
-                        <button id="btnSubirDrive" style="width:100%; margin-top:5px; background:#4285F4; color:white; border:none; padding:8px; border-radius:4px; cursor:pointer; font-weight:bold;">SUBIR A DRIVE</button>
+                        <button id="btnSubirDrive" style="width:100%; margin-top:5px; background:#4285F4; color:white; border:none; padding:8px; border-radius:4px; cursor:pointer; font-weight:bold;">ACTUALIZAR FOTO</button>
                     </div>
                 </div>
                 <div class="preview-info-box" id="preview-data"></div>
-                <div style="flex: 0 0 150px;">
-                    <button id="btnDescargarPDF" style="width:100%; padding:15px; background:#27ae60; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">REPORTE PDF</button>
+                <div style="flex: 0 0 180px;">
+                    <button id="btnDescargarPDF" style="width:100%; padding:20px; background:#27ae60; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px;">GENERAR REPORTE</button>
                 </div>
             </div>
         </section>
     </div>
 
-    <div id="reporte-print-area" style="display:none; padding:30px; background:white; color:black;">
-        <div id="pdf-header" style="border-bottom:2px solid #333; padding-bottom:10px; margin-bottom:20px;">
-            <h2>REPORTE TÉCNICO DE CALIDAD - PPAP</h2>
+    <div id="reporte-print-area" style="display:none; width:800px; font-family:Arial; color:black; padding:20px; background:white;">
+        <div style="border-bottom:3px solid #2c3e50; display:flex; justify-content:space-between; align-items:center; padding-bottom:10px;">
+            <h2 style="margin:0;">REPORTE TÉCNICO DE CALIDAD</h2>
+            <span id="pdf-fecha" style="font-size:12px; font-weight:bold;"></span>
         </div>
-        <div id="pdf-content" style="display:grid; grid-template-columns:1fr 1fr; gap:20px;"></div>
+        <div style="display:flex; gap:20px; margin-top:20px;">
+            <div style="flex:1; border:1px solid #ddd; padding:10px; text-align:center;">
+                <img id="pdf-img" style="max-width:100%; max-height:250px;">
+            </div>
+            <div id="pdf-main-data" style="flex:1.5; display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:12px;"></div>
+        </div>
+        <h3 style="background:#2c3e50; color:white; padding:5px; font-size:14px; margin-top:20px;">DETALLES PPAP</h3>
+        <div id="pdf-ppap-data" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; font-size:10px;"></div>
     </div>
 
     <script type="module">
         import { db, checkAuth } from './config.js';
         import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         
-        // Validar sesión y obtener datos del usuario
         const userStatus = checkAuth();
-        
-        // SI ES ADMIN, MOSTRAR BOTÓN DE USUARIOS
         if (userStatus && userStatus.usuario === 'admin') {
             document.getElementById('btnUsuarios').style.display = 'block';
         }
@@ -109,36 +111,34 @@
             const status = document.getElementById('status-foto');
             
             visor.style.display = 'flex';
-            status.innerText = "Buscando foto en Drive...";
+            status.innerText = "Buscando en Drive...";
             img.src = "imagenes/sin_foto.jpg"; 
 
             info.innerHTML = '';
-            campos.slice(0, 12).forEach(c => {
+            campos.slice(0, 3).forEach(c => {
                 info.innerHTML += `<div class="info-card"><label>${c}</label><span>${p[c] || 'N/A'}</span></div>`;
             });
 
-            // BÚSQUEDA EN DRIVE
             try {
                 const response = await fetch(`${scriptURL}?itemName=${p["Item #"]}`);
                 const resData = await response.json();
                 if(resData.result === "success" && resData.id) {
+                    // CORREGIDO: Usamos el ID de Drive directamente
                     img.src = `https://lh3.googleusercontent.com/u/0/d/${resData.id}`;
-                    status.innerText = "Foto de Google Drive cargada";
+                    status.innerText = "Imagen cargada desde Google Drive";
                 } else {
-                    status.innerText = "Buscando en carpeta local...";
                     img.src = `imagenes/${p["Item #"]}.jpg`;
-                    img.onerror = () => { img.src = 'imagenes/sin_foto.jpg'; status.innerText = "Sin imagen"; };
+                    img.onerror = () => { img.src = 'imagenes/sin_foto.jpg'; status.innerText = "Sin foto encontrada"; };
+                    status.innerText = "Buscando en carpeta local...";
                 }
-            } catch (e) {
-                img.src = `imagenes/${p["Item #"]}.jpg`;
-                img.onerror = () => { img.src = 'imagenes/sin_foto.jpg'; };
-                status.innerText = "";
+            } catch (e) { 
+                img.src = `imagenes/${p["Item #"]}.jpg`; 
+                status.innerText = "Error de conexión con Drive";
             }
 
-            // BOTÓN SUBIR A DRIVE
             document.getElementById('btnSubirDrive').onclick = () => {
                 const file = document.getElementById('fileDrive').files[0];
-                if(!file) return alert("Selecciona una foto");
+                if(!file) return alert("Selecciona una foto primero");
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
                 reader.onload = async () => {
@@ -146,39 +146,38 @@
                     const btn = document.getElementById('btnSubirDrive');
                     btn.innerText = "SUBIENDO..."; btn.disabled = true;
                     try {
-                        const res = await fetch(scriptURL, {
-                            method: "POST",
-                            body: JSON.stringify({ itemName: p["Item #"], imageB64: base64 })
-                        });
+                        const res = await fetch(scriptURL, { method: "POST", body: JSON.stringify({ itemName: p["Item #"], imageB64: base64 }) });
                         const data = await res.json();
-                        if(data.result === "success") {
-                            alert("¡Guardado en Drive!");
-                            btn.innerText = "SUBIR A DRIVE"; btn.disabled = false;
-                            mostrarVisor(p);
+                        if(data.result === "success") { 
+                            alert("¡Foto actualizada en Drive con éxito!"); 
+                            btn.innerText = "ACTUALIZAR FOTO"; btn.disabled = false; 
+                            mostrarVisor(p); 
                         }
                     } catch(e) { alert("Error al subir"); btn.disabled = false; }
                 };
             };
 
-            // LÓGICA PDF
             document.getElementById('btnDescargarPDF').onclick = () => {
-                const pdfContent = document.getElementById('pdf-content');
-                pdfContent.innerHTML = '';
-                campos.forEach(c => {
-                    pdfContent.innerHTML += `<p><b>${c}:</b> ${p[c] || 'N/A'}</p>`;
+                document.getElementById('pdf-fecha').innerText = "FECHA: " + new Date().toLocaleDateString();
+                document.getElementById('pdf-img').src = img.src;
+                const mainBox = document.getElementById('pdf-main-data');
+                const ppapBox = document.getElementById('pdf-ppap-data');
+                mainBox.innerHTML = ''; ppapBox.innerHTML = '';
+                campos.forEach((c, i) => {
+                    const html = `<div><b>${c}:</b> ${p[c] || 'N/A'}</div>`;
+                    if(i < 14) mainBox.innerHTML += html;
+                    else ppapBox.innerHTML += html;
                 });
                 const element = document.getElementById('reporte-print-area');
                 element.style.display = 'block';
                 html2pdf().set({
-                    margin: 10,
-                    filename: `Reporte_${p["Item #"]}.pdf`,
-                    html2canvas: { scale: 2 },
+                    margin: 10, filename: `Reporte_${p["Item #"]}.pdf`,
+                    html2canvas: { scale: 2, useCORS: true },
                     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
                 }).from(element).save().then(() => { element.style.display = 'none'; });
             };
         }
 
-        // BUSCADOR
         document.getElementById('mainSearch').oninput = (e) => {
             const t = e.target.value.toLowerCase();
             const filtrados = productosLocal.filter(p => 
