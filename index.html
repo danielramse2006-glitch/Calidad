@@ -17,7 +17,6 @@
         .preview-info-box h2 { margin: 0 0 10px 0; color: #3498db; border-bottom: 2px solid #3498db; display: inline-block; }
         .table-wrapper { max-height: 400px; overflow-y: auto; border: 1px solid #ddd; }
         #btnUsuarios { background: #f1c40f; color: #333; display: none; }
-        /* Botón Historial */
         #btnHistorial { background: #8e44ad; color: white; display: none; }
         .loading-text { font-size: 10px; color: #3498db; font-style: italic; display: block; margin-top: 5px; }
         #upload-container { display: none; margin-top:10px; padding:5px; background:#f8f9fa; border-radius:5px; font-size:10px; }
@@ -36,12 +35,14 @@
         </nav>
         <section class="content" style="flex:1; display: flex; flex-direction: column;">
             <input type="text" id="mainSearch" placeholder="Buscar por Item # o No. Parte..." style="width:100%; padding:12px; margin-bottom:15px; border-radius:5px; border:none;">
+            
             <div class="table-wrapper">
                 <table id="tabla-prod">
                     <thead><tr id="table-head"></tr></thead>
                     <tbody id="inventory-body"></tbody>
                 </table>
             </div>
+
             <div class="bottom-preview">
                 <div class="preview-image-box">
                     <span id="status-drive" class="loading-text"></span>
@@ -60,17 +61,33 @@
         </section>
     </div>
 
+    <div id="modalReporte" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; overflow-y:auto;">
+        <div style="background:white; width:90%; max-width:1000px; margin:20px auto; padding:20px; border-radius:8px;">
+            <div id="reporte-print-area" style="padding:20px; color:black;">
+                <h2 style="border-bottom:3px solid #2c3e50; padding-bottom:10px;">REPORTE TÉCNICO PPAP</h2>
+                <div style="display:flex; gap:20px;">
+                    <img id="rep-img" style="width:250px; height:250px; object-fit:contain; border:1px solid #ddd;">
+                    <div id="rep-data-main" style="flex:1; display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:12px;"></div>
+                </div>
+                <h3 style="background:#2c3e50; color:white; padding:5px; margin-top:20px;">CHECKLIST DE DOCUMENTACIÓN</h3>
+                <div id="rep-data-ppap" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; font-size:11px;"></div>
+            </div>
+            <div style="margin-top:20px; display:flex; gap:10px;">
+                <button id="btnDescargarPDF" style="flex:1; padding:15px; background:#27ae60; color:white; border:none; cursor:pointer; font-weight:bold;">DESCARGAR PDF</button>
+                <button onclick="document.getElementById('modalReporte').style.display='none'" style="flex:1; padding:15px; background:#7f8c8d; color:white; border:none; cursor:pointer;">CERRAR</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { db, checkAuth } from './config.js';
         import { collection, onSnapshot, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const user = checkAuth();
-        
-        // --- CONTROL DE PERMISOS ---
         if(user) {
             if(user.usuario === 'admin') {
                 document.getElementById('btnUsuarios').style.display = 'block';
-                document.getElementById('btnHistorial').style.display = 'block'; // Mostrar historial solo admin
+                document.getElementById('btnHistorial').style.display = 'block';
             }
             if(user.usuario === 'admin' || (user.permisos && user.permisos.subirDrive)) {
                 document.getElementById('upload-container').style.display = 'block';
@@ -79,6 +96,7 @@
 
         const scriptURL = "https://script.google.com/macros/s/AKfycbxaEtN66UYbSOO57Wm9HPrjv7IyfzV8Q3cyZgvDKkKcC8PTohwGaLhznjI3AfP2VTLS/exec";
         const campos = ["Item #","Estatus","Programador","PPAP Part Number","Component Description","Razon de Cambio","PRP5/area","Lider de Calidad"," OE/AFTERMARKET ","Se entrego documentacion","Muestras Recibidas","Ubicacion Fisica ","Fecha de Programacion","Proceso","Update","Comments","Responsable","Instrucciones Especiales","PPAP Type OE / SM AFTER Market","PV Result","1-Design records","2-ECN document","3-Customer eng approval","4-Design FMEA","5-Process Flow Diagram","6-PFMEA","7-Control Plan","8-MSA Studies","9-Dimensional results","10-Material, performance test result","11-Initial Process Studies","12-Qualify Lab Documentation","13-Appereance Approval Report","14-Sample product","15-Checking Aids","16-Record de compliance","17-Bulk material checklist","18-PSW(Full or Interim)","Supplier PPAP package status","Validation run readiness","Samples on hand","Dimension status","FFF review status","AAR review status","PPAP overall status"];
+        
         const head = document.getElementById('table-head');
         campos.forEach(c => head.innerHTML += `<th>${c.toUpperCase()}</th>`);
         head.innerHTML += `<th>ACCIONES</th>`;
@@ -96,34 +114,21 @@
             tbody.innerHTML = '';
             lista.forEach(p => {
                 const tr = document.createElement('tr');
-                tr.style.cursor = "pointer";
                 tr.onclick = async () => {
                     const itemID = p["Item #"] || "sin_id";
-                    const imgPreview = document.getElementById('main-preview-img');
-                    const nameDisplay = document.getElementById('prod-name-display');
-                    const detailDisplay = document.getElementById('prod-detail-display');
-                    const statusDrive = document.getElementById('status-drive');
+                    document.getElementById('prod-name-display').innerText = `Item: ${itemID}`;
+                    document.getElementById('prod-detail-display').innerHTML = `<b>No. Parte:</b> ${p["PPAP Part Number"]||'-'} <br> <b>Desc:</b> ${p["Component Description"]||'-'} <br> <b>Estatus:</b> ${p["Estatus"]||'-'}`;
                     
-                    nameDisplay.innerText = `Item: ${itemID}`;
-                    detailDisplay.innerHTML = `<b>No. Parte:</b> ${p["PPAP Part Number"]||'-'} <br> <b>Desc:</b> ${p["Component Description"]||'-'} <br> <b>Estatus:</b> ${p["Estatus"]||'-'} <br> <b>Resp:</b> ${p["Responsable"]||'-'}`;
-                    statusDrive.innerText = "Buscando en Drive...";
+                    const imgPreview = document.getElementById('main-preview-img');
+                    imgPreview.src = "imagenes/sin_foto.jpg";
                     try {
                         const res = await fetch(`${scriptURL}?itemName=${itemID}`);
                         const data = await res.json();
-                        if(data.result === "success") {
-                            imgPreview.src = `https://lh3.googleusercontent.com/u/0/d/${data.id}`;
-                            statusDrive.innerText = "Foto de Drive";
-                        } else {
-                            imgPreview.src = `imagenes/${itemID}.jpg`;
-                            imgPreview.onerror = () => { imgPreview.src = 'imagenes/sin_foto.jpg'; };
-                            statusDrive.innerText = "Local/Sin foto";
-                        }
-                    } catch (e) {
-                        imgPreview.src = 'imagenes/sin_foto.jpg'; statusDrive.innerText = "";
-                    }
-                    const btnSubir = document.getElementById('btnSubirDrive');
-                    if(btnSubir) btnSubir.onclick = () => subirAFirebase(p);
+                        if(data.result === "success") imgPreview.src = `https://lh3.googleusercontent.com/u/0/d/${data.id}`;
+                        else { imgPreview.src = `imagenes/${itemID}.jpg`; imgPreview.onerror = () => imgPreview.src = 'imagenes/sin_foto.jpg'; }
+                    } catch (e) { imgPreview.src = 'imagenes/sin_foto.jpg'; }
                 };
+
                 campos.forEach(c => tr.innerHTML += `<td>${p[c]||'-'}</td>`);
                 const tdBtn = document.createElement('td');
                 const btn = document.createElement('button');
@@ -133,38 +138,37 @@
             });
         }
 
-        async function subirAFirebase(p) {
-            const fileInput = document.getElementById('fileDrive');
-            const file = fileInput.files[0];
-            if(!file) return alert("Selecciona una foto primero");
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = async () => {
-                const base64 = reader.result.split(',')[1];
-                const btn = document.getElementById('btnSubirDrive');
-                btn.innerText = "SUBIENDO..."; btn.disabled = true;
-                try {
-                    const res = await fetch(scriptURL, { method: "POST", body: JSON.stringify({ itemName: p["Item #"], imageB64: base64 }) });
-                    const data = await res.json();
-                    if(data.result === "success") {
-                        // LOG DE IMAGEN SUBIDA
-                        await addDoc(collection(db, "movimientos"), {
-                            usuario: user.usuario, accion: "Subida de Imagen",
-                            detalle: `Item: ${p["Item #"]}`, fecha: serverTimestamp()
-                        });
-                        alert("¡Foto guardada en Drive!");
-                        btn.innerText = "SUBIR A DRIVE"; btn.disabled = false; fileInput.value = "";
-                    }
-                } catch(e) { alert("Error al subir"); btn.disabled = false; }
-            };
-        }
+        // --- FUNCIÓN DE REPORTE CORREGIDA ---
+        window.abrirReporte = function(p) {
+            const modal = document.getElementById('modalReporte');
+            const rMain = document.getElementById('rep-data-main');
+            const rPpap = document.getElementById('rep-data-ppap');
+            const img = document.getElementById('rep-img');
 
-        function abrirReporte(p) { /* (Código reporte igual) */ } 
-        // ... (resto de funciones de búsqueda y pdf igual)
+            rMain.innerHTML = ''; rPpap.innerHTML = '';
+            img.src = document.getElementById('main-preview-img').src;
+
+            campos.forEach((key, index) => {
+                const html = `<div style="border-bottom:1px solid #eee;">
+                    <b style="font-size:9px; color:gray; display:block;">${key}</b>
+                    <span>${p[key] || '-'}</span>
+                </div>`;
+                if(index < 14) rMain.innerHTML += html;
+                else rPpap.innerHTML += html;
+            });
+            modal.style.display = 'block';
+        };
+
+        document.getElementById('btnDescargarPDF').onclick = () => {
+            const element = document.getElementById('reporte-print-area');
+            html2pdf().from(element).save('Reporte-PPAP.pdf');
+        };
+
         document.getElementById('mainSearch').oninput = (e) => {
             const t = e.target.value.toLowerCase();
             renderTable(productosLocal.filter(p => (p["Item #"]||'').toString().toLowerCase().includes(t) || (p["PPAP Part Number"]||'').toLowerCase().includes(t)));
         };
+
         document.getElementById('btnSalir').onclick = () => { sessionStorage.clear(); window.location.href = "login.html"; };
     </script>
 </body>
