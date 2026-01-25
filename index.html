@@ -6,196 +6,176 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
     <style>
-        /* --- ESTILOS DEL VISOR INFERIOR GIGANTE --- */
+        /* Mantenemos tus estilos del visor gigante */
         .bottom-preview {
-            margin-top: 20px;
-            background: white;
-            border-radius: 12px;
-            border: 3px solid #3498db;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            gap: 30px;
-            box-shadow: 0 -5px 25px rgba(0,0,0,0.1);
+            margin-top: 20px; background: white; border-radius: 12px;
+            border: 3px solid #3498db; padding: 20px; display: flex;
+            align-items: center; gap: 30px; box-shadow: 0 -5px 25px rgba(0,0,0,0.1);
         }
-
-        .preview-image-box {
-            flex: 0 0 300px;
-            text-align: center;
-        }
-
-        #main-preview-img {
-            max-width: 100%;
-            max-height: 350px; 
-            object-fit: contain;
-            border-radius: 8px;
-            border: 1px solid #eee;
-        }
-
-        .preview-info-box {
-            flex: 1;
-            color: #2c3e50;
-        }
-
-        .preview-info-box h2 {
-            margin: 0 0 10px 0;
-            color: #3498db;
-            border-bottom: 2px solid #3498db;
-            display: inline-block;
-        }
-
-        /* Ajuste de scroll para la tabla */
-        .table-wrapper {
-            max-height: 400px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-        }
+        .preview-image-box { flex: 0 0 300px; text-align: center; }
+        #main-preview-img { max-width: 100%; max-height: 350px; object-fit: contain; border-radius: 8px; border: 1px solid #eee; background: #f9f9f9; }
+        .preview-info-box { flex: 1; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .info-card { background: #f8f9fa; padding: 8px; border-radius: 6px; border-left: 4px solid #3498db; }
+        .info-card label { display: block; font-size: 10px; color: #7f8c8d; font-weight: bold; text-transform: uppercase; }
+        .info-card span { font-size: 14px; color: #2c3e50; font-weight: bold; }
+        .loading-text { font-size: 11px; color: #3498db; font-style: italic; }
+        
+        /* Estilo para el botón de admin */
+        #btnUsuarios { background: #f1c40f; color: #333; display: none; }
     </style>
 </head>
 <body class="bg-blue">
     <header><h1>PPAP Master Track System</h1></header>
     <div class="main-container">
         <nav class="side-menu">
+            <button id="btnUsuarios" onclick="location.href='usuarios.html'">⚙️ GESTIÓN USUARIOS</button>
             <button onclick="location.href='registro.html'">Registrar</button>
             <button onclick="location.href='actualizar.html'">Actualizar</button>
             <button onclick="location.href='eliminar.html'">Eliminar</button>
-            <button id="btnSalir" style="background: #c0392b; color: white; margin-top: 20px; border:none; cursor:pointer; padding:14px; border-radius:8px;">CERRAR SESIÓN</button>
+            <button id="btnSalir" style="background: #c0392b; color: white; margin-top: 20px;">CERRAR SESIÓN</button>
         </nav>
-        <section class="content" style="flex:1; display: flex; flex-direction: column;">
+        <section class="content">
             <input type="text" id="mainSearch" placeholder="Buscar por Item # o No. Parte..." style="width:100%; padding:12px; margin-bottom:15px; border-radius:5px; border:none;">
-            
             <div class="table-wrapper">
                 <table id="tabla-prod">
-                    <thead><tr id="table-head"></tr></thead>
-                    <tbody id="inventory-body"></tbody>
+                    <thead><tr id="table-header"></tr></thead>
+                    <tbody id="lista-productos"></tbody>
                 </table>
             </div>
 
-            <div class="bottom-preview">
+            <div id="bottom-visor" class="bottom-preview" style="display:none;">
                 <div class="preview-image-box">
-                    <img id="main-preview-img" src="imagenes/sin_foto.jpg" alt="Vista previa">
+                    <div id="status-foto" class="loading-text"></div>
+                    <img id="main-preview-img" src="imagenes/sin_foto.jpg">
+                    <div style="margin-top:10px; padding:10px; background:#f1f1f1; border-radius:8px;">
+                        <input type="file" id="fileDrive" accept="image/*" style="font-size:10px; width:100%;">
+                        <button id="btnSubirDrive" style="width:100%; margin-top:5px; background:#4285F4; color:white; border:none; padding:8px; border-radius:4px; cursor:pointer; font-weight:bold;">SUBIR A DRIVE</button>
+                    </div>
                 </div>
-                <div class="preview-info-box">
-                    <p style="text-transform: uppercase; font-size: 0.8em; font-weight: bold; color: #7f8c8d; margin-bottom: 5px;">Detalles del registro seleccionado:</p>
-                    <h2 id="prod-name-display">Selecciona un registro</h2>
-                    <p id="prod-detail-display" style="font-size: 1.1em; line-height: 1.5;">Pasa el mouse sobre la tabla para ver la imagen y detalles rápidos.</p>
+                <div class="preview-info-box" id="preview-data"></div>
+                <div style="flex: 0 0 150px;">
+                    <button id="btnDescargarPDF" style="width:100%; padding:15px; background:#27ae60; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">REPORTE PDF</button>
                 </div>
             </div>
         </section>
     </div>
 
-    <div id="modalReporte" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; overflow-y:auto;">
-        <div style="background:white; width:95%; max-width:900px; margin:20px auto; padding:30px; border-radius:10px;">
-            <div id="reporte-print-area" style="padding:10px; background:white; color: black !important; font-family: Arial, sans-serif;">
-                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #2c3e50; padding-bottom:10px; margin-bottom:20px;">
-                    <h2 style="margin:0; color:#2c3e50;">REPORTE TÉCNICO PPAP</h2>
-                    <span style="font-weight:bold; color:#7f8c8d;">MASTER TRACK SYSTEM</span>
-                </div>
-                <div style="display:flex; gap:25px; margin-bottom:20px;">
-                    <div style="flex:0 0 250px;">
-                        <img id="rep-img" crossorigin="anonymous" style="width:100%; height:250px; object-fit:contain; border:1px solid #dee2e6; border-radius:5px; background:#f8f9fa;">
-                    </div>
-                    <div style="flex:1;">
-                        <h4 style="background:#2c3e50; color:white; padding:8px; margin:0 0 10px 0; border-radius:3px;">INFORMACIÓN GENERAL</h4>
-                        <div id="rep-data-main" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; font-size:12px;"></div>
-                    </div>
-                </div>
-                <h4 style="background:#2c3e50; color:white; padding:8px; margin:20px 0 10px 0; border-radius:3px;">ESTADO DE DOCUMENTACIÓN Y VALIDACIÓN</h4>
-                <div id="rep-data-ppap" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; font-size:10px;"></div>
-            </div>
-            <div style="display:flex; gap:15px; margin-top:30px; border-top:1px solid #eee; padding-top:20px;">
-                <button id="btnDescargarPDF" style="flex:2; padding:15px; background:#2980b9; color:white; font-weight:bold; border:none; border-radius:8px; cursor:pointer; font-size:16px;">📥 DESCARGAR REPORTE PDF</button>
-                <button onclick="document.getElementById('modalReporte').style.display='none'" style="flex:1; padding:15px; background:#e74c3c; color:white; border:none; border-radius:8px; cursor:pointer;">CERRAR</button>
-            </div>
+    <div id="reporte-print-area" style="display:none; padding:30px; background:white; color:black;">
+        <div id="pdf-header" style="border-bottom:2px solid #333; padding-bottom:10px; margin-bottom:20px;">
+            <h2>REPORTE TÉCNICO DE CALIDAD - PPAP</h2>
         </div>
+        <div id="pdf-content" style="display:grid; grid-template-columns:1fr 1fr; gap:20px;"></div>
     </div>
 
     <script type="module">
         import { db, checkAuth } from './config.js';
         import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        const user = checkAuth();
-        if(!user) throw new Error("Acceso denegado");
-
-        const campos = ["Item #","Estatus","Programador","PPAP Part Number","Component Description","Razon de Cambio","PRP5/area","Lider de Calidad"," OE/AFTERMARKET ","Se entrego documentacion","Muestras Recibidas","Ubicacion Fisica ","Fecha de Programacion","Proceso","Update","Comments","Responsable","Instrucciones Especiales","PPAP Type OE / SM AFTER Market","PV Result","1-Design records","2-ECN document","3-Customer eng approval","4-Design FMEA","5-Process Flow Diagram","6-PFMEA","7-Control Plan","8-MSA Studies","9-Dimensional results","10-Material, performance test result","11-Initial Process Studies","12-Qualify Lab Documentation","13-Appereance Approval Report","14-Sample product","15-Checking Aids","16-Record de compliance","17-Bulk material checklist","18-PSW(Full or Interim)","Supplier PPAP package status","Validation run readiness","Samples on hand","Dimension status","FFF review status","AAR review status","PPAP overall status"];
         
-        const head = document.getElementById('table-head');
-        campos.forEach(c => head.innerHTML += `<th>${c.toUpperCase()}</th>`);
-        head.innerHTML += `<th>ACCIONES</th>`;
+        // Validar sesión y obtener datos del usuario
+        const userStatus = checkAuth();
+        
+        // SI ES ADMIN, MOSTRAR BOTÓN DE USUARIOS
+        if (userStatus && userStatus.usuario === 'admin') {
+            document.getElementById('btnUsuarios').style.display = 'block';
+        }
+
+        const scriptURL = "https://script.google.com/macros/s/AKfycbxaEtN66UYbSOO57Wm9HPrjv7IyfzV8Q3cyZgvDKkKcC8PTohwGaLhznjI3AfP2VTLS/exec";
+        const campos = ["Item #","Estatus","Programador","PPAP Part Number","Component Description","Supplier Name","Supplier Location","Current SQE","Project Name","Drawing Revision","Material Type","Process Type","Country of Origin","Safety or Critical","1-Design Documentation","2-Engineering Change Document","3-Customer Engineering Approval","4-Design FMEA","5-Process Flow Diagram","6-Process FMEA","7-Control Plan","8-Measurement System Analysis","9-Dimensional Results","10-Material Performance Test","11-Initial Process Studies","12-Qualify Lab Documentation","13-Appereance Approval Report","14-Sample product","15-Checking Aids","16-Record of compliance","17-Bulk material checklist","18-PSW(Full or Interim)","Supplier PPAP package status","Validation run readiness","Samples on hand","Dimension status","FFF review status","AAR review status","PPAP overall status"];
+        
+        const header = document.getElementById('table-header');
+        campos.forEach(c => header.innerHTML += `<th>${c}</th>`);
 
         let productosLocal = [];
-
         onSnapshot(collection(db, "productos"), (snap) => {
-            productosLocal = [];
-            snap.forEach(doc => productosLocal.push(doc.data()));
+            productosLocal = snap.docs.map(doc => doc.data());
             renderTable(productosLocal);
         });
 
-        function renderTable(lista) {
-            const tbody = document.getElementById('inventory-body');
+        function renderTable(data) {
+            const tbody = document.getElementById('lista-productos');
             tbody.innerHTML = '';
-            lista.forEach(p => {
+            data.forEach(p => {
                 const tr = document.createElement('tr');
-                
-                // EVENTO MOUSE ENTER PARA EL VISOR
-                tr.onmouseenter = () => {
-                    const itemID = p["Item #"] || "sin_id";
-                    const imgPreview = document.getElementById('main-preview-img');
-                    const nameDisplay = document.getElementById('prod-name-display');
-                    const detailDisplay = document.getElementById('prod-detail-display');
-                    
-                    imgPreview.src = `imagenes/${itemID}.jpg`;
-                    nameDisplay.innerText = `Item: ${itemID}`;
-                    detailDisplay.innerHTML = `
-                        <b>Número de Parte:</b> ${p["PPAP Part Number"] || '-'} <br>
-                        <b>Descripción:</b> ${p["Component Description"] || '-'} <br>
-                        <b>Estatus:</b> ${p["Estatus"] || '-'} <br>
-                        <b>Responsable:</b> ${p["Responsable"] || '-'}
-                    `;
-                    imgPreview.onerror = () => { imgPreview.src = 'imagenes/sin_foto.jpg'; };
-                };
-
-                // Llenar datos
-                campos.forEach(c => {
-                    tr.innerHTML += `<td>${p[c] || '-'}</td>`;
-                });
-
-                // Botón reporte
-                const tdBtn = document.createElement('td');
-                const btn = document.createElement('button');
-                btn.innerText = "VER REPORTE";
-                btn.className = "btn-ver";
-                btn.style = "background:#27ae60; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;";
-                btn.onclick = () => abrirReporte(p);
-                tdBtn.appendChild(btn);
-                tr.appendChild(tdBtn);
-
+                campos.forEach(c => { tr.innerHTML += `<td>${p[c] || '-'}</td>`; });
+                tr.onclick = () => mostrarVisor(p);
                 tbody.appendChild(tr);
             });
         }
 
-        function abrirReporte(p) {
-            const modal = document.getElementById('modalReporte');
-            const img = document.getElementById('rep-img');
-            const rDataMain = document.getElementById('rep-data-main');
-            const rDataPpap = document.getElementById('rep-data-ppap');
+        async function mostrarVisor(p) {
+            const visor = document.getElementById('bottom-visor');
+            const info = document.getElementById('preview-data');
+            const img = document.getElementById('main-preview-img');
+            const status = document.getElementById('status-foto');
             
-            rDataMain.innerHTML = '';
-            rDataPpap.innerHTML = '';
+            visor.style.display = 'flex';
+            status.innerText = "Buscando foto en Drive...";
+            img.src = "imagenes/sin_foto.jpg"; 
 
-            campos.forEach((key, index) => {
-                const val = p[key] || '-';
-                const itemHtml = `<div style="border-bottom:1px solid #f1f1f1; padding:4px 0;">
-                                    <span style="color:#7f8c8d; font-weight:bold; display:block; font-size:9px; text-transform:uppercase;">${key}</span>
-                                    <span style="color:#2c3e50;">${val}</span>
-                                  </div>`;
-                if(index < 14) rDataMain.innerHTML += itemHtml;
-                else rDataPpap.innerHTML += itemHtml;
+            info.innerHTML = '';
+            campos.slice(0, 12).forEach(c => {
+                info.innerHTML += `<div class="info-card"><label>${c}</label><span>${p[c] || 'N/A'}</span></div>`;
             });
 
-            img.src = `imagenes/${p["Item #"]}.jpg`;
-            img.onerror = () => img.src = 'imagenes/sin_foto.jpg';
-            modal.style.display = 'block';
+            // BÚSQUEDA EN DRIVE
+            try {
+                const response = await fetch(`${scriptURL}?itemName=${p["Item #"]}`);
+                const resData = await response.json();
+                if(resData.result === "success" && resData.id) {
+                    img.src = `https://lh3.googleusercontent.com/u/0/d/${resData.id}`;
+                    status.innerText = "Foto de Google Drive cargada";
+                } else {
+                    status.innerText = "Buscando en carpeta local...";
+                    img.src = `imagenes/${p["Item #"]}.jpg`;
+                    img.onerror = () => { img.src = 'imagenes/sin_foto.jpg'; status.innerText = "Sin imagen"; };
+                }
+            } catch (e) {
+                img.src = `imagenes/${p["Item #"]}.jpg`;
+                img.onerror = () => { img.src = 'imagenes/sin_foto.jpg'; };
+                status.innerText = "";
+            }
+
+            // BOTÓN SUBIR A DRIVE
+            document.getElementById('btnSubirDrive').onclick = () => {
+                const file = document.getElementById('fileDrive').files[0];
+                if(!file) return alert("Selecciona una foto");
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = async () => {
+                    const base64 = reader.result.split(',')[1];
+                    const btn = document.getElementById('btnSubirDrive');
+                    btn.innerText = "SUBIENDO..."; btn.disabled = true;
+                    try {
+                        const res = await fetch(scriptURL, {
+                            method: "POST",
+                            body: JSON.stringify({ itemName: p["Item #"], imageB64: base64 })
+                        });
+                        const data = await res.json();
+                        if(data.result === "success") {
+                            alert("¡Guardado en Drive!");
+                            btn.innerText = "SUBIR A DRIVE"; btn.disabled = false;
+                            mostrarVisor(p);
+                        }
+                    } catch(e) { alert("Error al subir"); btn.disabled = false; }
+                };
+            };
+
+            // LÓGICA PDF
+            document.getElementById('btnDescargarPDF').onclick = () => {
+                const pdfContent = document.getElementById('pdf-content');
+                pdfContent.innerHTML = '';
+                campos.forEach(c => {
+                    pdfContent.innerHTML += `<p><b>${c}:</b> ${p[c] || 'N/A'}</p>`;
+                });
+                const element = document.getElementById('reporte-print-area');
+                element.style.display = 'block';
+                html2pdf().set({
+                    margin: 10,
+                    filename: `Reporte_${p["Item #"]}.pdf`,
+                    html2canvas: { scale: 2 },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                }).from(element).save().then(() => { element.style.display = 'none'; });
+            };
         }
 
         // BUSCADOR
@@ -208,21 +188,7 @@
             renderTable(filtrados);
         };
 
-        // PDF Y SALIR
-        document.getElementById('btnDescargarPDF').onclick = function() {
-            const element = document.getElementById('reporte-print-area');
-            html2pdf().set({
-                margin: [10, 10],
-                filename: 'Reporte_PPAP.pdf',
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            }).from(element).save();
-        };
-
-        document.getElementById('btnSalir').onclick = () => {
-            sessionStorage.clear();
-            window.location.href = "login.html";
-        };
+        document.getElementById('btnSalir').onclick = () => { sessionStorage.clear(); window.location.href = "login.html"; };
     </script>
 </body>
 </html>
