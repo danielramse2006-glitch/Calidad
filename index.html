@@ -5,6 +5,52 @@
     <title>Master Track - Index</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+    <style>
+        /* --- ESTILOS DEL VISOR INFERIOR GIGANTE --- */
+        .bottom-preview {
+            margin-top: 20px;
+            background: white;
+            border-radius: 12px;
+            border: 3px solid #3498db;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            box-shadow: 0 -5px 25px rgba(0,0,0,0.1);
+        }
+
+        .preview-image-box {
+            flex: 0 0 300px;
+            text-align: center;
+        }
+
+        #main-preview-img {
+            max-width: 100%;
+            max-height: 350px; 
+            object-fit: contain;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+
+        .preview-info-box {
+            flex: 1;
+            color: #2c3e50;
+        }
+
+        .preview-info-box h2 {
+            margin: 0 0 10px 0;
+            color: #3498db;
+            border-bottom: 2px solid #3498db;
+            display: inline-block;
+        }
+
+        /* Ajuste de scroll para la tabla */
+        .table-wrapper {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+        }
+    </style>
 </head>
 <body class="bg-blue">
     <header><h1>PPAP Master Track System</h1></header>
@@ -15,50 +61,51 @@
             <button onclick="location.href='eliminar.html'">Eliminar</button>
             <button id="btnSalir" style="background: #c0392b; color: white; margin-top: 20px; border:none; cursor:pointer; padding:14px; border-radius:8px;">CERRAR SESIÓN</button>
         </nav>
-        <section class="content">
+        <section class="content" style="flex:1; display: flex; flex-direction: column;">
             <input type="text" id="mainSearch" placeholder="Buscar por Item # o No. Parte..." style="width:100%; padding:12px; margin-bottom:15px; border-radius:5px; border:none;">
+            
             <div class="table-wrapper">
                 <table id="tabla-prod">
                     <thead><tr id="table-head"></tr></thead>
                     <tbody id="inventory-body"></tbody>
                 </table>
             </div>
+
+            <div class="bottom-preview">
+                <div class="preview-image-box">
+                    <img id="main-preview-img" src="imagenes/sin_foto.jpg" alt="Vista previa">
+                </div>
+                <div class="preview-info-box">
+                    <p style="text-transform: uppercase; font-size: 0.8em; font-weight: bold; color: #7f8c8d; margin-bottom: 5px;">Detalles del registro seleccionado:</p>
+                    <h2 id="prod-name-display">Selecciona un registro</h2>
+                    <p id="prod-detail-display" style="font-size: 1.1em; line-height: 1.5;">Pasa el mouse sobre la tabla para ver la imagen y detalles rápidos.</p>
+                </div>
+            </div>
         </section>
     </div>
 
     <div id="modalReporte" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; overflow-y:auto;">
         <div style="background:white; width:95%; max-width:900px; margin:20px auto; padding:30px; border-radius:10px;">
-            
             <div id="reporte-print-area" style="padding:10px; background:white; color: black !important; font-family: Arial, sans-serif;">
-                
                 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #2c3e50; padding-bottom:10px; margin-bottom:20px;">
                     <h2 style="margin:0; color:#2c3e50;">REPORTE TÉCNICO PPAP</h2>
                     <span style="font-weight:bold; color:#7f8c8d;">MASTER TRACK SYSTEM</span>
                 </div>
-
                 <div style="display:flex; gap:25px; margin-bottom:20px;">
                     <div style="flex:0 0 250px;">
                         <img id="rep-img" crossorigin="anonymous" style="width:100%; height:250px; object-fit:contain; border:1px solid #dee2e6; border-radius:5px; background:#f8f9fa;">
                     </div>
                     <div style="flex:1;">
                         <h4 style="background:#2c3e50; color:white; padding:8px; margin:0 0 10px 0; border-radius:3px;">INFORMACIÓN GENERAL</h4>
-                        <div id="rep-data-main" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; font-size:12px;">
-                            </div>
+                        <div id="rep-data-main" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; font-size:12px;"></div>
                     </div>
                 </div>
-
                 <h4 style="background:#2c3e50; color:white; padding:8px; margin:20px 0 10px 0; border-radius:3px;">ESTADO DE DOCUMENTACIÓN Y VALIDACIÓN</h4>
-                <div id="rep-data-ppap" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; font-size:10px;">
-                    </div>
+                <div id="rep-data-ppap" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; font-size:10px;"></div>
             </div>
-
             <div style="display:flex; gap:15px; margin-top:30px; border-top:1px solid #eee; padding-top:20px;">
-                <button id="btnDescargarPDF" style="flex:2; padding:15px; background:#2980b9; color:white; font-weight:bold; border:none; border-radius:8px; cursor:pointer; font-size:16px;">
-                    📥 DESCARGAR REPORTE PDF
-                </button>
-                <button onclick="document.getElementById('modalReporte').style.display='none'" style="flex:1; padding:15px; background:#e74c3c; color:white; border:none; border-radius:8px; cursor:pointer;">
-                    CERRAR
-                </button>
+                <button id="btnDescargarPDF" style="flex:2; padding:15px; background:#2980b9; color:white; font-weight:bold; border:none; border-radius:8px; cursor:pointer; font-size:16px;">📥 DESCARGAR REPORTE PDF</button>
+                <button onclick="document.getElementById('modalReporte').style.display='none'" style="flex:1; padding:15px; background:#e74c3c; color:white; border:none; border-radius:8px; cursor:pointer;">CERRAR</button>
             </div>
         </div>
     </div>
@@ -72,66 +119,104 @@
 
         const campos = ["Item #","Estatus","Programador","PPAP Part Number","Component Description","Razon de Cambio","PRP5/area","Lider de Calidad"," OE/AFTERMARKET ","Se entrego documentacion","Muestras Recibidas","Ubicacion Fisica ","Fecha de Programacion","Proceso","Update","Comments","Responsable","Instrucciones Especiales","PPAP Type OE / SM AFTER Market","PV Result","1-Design records","2-ECN document","3-Customer eng approval","4-Design FMEA","5-Process Flow Diagram","6-PFMEA","7-Control Plan","8-MSA Studies","9-Dimensional results","10-Material, performance test result","11-Initial Process Studies","12-Qualify Lab Documentation","13-Appereance Approval Report","14-Sample product","15-Checking Aids","16-Record de compliance","17-Bulk material checklist","18-PSW(Full or Interim)","Supplier PPAP package status","Validation run readiness","Samples on hand","Dimension status","FFF review status","AAR review status","PPAP overall status"];
         
-        // Armar cabecera de la tabla (Mostramos todos los campos)
         const head = document.getElementById('table-head');
         campos.forEach(c => head.innerHTML += `<th>${c.toUpperCase()}</th>`);
         head.innerHTML += `<th>ACCIONES</th>`;
 
+        let productosLocal = [];
+
         onSnapshot(collection(db, "productos"), (snap) => {
+            productosLocal = [];
+            snap.forEach(doc => productosLocal.push(doc.data()));
+            renderTable(productosLocal);
+        });
+
+        function renderTable(lista) {
             const tbody = document.getElementById('inventory-body');
             tbody.innerHTML = '';
-            snap.forEach(doc => {
-                const p = doc.data();
+            lista.forEach(p => {
                 const tr = document.createElement('tr');
                 
-                // Llenar filas de la tabla con todos los campos
+                // EVENTO MOUSE ENTER PARA EL VISOR
+                tr.onmouseenter = () => {
+                    const itemID = p["Item #"] || "sin_id";
+                    const imgPreview = document.getElementById('main-preview-img');
+                    const nameDisplay = document.getElementById('prod-name-display');
+                    const detailDisplay = document.getElementById('prod-detail-display');
+                    
+                    imgPreview.src = `imagenes/${itemID}.jpg`;
+                    nameDisplay.innerText = `Item: ${itemID}`;
+                    detailDisplay.innerHTML = `
+                        <b>Número de Parte:</b> ${p["PPAP Part Number"] || '-'} <br>
+                        <b>Descripción:</b> ${p["Component Description"] || '-'} <br>
+                        <b>Estatus:</b> ${p["Estatus"] || '-'} <br>
+                        <b>Responsable:</b> ${p["Responsable"] || '-'}
+                    `;
+                    imgPreview.onerror = () => { imgPreview.src = 'imagenes/sin_foto.jpg'; };
+                };
+
+                // Llenar datos
                 campos.forEach(c => {
                     tr.innerHTML += `<td>${p[c] || '-'}</td>`;
                 });
 
-                tr.innerHTML += `<td><button class="btn-ver" style="background:#27ae60; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;">VER REPORTE</button></td>`;
-                
-                tr.querySelector('.btn-ver').onclick = () => {
-                    const modal = document.getElementById('modalReporte');
-                    const img = document.getElementById('rep-img');
-                    const rDataMain = document.getElementById('rep-data-main');
-                    const rDataPpap = document.getElementById('rep-data-ppap');
-                    
-                    rDataMain.innerHTML = '';
-                    rDataPpap.innerHTML = '';
+                // Botón reporte
+                const tdBtn = document.createElement('td');
+                const btn = document.createElement('button');
+                btn.innerText = "VER REPORTE";
+                btn.className = "btn-ver";
+                btn.style = "background:#27ae60; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;";
+                btn.onclick = () => abrirReporte(p);
+                tdBtn.appendChild(btn);
+                tr.appendChild(tdBtn);
 
-                    campos.forEach((key, index) => {
-                        const val = p[key] || '-';
-                        const itemHtml = `<div style="border-bottom:1px solid #f1f1f1; padding:4px 0;">
-                                            <span style="color:#7f8c8d; font-weight:bold; display:block; font-size:9px; text-transform:uppercase;">${key}</span>
-                                            <span style="color:#2c3e50;">${val}</span>
-                                          </div>`;
-                        
-                        // Mejora: División lógica de la información en el reporte
-                        if(index < 14) rDataMain.innerHTML += itemHtml;
-                        else rDataPpap.innerHTML += itemHtml;
-                    });
-
-                    img.src = `imagenes/${p["Item #"]}.jpg`;
-                    img.onerror = () => img.src = 'imagenes/sin_foto.jpg';
-
-                    modal.style.display = 'block';
-                };
                 tbody.appendChild(tr);
             });
-        });
+        }
 
-        // Lógica de descarga PDF
+        function abrirReporte(p) {
+            const modal = document.getElementById('modalReporte');
+            const img = document.getElementById('rep-img');
+            const rDataMain = document.getElementById('rep-data-main');
+            const rDataPpap = document.getElementById('rep-data-ppap');
+            
+            rDataMain.innerHTML = '';
+            rDataPpap.innerHTML = '';
+
+            campos.forEach((key, index) => {
+                const val = p[key] || '-';
+                const itemHtml = `<div style="border-bottom:1px solid #f1f1f1; padding:4px 0;">
+                                    <span style="color:#7f8c8d; font-weight:bold; display:block; font-size:9px; text-transform:uppercase;">${key}</span>
+                                    <span style="color:#2c3e50;">${val}</span>
+                                  </div>`;
+                if(index < 14) rDataMain.innerHTML += itemHtml;
+                else rDataPpap.innerHTML += itemHtml;
+            });
+
+            img.src = `imagenes/${p["Item #"]}.jpg`;
+            img.onerror = () => img.src = 'imagenes/sin_foto.jpg';
+            modal.style.display = 'block';
+        }
+
+        // BUSCADOR
+        document.getElementById('mainSearch').oninput = (e) => {
+            const t = e.target.value.toLowerCase();
+            const filtrados = productosLocal.filter(p => 
+                (p["Item #"] || '').toString().toLowerCase().includes(t) || 
+                (p["PPAP Part Number"] || '').toLowerCase().includes(t)
+            );
+            renderTable(filtrados);
+        };
+
+        // PDF Y SALIR
         document.getElementById('btnDescargarPDF').onclick = function() {
             const element = document.getElementById('reporte-print-area');
-            const opt = {
-                margin:       [10, 10],
-                filename:     'Reporte_Tecnico_PPAP.pdf',
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-            html2pdf().set(opt).from(element).save();
+            html2pdf().set({
+                margin: [10, 10],
+                filename: 'Reporte_PPAP.pdf',
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            }).from(element).save();
         };
 
         document.getElementById('btnSalir').onclick = () => {
