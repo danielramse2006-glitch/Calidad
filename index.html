@@ -94,7 +94,7 @@
         import { collection, onSnapshot, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const user = checkAuth();
-        let currentItemSeleccionado = null; // Guardar el objeto seleccionado
+        let currentItemSeleccionado = null;
 
         if(user) {
             if(user.usuario === 'admin') {
@@ -106,7 +106,7 @@
             }
         }
 
-        const scriptURL = "https://script.google.com/macros/s/AKfycbzGVK2mWZPMcW6BTKlk0nIbhmlg7s_Qi9-Rrd7oe8uZZAG4KDfb-l3RPdF9RAGY2AmR/exec";
+        const scriptURL = "https://script.google.com/macros/s/AKfycbz-zqhnPq-ZCVv1miDE8lF6WkKfTrw4KMj2ikRm8ZYkncyOpSG0VAqEkbfbnThTIdmb/exec";
         const campos = ["Item #","Estatus","Programador","PPAP Part Number","Component Description","Razon de Cambio","PRP5/area","Lider de Calidad"," OE/AFTERMARKET ","Se entrego documentacion","Muestras Recibidas","Ubicacion Fisica ","Fecha de Programacion","Proceso","Update","Comments","Responsable","Instrucciones Especiales","PPAP Type OE / SM AFTER Market","PV Result","1-Design records","2-ECN document","3-Customer eng approval","4-Design FMEA","5-Process Flow Diagram","6-PFMEA","7-Control Plan","8-MSA Studies","9-Dimensional results","10-Material, performance test result","11-Initial Process Studies","12-Qualify Lab Documentation","13-Appereance Approval Report","14-Sample product","15-Checking Aids","16-Record de compliance","17-Bulk material checklist","18-PSW(Full or Interim)","Supplier PPAP package status","Validation run readiness","Samples on hand","Dimension status","FFF review status","AAR review status","PPAP overall status"];
         
         const head = document.getElementById('table-head');
@@ -128,7 +128,7 @@
                 const tr = document.createElement('tr');
                 tr.style.cursor = "pointer";
                 tr.onclick = async () => {
-                    currentItemSeleccionado = p; // Guardamos para subir foto luego
+                    currentItemSeleccionado = p; 
                     const itemID = p["Item #"] || "sin_id";
                     document.getElementById('prod-name-display').innerText = `Item: ${itemID}`;
                     document.getElementById('prod-detail-display').innerHTML = `<b>No. Parte:</b> ${p["PPAP Part Number"]||'-'} <br> <b>Desc:</b> ${p["Component Description"]||'-'} <br> <b>Estatus:</b> ${p["Estatus"]||'-'}`;
@@ -142,14 +142,14 @@
                         const res = await fetch(`${scriptURL}?itemName=${itemID}`);
                         const data = await res.json();
                         if(data.result === "success") {
-                            // Corregido: URL de Google Drive correcta
+                            // URL de Google Drive corregida con el ID real
                             imgPreview.src = `https://lh3.googleusercontent.com/u/0/d/${data.id}`;
-                            statusDrive.innerText = "";
+                            statusDrive.innerText = "Imagen de Drive cargada";
                         } else {
                             statusDrive.innerText = "Sin imagen en Drive";
                         }
                     } catch (e) { 
-                        statusDrive.innerText = "";
+                        statusDrive.innerText = "Error al conectar con Drive";
                         imgPreview.src = 'imagenes/sin_foto.jpg'; 
                     }
                 };
@@ -197,7 +197,6 @@
             html2pdf().set(opt).from(element).save();
         };
 
-        // CORRECCIÓN: Conectar el botón de subida
         document.getElementById('btnSubirDrive').onclick = async () => {
             if(!currentItemSeleccionado) return alert("Primero selecciona un registro de la tabla.");
             
@@ -229,7 +228,6 @@
                             fecha: serverTimestamp()
                         });
                         alert("¡Foto guardada en Drive correctamente!");
-                        // Refrescar visor
                         document.getElementById('main-preview-img').src = `https://lh3.googleusercontent.com/u/0/d/${data.id}`;
                     }
                 } catch(e) { 
