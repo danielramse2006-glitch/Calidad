@@ -1,126 +1,153 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8"><title>Actualizar PPAP</title>
+    <meta charset="UTF-8"><title>Actualizar PPAP - Master Track</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-blue">
-    <div style="padding:20px; max-width:1000px; margin:auto; background:white; color:black; border-radius:10px; display:grid; grid-template-columns: 1fr 350px; gap:20px;">
+    <div style="padding:20px; max-width:1000px; margin:auto; background:white; color:black; border-radius:10px; display:grid; grid-template-columns: 1fr 350px; gap:20px; margin-top:20px;">
         
         <div>
             <h2>Actualizar Registro</h2>
             <div style="margin-bottom:20px; display:flex; gap:10px;">
-                <input type="text" id="searchItem" placeholder="Item #..." style="flex:1; padding:10px;">
-                <button id="btnBuscar" style="padding:10px; width:100px;">BUSCAR</button>
+                <input type="text" id="searchItem" placeholder="Ingrese Item #..." style="flex:1; padding:12px; border:1px solid #ccc; border-radius:5px;">
+                <button id="btnBuscar" style="padding:10px; width:100px; cursor:pointer; background:#2c3e50; color:white; border:none; border-radius:5px;">BUSCAR</button>
             </div>
-            <div id="edit-form" style="display:none; grid-template-columns:1fr 1fr; gap:10px; max-height:500px; overflow-y:auto; padding-right:10px;"></div>
-            <button id="btnUpdate" style="display:none; width:100%; margin-top:20px; padding:15px; background:#f39c12; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">ACTUALIZAR CAMBIOS</button>
-            <button onclick="location.href='index.html'" style="width:100%; margin-top:10px; padding:10px; border:none; border-radius:5px; cursor:pointer;">VOLVER</button>
+
+            <div id="edit-form" style="display:none; grid-template-columns:1fr 1fr; gap:10px; max-height:500px; overflow-y:auto; padding-right:10px; border-top:1px solid #eee; pt:15px;">
+                </div>
+
+            <button id="btnUpdate" style="display:none; width:100%; margin-top:20px; padding:15px; background:#f39c12; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">ACTUALIZAR DATOS EN FIREBASE</button>
         </div>
 
-        <div id="image-panel" style="display:none; border-left: 1px solid #eee; padding-left:20px;">
-            <h4 style="margin-top:0;">Imagen Actual (Drive)</h4>
-            <img id="current-img" src="imagenes/sin_foto.jpg" style="width:100%; border-radius:8px; border:1px solid #ddd; min-height: 200px; object-fit: contain; background: #f0f0f0;">
-            
-            <div style="margin-top:20px; background:#f9f9f9; padding:15px; border-radius:8px; border:1px solid #3498db;">
-                <p style="font-size:11px; font-weight:bold; color:#3498db; margin-top:0;">SUBIR NUEVA VERSIÓN (MES/DÍA)</p>
-                <input type="file" id="fileDrive" style="width:100%; font-size:11px;">
-                <button id="btnSubirDrive" style="width:100%; margin-top:10px; background:#3498db; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">SUBIR A DRIVE</button>
-                <p id="upload-status" style="font-size:10px; color:#666; margin-top:5px;"></p>
+        <div style="border-left:1px solid #eee; padding-left:20px; text-align:center;">
+            <h3>Imagen de la Versión</h3>
+            <div style="width:100%; height:250px; border:2px dashed #ccc; display:flex; align-items:center; justify-content:center; margin-bottom:10px; background:#f9f9f9; overflow:hidden;">
+                <img id="current-img" src="imagenes/sin_foto.jpg" style="max-width:100%; max-height:100%; object-fit: contain;">
             </div>
+            
+            <input type="file" id="fileInput" accept="image/*" style="display:none;">
+            <button id="btnSubirDrive" style="width:100%; padding:10px; background:#27ae60; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold; display:none;">
+                📷 SUBIR/CAMBIAR FOTO
+            </button>
+            <p id="upload-status" style="font-size:12px; color:#666; margin-top:5px;"></p>
         </div>
     </div>
 
     <script type="module">
         import { db, checkAuth } from './config.js';
         import { collection, query, where, getDocs, doc, setDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        
+
         const user = checkAuth();
         const scriptURL = "https://script.google.com/macros/s/AKfycbz-zqhnPq-ZCVv1miDE8lF6WkKfTrw4KMj2ikRm8ZYkncyOpSG0VAqEkbfbnThTIdmb/exec";
-        const campos = ["Item #","Estatus","Programador","PPAP Part Number","Component Description","Razon de Cambio","PRP5/area","Lider de Calidad"," OE/AFTERMARKET ","Se entrego documentacion","Muestras Recibidas","Ubicacion Fisica ","Fecha de Programacion","Proceso","Update","Comments","Responsable","Instrucciones Especiales","PPAP Type OE / SM AFTER Market","PV Result","1-Design records","2-ECN document","3-Customer eng approval","4-Design FMEA","5-Process Flow Diagram","6-PFMEA","7-Control Plan","8-MSA Studies","9-Dimensional results","10-Material, performance test result","11-Initial Process Studies","12-Qualify Lab Documentation","13-Appereance Approval Report","14-Sample product","15-Checking Aids","16-Record de compliance","17-Bulk material checklist","18-PSW(Full or Interim)","Supplier PPAP package status","Validation run readiness","Samples on hand","Dimension status","FFF review status","AAR review status","PPAP overall status"];
-        let currentId = null;
-        let itemActual = "";
 
+        let currentId = null;
+        let itemActual = null;
+        const campos = ["Item #","Estatus","Programador","PPAP Part Number","Component Description","Razon para el cambio","Nivel de Submission","Target Date","Recibido","1-Design Record","2-Engineering change document","3-Customer Engineering Approval","4-DFMEA","5-Process Flow Diagram","6-PFMEA","7-Control Plan","8-MSA","9-Dimensional results","10-Material/Performance Test","11-Initial Process Studies","12-Qualified Lab Documentation","13-Appearance Approval Report","14-Sample product","15-Checking Aids","16-Record de compliance","17-Bulk material checklist","18-PSW(Full or Interim)","Supplier PPAP package status","Validation run readiness","Samples on hand","Dimension status","FFF review status","AAR review status","PPAP overall status"];
+
+        // BUSCAR
         document.getElementById('btnBuscar').onclick = async () => {
             const val = document.getElementById('searchItem').value.trim();
+            if(!val) return;
+
             const q = query(collection(db, "productos"), where("Item #", "==", val));
             const snap = await getDocs(q);
-            
-            if(snap.empty) { alert("No encontrado"); return; }
-            
-            const prod = snap.docs[0];
-            currentId = prod.id;
-            itemActual = prod.data()["Item #"];
-            
-            // Llenar Formulario
+
+            if(snap.empty) {
+                alert("No se encontró el Item.");
+                return;
+            }
+
+            const d = snap.docs[0];
+            currentId = d.id;
+            const data = d.data();
+            itemActual = data["Item #"];
+
             const form = document.getElementById('edit-form');
             form.innerHTML = '';
             campos.forEach(c => {
-                form.innerHTML += `<div><label style="font-size:10px;font-weight:bold;">${c}</label><input type="text" id="upd-${c}" value="${prod.data()[c]||''}" style="width:100%;padding:5px;"></div>`;
+                const div = document.createElement('div');
+                div.innerHTML = `<label style="font-size:11px; font-weight:bold; display:block;">${c}</label>
+                                 <input type="text" id="upd-${c}" value="${data[c] || ''}" style="width:100%; padding:6px; border:1px solid #ddd; border-radius:4px;">`;
+                form.appendChild(div);
             });
-
-            // Cargar Imagen
-            const imgEl = document.getElementById('current-img');
-            imgEl.src = "imagenes/sin_foto.jpg";
-            try {
-                // Intenta buscar si ya existe una imagen de hoy, si no, busca la genérica (opcional)
-                // Por simplicidad, aquí solo mostramos placeholder hasta subir una nueva o buscar específicamente
-            } catch(e) {}
 
             form.style.display = 'grid';
             document.getElementById('btnUpdate').style.display = 'block';
-            document.getElementById('image-panel').style.display = 'block';
+            document.getElementById('btnSubirDrive').style.display = 'block';
         };
 
-        document.getElementById('btnSubirDrive').onclick = async () => {
-            const file = document.getElementById('fileDrive').files[0];
-            if(!file) return alert("Selecciona una foto");
+        // LÓGICA DE DRIVE (SUBIR FOTO)
+        document.getElementById('btnSubirDrive').onclick = () => document.getElementById('fileInput').click();
 
+        document.getElementById('fileInput').onchange = function() {
+            const file = this.files[0];
             const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = async () => {
+            const btn = document.getElementById('btnSubirDrive');
+            const status = document.getElementById('upload-status');
+
+            reader.onload = async function() {
                 const base64 = reader.result.split(',')[1];
-                const btn = document.getElementById('btnSubirDrive');
-                const status = document.getElementById('upload-status');
-                
-                // --- CORRECCIÓN DE NOMBRE: Usamos guiones bajos (_) para separar ---
-                const hoy = new Date();
-                const nombreArchivo = `${itemActual}_${hoy.getMonth()+1}_${hoy.getDate()}`;
-                
-                btn.innerText = "SUBIENDO..."; btn.disabled = true;
-                status.innerText = `Guardando como: ${nombreArchivo}.jpg`;
+                const hoy = new Date().toISOString().split('T')[0];
+                const nombreArchivo = `${itemActual}_${hoy}`;
+
+                btn.innerText = "SUBIENDO...";
+                btn.disabled = true;
+                status.innerText = "Procesando imagen en Google Drive...";
 
                 try {
                     const res = await fetch(scriptURL, { 
                         method: "POST", 
                         body: JSON.stringify({ itemName: nombreArchivo, imageB64: base64 }) 
                     });
-                    const data = await res.json();
-                    if(data.result === "success") {
-                        alert("¡Imagen guardada para esta versión!");
-                        // --- CORRECCIÓN URL: Agregado el $ y url segura ---
-                        document.getElementById('current-img').src = `https://lh3.googleusercontent.com/d/${data.id}`;
+                    const resData = await res.json();
+
+                    if(resData.result === "success") {
+                        alert("¡Imagen guardada en Drive correctamente!");
+                        // Corrección de la URL para visualizar la miniatura
+                        document.getElementById('current-img').src = `https://lh3.googleusercontent.com/d/${resData.id}`;
+                        status.innerText = "Archivo: " + nombreArchivo + ".jpg";
+
+                        // Registro en el historial que se subió una imagen
+                        await addDoc(collection(db, "movimientos"), {
+                            usuario: user.usuario,
+                            accion: "Imagen Subida",
+                            detalle: `Item: ${itemActual} (Versión: ${hoy})`,
+                            fecha: serverTimestamp()
+                        });
                     }
-                } catch(e) { alert("Error al subir"); console.error(e); }
-                finally { btn.innerText = "SUBIR A DRIVE"; btn.disabled = false; }
+                } catch(e) { 
+                    alert("Error de conexión con el Script de Google");
+                    console.error(e);
+                } finally { 
+                    btn.innerText = "📷 SUBIR/CAMBIAR FOTO"; 
+                    btn.disabled = false; 
+                }
             };
+            reader.readAsDataURL(file);
         };
 
+        // ACTUALIZAR FIRESTORE
         document.getElementById('btnUpdate').onclick = async () => {
             const newData = {};
             campos.forEach(c => newData[c] = document.getElementById(`upd-${c}`).value);
+            
             try {
                 await setDoc(doc(db, "productos", currentId), newData, { merge: true });
+                
                 await addDoc(collection(db, "movimientos"), {
                     usuario: user.usuario,
                     accion: "Actualización",
-                    detalle: `Item: ${itemActual}`, // Mantener formato estricto
+                    detalle: `Item: ${itemActual}`,
                     statusMomento: newData["PPAP overall status"],
                     fecha: serverTimestamp()
                 });
-                alert("Actualizado");
+
+                alert("Registro actualizado con éxito");
                 location.href = 'index.html';
-            } catch(e) { alert("Error"); }
+            } catch(e) { 
+                alert("Error al actualizar en Firebase"); 
+            }
         };
     </script>
 </body>

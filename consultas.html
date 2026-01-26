@@ -2,62 +2,49 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Consultas - Master Track</title>
+    <title>Consultas de Versiones - Master Track</title>
     <link rel="stylesheet" href="style.css">
     <style>
         .search-box { background: white; padding: 20px; border-radius: 10px; display: flex; gap: 10px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .main-grid { display: grid; grid-template-columns: 1fr 450px; gap: 20px; }
         .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        
         .history-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
         .history-table th { background: #2c3e50; color: white; text-align: left; padding: 10px; }
         .history-table td { padding: 10px; border-bottom: 1px solid #eee; }
-        
-        .image-viewer { text-align: center; background: #f9f9f9; border: 2px solid #3498db; border-radius: 10px; padding: 10px; }
-        #drive-preview { width: 100%; height: 300px; object-fit: contain; border-radius: 5px; background: white; border: 1px solid #ddd; }
-        #img-caption { font-size: 13px; color: #2c3e50; margin-top: 8px; font-weight: bold; background: #ebf5fb; padding: 5px; border-radius: 4px; }
-
-        .btn-view { background: #3498db; color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer; border: none; font-weight: bold; font-size: 11px; }
-        .status-badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
-        .aprobado { background: #d4edda; color: #155724; }
-        .rechazado { background: #f8d7da; color: #721c24; }
-        .pendiente { background: #fff3cd; color: #856404; }
+        .image-viewer { text-align: center; background: #f9f9f9; border: 2px solid #3498db; border-radius: 10px; padding: 20px; position: sticky; top: 20px; }
+        .btn-view { background: #3498db; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; }
     </style>
 </head>
 <body class="bg-blue">
-    <div style="max-width: 1200px; margin: 30px auto; padding: 0 20px;">
-        <h2 style="color: white; text-align: center;">Historial de Versiones e Imágenes</h2>
-        
+    <header><h1>Consultas Históricas</h1></header>
+
+    <div style="padding: 20px; max-width: 1300px; margin: auto;">
         <div class="search-box">
-            <input type="text" id="term" placeholder="Buscar Item # (ej: 2pp)..." style="flex:1; padding:12px; border:1px solid #ddd; border-radius:5px;">
-            <button id="btnSearch" style="padding:12px 25px; background:#2ecc71; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">CONSULTAR</button>
+            <input type="text" id="inputSearch" placeholder="Ingrese Item # para ver historial..." style="flex:1; padding:12px; border:1px solid #ccc; border-radius:5px;">
+            <button id="btnConsultar" style="padding:12px 30px; background:#2c3e50; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">CONSULTAR</button>
             <button onclick="location.href='index.html'" style="padding:12px; background:#95a5a6; color:white; border:none; border-radius:5px; cursor:pointer;">VOLVER</button>
         </div>
 
-        <div id="content-view" style="display:none;" class="main-grid">
-            
+        <div id="content-view" class="main-grid" style="display:none;">
             <div class="card">
-                <h3 id="display-title" style="margin-top:0; color:#2c3e50; border-bottom:2px solid #eee; padding-bottom:10px;">Resultados</h3>
-                <div id="data-fields" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:15px;"></div>
-            </div>
-
-            <div class="card">
-                <div class="image-viewer">
-                    <img id="drive-preview" src="imagenes/sin_foto.jpg" alt="Vista Previa">
-                    <div id="img-caption">Selecciona una versión para ver foto</div>
-                </div>
-                
-                <h4 style="margin: 20px 0 10px 0; color:#3498db;">Versiones Guardadas</h4>
+                <h3>Cambios Detectados (Versiones)</h3>
                 <table class="history-table">
                     <thead>
                         <tr>
-                            <th>Fecha</th>
-                            <th>Status PPAP</th>
-                            <th>Foto</th>
+                            <th>Fecha/Hora</th>
+                            <th>Usuario</th>
+                            <th>Estatus en ese momento</th>
+                            <th>Imagen</th>
                         </tr>
                     </thead>
-                    <tbody id="history-body"></tbody>
+                    <tbody id="historial-body"></tbody>
                 </table>
+            </div>
+
+            <div class="image-viewer">
+                <h3 id="img-caption">Seleccione una versión</h3>
+                <img id="drive-preview" src="imagenes/sin_foto.jpg" style="max-width:100%; border-radius:5px; box-shadow:0 4px 8px rgba(0,0,0,0.2);">
+                <p style="margin-top:10px; font-size:12px; color:#666;">Las imágenes se buscan por Nombre del Item + Fecha</p>
             </div>
         </div>
     </div>
@@ -66,134 +53,80 @@
         import { db, checkAuth } from './config.js';
         import { collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Verificar Login
-        const user = checkAuth();
-        if(!user) {
-            alert("Debes iniciar sesión");
-            window.location.href = "login.html";
-        }
-
+        checkAuth();
         const scriptURL = "https://script.google.com/macros/s/AKfycbz-zqhnPq-ZCVv1miDE8lF6WkKfTrw4KMj2ikRm8ZYkncyOpSG0VAqEkbfbnThTIdmb/exec";
 
-        // Función del Botón Consultar
-        document.getElementById('btnSearch').onclick = async () => {
-            const btn = document.getElementById('btnSearch');
-            const val = document.getElementById('term').value.trim();
-            
-            if(!val) return alert("Escribe un número de Item");
+        document.getElementById('btnConsultar').onclick = async () => {
+            const itemBusqueda = document.getElementById('inputSearch').value.trim();
+            if(!itemBusqueda) return;
 
-            btn.innerText = "BUSCANDO...";
-            btn.disabled = true;
+            const tbody = document.getElementById('historial-body');
+            tbody.innerHTML = '<tr><td colspan="4">Cargando historial...</td></tr>';
 
-            try {
-                // 1. Buscar Datos del Producto
-                const q = query(collection(db, "productos"), where("Item #", "==", val));
-                const snap = await getDocs(q);
+            const q = query(
+                collection(db, "movimientos"), 
+                where("detalle", "==", `Item: ${itemBusqueda}`),
+                orderBy("fecha", "desc")
+            );
 
-                if(snap.empty) { 
-                    alert("No existe el Item: " + val);
-                    btn.innerText = "CONSULTAR";
-                    btn.disabled = false;
-                    return; 
-                }
+            const snap = await getDocs(q);
+            tbody.innerHTML = '';
 
-                const prodData = snap.docs[0].data();
-                const itemID = prodData["Item #"];
-
-                document.getElementById('display-title').innerText = "Item: " + itemID;
-
-                // Llenar campos de texto
-                const camposB = ["PPAP Part Number", "Component Description", "Responsable", "Proceso"];
-                const container = document.getElementById('data-fields');
-                container.innerHTML = '';
-                camposB.forEach(f => {
-                    container.innerHTML += `<div><label style="font-size:10px;color:#888;">${f}</label><br><b>${prodData[f]||'-'}</b></div>`;
-                });
-
-                // 2. Buscar Historial de Cambios (Versiones)
-                await cargarHistorial(itemID);
-                
-                document.getElementById('content-view').style.display = 'grid';
-
-            } catch (error) {
-                console.error("Error:", error);
-                alert("Error al buscar datos.");
-            } finally {
-                btn.innerText = "CONSULTAR";
-                btn.disabled = false;
+            if(snap.empty) {
+                alert("No hay movimientos registrados para este Item.");
+                return;
             }
+
+            snap.forEach(doc => {
+                const m = doc.data();
+                const fechaFull = m.fecha ? new Date(m.fecha.seconds * 1000) : null;
+                const fechaStr = fechaFull ? fechaFull.toLocaleString() : '---';
+                
+                // Formato para buscar imagen: Item_YYYY-MM-DD
+                const isoFecha = fechaFull ? fechaFull.toISOString().split('T')[0] : '';
+                const nombreArchivoVersion = `${itemBusqueda}_${isoFecha}`;
+
+                const statusV = m.statusMomento || 'N/A';
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${fechaStr}</td>
+                        <td><b>${m.usuario}</b></td>
+                        <td><span class="badge bg-upd">${statusV}</span></td>
+                        <td>
+                            <button class="btn-view" onclick="verImagenHistorica('${nombreArchivoVersion}')">
+                                VER FOTO
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('content-view').style.display = 'grid';
         };
 
-        // Función Auxiliar para Cargar la Tabla
-        async function cargarHistorial(itemID) {
-            const hBody = document.getElementById('history-body');
-            hBody.innerHTML = '<tr><td colspan="3">Cargando versiones...</td></tr>';
-
-            const qLogs = query(collection(db, "movimientos"), where("detalle", "==", `Item: ${itemID}`), orderBy("fecha", "desc"));
-            const logSnap = await getDocs(qLogs);
-
-            hBody.innerHTML = '';
-            
-            if(logSnap.empty) {
-                hBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No hay versiones anteriores.</td></tr>';
-            } else {
-                logSnap.forEach(docLog => {
-                    const log = docLog.data();
-                    if(!log.fecha) return;
-
-                    const fechaObj = new Date(log.fecha.seconds * 1000);
-                    const dia = fechaObj.getDate();
-                    const mes = fechaObj.getMonth() + 1;
-                    
-                    // Nombre del archivo según tu lógica: Item + Mes + Dia
-                    const nombreArchivoVersion = `${itemID}${mes}${dia}`;
-                    const statusV = log.statusMomento || "N/A";
-                    
-                    let claseStatus = 'pendiente';
-                    if(statusV.toLowerCase().includes('aprob')) claseStatus = 'aprobado';
-                    if(statusV.toLowerCase().includes('rechaz') || statusV.toLowerCase().includes('reject')) claseStatus = 'rechazado';
-
-                    hBody.innerHTML += `
-                        <tr>
-                            <td>${fechaObj.toLocaleDateString()}</td>
-                            <td><span class="status-badge ${claseStatus}">${statusV}</span></td>
-                            <td>
-                                <button class="btn-view" onclick="verImagenHistorica('${nombreArchivoVersion}')">
-                                    VER FOTO
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                });
-            }
-        }
-
-        // --- FUNCIÓN GLOBAL PARA VER IMAGEN ---
-        // (Está fuera del type=module para que el HTML la encuentre)
+        // Función global para el botón de la tabla
         window.verImagenHistorica = async (nombreImg) => {
             const imgPreview = document.getElementById('drive-preview');
             const caption = document.getElementById('img-caption');
             
-            caption.innerText = "Buscando: " + nombreImg + ".jpg ...";
-            imgPreview.src = "https://ssl.gstatic.com/docs/doclist/images/icon_10_image_list.png"; // Icono de carga
+            caption.innerText = "Buscando: " + nombreImg + ".jpg...";
+            imgPreview.src = "https://ssl.gstatic.com/docs/doclist/images/icon_10_image_list.png"; 
 
             try {
                 const res = await fetch(`${scriptURL}?itemName=${nombreImg}`);
                 const data = await res.json();
                 
                 if(data.result === "success") {
-                    // AQUÍ ESTÁ LA CORRECCIÓN CLAVE:
-                    // Usamos concatenación simple para evitar errores con las comillas
-                    const driveID = data.id; 
-                    imgPreview.src = "https://lh3.googleusercontent.com/d/" + driveID;
-                    
-                    caption.innerHTML = `<span style="color:green">✔ Imagen cargada:</span> ${nombreImg}.jpg`;
+                    // ID de Drive directo a visualizador de miniaturas
+                    imgPreview.src = `https://lh3.googleusercontent.com/d/${data.id}`;
+                    caption.innerHTML = `<span style="color:green">✔ Foto encontrada:</span> ${nombreImg}`;
                 } else {
                     imgPreview.src = "imagenes/sin_foto.jpg";
-                    caption.innerText = "⚠️ No existe foto para esta fecha.";
+                    caption.innerText = "⚠️ No hay foto para esta fecha.";
                 }
             } catch(e) {
-                console.error(e);
+                console.error("Error Drive:", e);
                 caption.innerText = "Error de conexión con Drive";
             }
         };
