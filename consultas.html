@@ -5,14 +5,128 @@
     <title>Consultas de Versiones - Master Track</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .search-box { background: white; padding: 20px; border-radius: 10px; display: flex; gap: 10px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .main-grid { display: grid; grid-template-columns: 1fr 450px; gap: 20px; }
-        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .history-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-        .history-table th { background: #2c3e50; color: white; text-align: left; padding: 10px; }
-        .history-table td { padding: 10px; border-bottom: 1px solid #eee; }
-        .image-viewer { text-align: center; background: #f9f9f9; border: 2px solid #3498db; border-radius: 10px; padding: 20px; position: sticky; top: 20px; }
-        .btn-view { background: #3498db; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; }
+        .search-box { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            display: flex; 
+            gap: 10px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+        }
+        .main-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 450px; 
+            gap: 20px; 
+        }
+        .card { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+        }
+        .history-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 10px; 
+            font-size: 13px; 
+        }
+        .history-table th { 
+            background: #2c3e50; 
+            color: white; 
+            text-align: left; 
+            padding: 10px; 
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        .history-table td { 
+            padding: 10px; 
+            border-bottom: 1px solid #eee; 
+            vertical-align: middle;
+        }
+        .image-viewer { 
+            text-align: center; 
+            background: #f9f9f9; 
+            border: 2px solid #3498db; 
+            border-radius: 10px; 
+            padding: 20px; 
+            position: sticky; 
+            top: 20px; 
+            height: fit-content;
+        }
+        .btn-view { 
+            background: #3498db; 
+            color: white; 
+            border: none; 
+            padding: 6px 12px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 11px; 
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn-view:hover { 
+            background: #2980b9; 
+            transform: scale(1.05);
+        }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+            display: inline-block;
+            min-width: 70px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        .status-approved {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+        .status-pending {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+        .status-rejected {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        .status-na {
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+        }
+        .action-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            color: white;
+            display: inline-block;
+            text-align: center;
+        }
+        .action-update { background: #3498db; }
+        .action-image { background: #9b59b6; }
+        .action-delete { background: #e74c3c; }
+        .action-login { background: #2ecc71; }
+        .action-create { background: #1abc9c; }
+        #historial-body tr:hover {
+            background-color: #f8f9fa;
+            transition: background-color 0.2s;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+        .empty-state img {
+            width: 80px;
+            opacity: 0.5;
+            margin-bottom: 15px;
+        }
+        .item-highlight {
+            font-weight: bold;
+            color: #2c3e50;
+            background: #ecf0f1;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
     </style>
 </head>
 <body class="bg-blue">
@@ -21,30 +135,52 @@
     <div style="padding: 20px; max-width: 1300px; margin: auto;">
         <div class="search-box">
             <input type="text" id="inputSearch" placeholder="Ingrese Item # para ver historial..." style="flex:1; padding:12px; border:1px solid #ccc; border-radius:5px;">
-            <button id="btnConsultar" style="padding:12px 30px; background:#2c3e50; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">CONSULTAR</button>
+            <button id="btnConsultar" style="padding:12px 30px; background:#2c3e50; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">BUSCAR</button>
             <button onclick="location.href='index.html'" style="padding:12px; background:#95a5a6; color:white; border:none; border-radius:5px; cursor:pointer;">VOLVER</button>
         </div>
 
         <div id="content-view" class="main-grid" style="display:none;">
             <div class="card">
-                <h3>Cambios Detectados (Versiones)</h3>
-                <table class="history-table">
-                    <thead>
-                        <tr>
-                            <th>Fecha/Hora</th>
-                            <th>Usuario</th>
-                            <th>Estatus en ese momento</th>
-                            <th>Imagen</th>
-                        </tr>
-                    </thead>
-                    <tbody id="historial-body"></tbody>
-                </table>
+                <h3 style="margin-bottom: 20px; color: #2c3e50; display: flex; align-items: center; gap: 10px;">
+                    📋 Historial de Cambios
+                    <span id="item-counter" style="font-size: 12px; background: #3498db; color: white; padding: 4px 10px; border-radius: 20px;"></span>
+                </h3>
+                <div style="overflow-x: auto;">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha/Hora</th>
+                                <th>Usuario</th>
+                                <th>Acción</th>
+                                <th>Item #</th>
+                                <th>Estado PPAP</th>
+                                <th>Detalles</th>
+                                <th>Imagen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historial-body">
+                            <tr>
+                                <td colspan="7" class="empty-state">
+                                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTM4LjI5MzMgMjYuMjkzM0w0Mi41ODY2IDIyTDU0IDMzLjQxMzRMNDkuNzA2NyAzNy43MDY3TDM4LjI5MzMgMjYuMjkzM1pNNTcuMzMzMyA1MS4zMzMzSDEyVjE2SDUxLjMzMzNWMjcuMzMzM0g1Ny4zMzMzVjUxLjMzMzNaTTUxLjMzMzMgOC42NjY2N0gxMkM5LjA2IDguNjY2NjcgNi42NjY2NyAxMS4wNiA2LjY2NjY3IDE0VjU0QzYuNjY2NjcgNTYuOTQgOS4wNiA1OS4zMzMzIDEyIDU5LjMzMzNINTQuNjY2N0M1Ny42MDY3IDU5LjMzMzMgNjAgNTYuOTQgNjAgNTRWMjcuMzMzM0g1MS4zMzMzVjguNjY2NjdaTTMxLjMzMzMgMzkuMzMzM0w0Mi42NjY3IDUwLjY2NjdMNDkgNDQuMzMzM0w1Ny4zMzMzIDUyLjY2NjdWNTdIMTJWNDYuNjY2N0wxOC42NjY3IDQwTDI1LjMzMzMgNDYuNjY2N0wzMS4zMzMzIDQwLjY2NjdMMzguNjY2NyA0OEw0Mi42NjY3IDQ0TDMxLjMzMzMgMzIuNjY2N0wyMi42NjY3IDQxLjMzMzNMMTguNjY2NyIDM3LjMzMzNMMTIgNDRWMjcuMzMzM0g1Ny4zMzMzVjM0LjY2NjdMNDkgMjYuMzMzM0w0Mi42NjY3IDMyLjY2NjdMMzEuMzMzMyAyMS4zMzMzTDE0IDM4LjY2NjdWMjEuMzMzM0g2LjY2NjY3VjM4LjY2NjdMMzEuMzMzMyAxNFYwSDQyLjY2NjdWMTEuMzMzM0g1NFYwSDU3LjMzMzNWMTQuNjY2N0w2MCAxNi42NjY3VjIxLjMzMzNINTcuMzMzM1YxNi42NjY3SDUxLjMzMzNWMjcuMzMzM0g2MFYyMS4zMzMzSDU3LjMzMzNWMTYuNjY2N1oiIGZpbGw9IiM3RjhDODgiLz4KPC9zdmc+" alt="Icono">
+                                    <p>Ingrese un Item # y haga clic en BUSCAR para ver el historial</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <div class="image-viewer">
-                <h3 id="img-caption">Seleccione una versión</h3>
-                <img id="drive-preview" src="imagenes/sin_foto.jpg" style="max-width:100%; border-radius:5px; box-shadow:0 4px 8px rgba(0,0,0,0.2);">
-                <p style="margin-top:10px; font-size:12px; color:#666;">Las imágenes se buscan por Nombre del Item + Fecha</p>
+                <h3 id="img-caption">Vista Previa de Imagen</h3>
+                <div style="width:100%; height:300px; border:2px dashed #ddd; display:flex; align-items:center; justify-content:center; margin:10px 0; background:#f5f5f5; overflow:hidden; border-radius:8px;">
+                    <img id="drive-preview" src="imagenes/sin_foto.jpg" style="max-width:100%; max-height:100%; object-fit: contain;">
+                </div>
+                <div id="image-info" style="font-size:12px; color:#666; margin-top:10px; text-align:left; padding:10px; background:#f0f0f0; border-radius:5px;">
+                    <p><strong>Nombre del archivo:</strong> <span id="image-filename">N/A</span></p>
+                    <p><strong>Fecha de versión:</strong> <span id="image-date">N/A</span></p>
+                    <p><strong>Estado actual:</strong> <span id="image-status">N/A</span></p>
+                </div>
+                <p style="margin-top:15px; font-size:11px; color:#999;">Las imágenes se almacenan en Google Drive con formato: Item_Fecha.jpg</p>
             </div>
         </div>
     </div>
@@ -58,78 +194,207 @@
 
         document.getElementById('btnConsultar').onclick = async () => {
             const itemBusqueda = document.getElementById('inputSearch').value.trim();
-            if(!itemBusqueda) return;
-
-            const tbody = document.getElementById('historial-body');
-            tbody.innerHTML = '<tr><td colspan="4">Cargando historial...</td></tr>';
-
-            const q = query(
-                collection(db, "movimientos"), 
-                where("detalle", "==", `Item: ${itemBusqueda}`),
-                orderBy("fecha", "desc")
-            );
-
-            const snap = await getDocs(q);
-            tbody.innerHTML = '';
-
-            if(snap.empty) {
-                alert("No hay movimientos registrados para este Item.");
+            if(!itemBusqueda) {
+                alert("Por favor ingresa un Item #");
                 return;
             }
 
-            snap.forEach(doc => {
-                const m = doc.data();
-                const fechaFull = m.fecha ? new Date(m.fecha.seconds * 1000) : null;
-                const fechaStr = fechaFull ? fechaFull.toLocaleString() : '---';
-                
-                // Formato para buscar imagen: Item_YYYY-MM-DD
-                const isoFecha = fechaFull ? fechaFull.toISOString().split('T')[0] : '';
-                const nombreArchivoVersion = `${itemBusqueda}_${isoFecha}`;
+            const tbody = document.getElementById('historial-body');
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:40px;"><div style="display:inline-block; padding:20px; background:#f8f9fa; border-radius:8px;">🔍 Buscando historial para Item: <strong>' + itemBusqueda + '</strong>...</div></td></tr>';
+            
+            // Mostrar el contenedor
+            document.getElementById('content-view').style.display = 'grid';
 
-                const statusV = m.statusMomento || 'N/A';
+            try {
+                // Buscar todos los movimientos que contengan el item
+                const q = query(
+                    collection(db, "movimientos"), 
+                    orderBy("fecha", "desc")
+                );
+
+                const snap = await getDocs(q);
                 
-                tbody.innerHTML += `
+                if(snap.empty) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="7" class="empty-state">
+                                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTU2IDE2SDEyQzkuOCAxNiA4IDE3LjggOCAyMFY1NkMwIDU4LjIgOS44IDYwIDEyIDYwSDU2QzU4LjIgNjAgNjAgNTguMiA2MCA1NlYyMEM2MCAxNy44IDU4LjIgMTYgNTYgMTZaTTUyIDQ0SDEyVjI4SDUyVjQ0Wk0yNCAzMkgyMFYzNkgyNFYzMlpNMzYgMzJIMzJWMzZIMzZWMzJaTTQ4IDMySDQ0VjM2SDQ4VjMyWk0yNCA0MEgyMFY0NEgyNFY0MFpNMzYgNDBIMzJWNDRIMzZWNDBaTTQ4IDQwSDQ0VjQ0SDQ4VjQwWk0yNCA0OEgyMFY1MkgyNFY0OFpNMzYgNDhIMzJWNTJIMzZWNDhaTTQ4IDQ4SDQ0VjUySDQ4VjQ4Wk0xNiAxNkg1NlYyMEgxNlYxNloiIGZpbGw9IiM3RjhDODgiLz4KPC9zdmc+" alt="Icono vacío">
+                                <p>No hay movimientos registrados en el sistema</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                // Filtrar movimientos que contengan el item buscado
+                const movimientosFiltrados = [];
+                snap.forEach(doc => {
+                    const m = doc.data();
+                    // Verificar si el detalle contiene el item buscado
+                    if (m.detalle && m.detalle.includes(itemBusqueda)) {
+                        // Extraer el número de item del detalle
+                        const itemMatch = m.detalle.match(/Item:\s*(\d+)/i);
+                        const itemNum = itemMatch ? itemMatch[1] : '';
+                        
+                        // Solo incluir si coincide exactamente con el item buscado
+                        if (itemNum === itemBusqueda) {
+                            movimientosFiltrados.push({ 
+                                id: doc.id, 
+                                ...m,
+                                itemNum: itemNum
+                            });
+                        }
+                    }
+                });
+
+                // Actualizar contador
+                document.getElementById('item-counter').textContent = `${movimientosFiltrados.length} registros`;
+
+                if(movimientosFiltrados.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="7" class="empty-state">
+                                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTUwLjY2NjcgMjYuNjY2N0g0NC42NjY3VjQwSDQwVjI2LjY2NjdIMzMuMzMzM1Y0MEgyOC42NjY3VjI2LjY2NjdIMjJWNDBIMTcuMzMzM1YyNi42NjY3SDEwLjY2NjdWNDBINlYyNi42NjY3SDBWNTcuMzMzM0g1MC42NjY3VjI2LjY2NjdaTTQ0LjY2NjcgNTNINy4zMzMzM1YzMy4zMzMzSDQ0LjY2NjdWNTNaTTU3LjMzMzMgNi42NjY2N0g0NC42NjY3VjIwSDU3LjMzMzNWNi42NjY2N1pNNjAgMEM2MCAzLjY4IDU2LjY4IDcgNTMgN0g0NC42NjY3VjBDNDQuNjY2NyAzLjY4IDQxLjM0NjcgNyAzNy42NjY3IDdIMjYuMzMzM0MyMi42NTMzIDcgMTkuMzMzMyAzLjY4IDE5LjMzMzMgMEgxMUM3LjMyIDAgNCAzLjMyIDQgNy41MzMzM1Y1N0MwIDYwLjY4IDMuMzIgNjQgNi42NjY2NyA2NEg1Ny4zMzMzQzYwLjY4IDY0IDY0IDYwLjY4IDY0IDU3VjIwQzY0IDE2LjMyIDYwLjY4IDEzIDU3LjMzMzMgMTNWNi42NjY2N0M2MC42OCA2LjY2NjY3IDY0IDMuMzQ2NjcgNjQgMFoiIGZpbGw9IiM3RjhDODgiLz4KPC9zdmc+" alt="Icono no encontrado">
+                                <p>No hay movimientos registrados para el Item: <strong class="item-highlight">${itemBusqueda}</strong></p>
+                                <p style="font-size:11px; margin-top:10px;">Verifica que el Item # sea correcto</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                // Ordenar por fecha (más reciente primero)
+                movimientosFiltrados.sort((a, b) => {
+                    const fechaA = a.fecha ? a.fecha.seconds : 0;
+                    const fechaB = b.fecha ? b.fecha.seconds : 0;
+                    return fechaB - fechaA;
+                });
+
+                // Mostrar resultados
+                tbody.innerHTML = '';
+                movimientosFiltrados.forEach(m => {
+                    const fechaFull = m.fecha ? new Date(m.fecha.seconds * 1000) : new Date();
+                    const fechaStr = fechaFull.toLocaleDateString('es-ES', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                    
+                    // Extraer fecha para nombre de imagen
+                    const isoFecha = fechaFull.toISOString().split('T')[0];
+                    const nombreArchivoVersion = `${itemBusqueda}_${isoFecha}`;
+                    
+                    // Determinar estado PPAP
+                    const statusPPAP = m.statusMomento || m.accion || 'N/A';
+                    
+                    // Determinar clase de estado
+                    let statusClass = 'status-na';
+                    if (statusPPAP.toLowerCase().includes('aprobado') || statusPPAP.toLowerCase().includes('approved')) {
+                        statusClass = 'status-approved';
+                    } else if (statusPPAP.toLowerCase().includes('pendiente') || statusPPAP.toLowerCase().includes('pending')) {
+                        statusClass = 'status-pending';
+                    } else if (statusPPAP.toLowerCase().includes('rechazado') || statusPPAP.toLowerCase().includes('rejected')) {
+                        statusClass = 'status-rejected';
+                    }
+                    
+                    // Determinar clase de acción
+                    let actionClass = 'action-update';
+                    const accion = m.accion || '';
+                    if (accion.toLowerCase().includes('imagen') || accion.toLowerCase().includes('foto')) {
+                        actionClass = 'action-image';
+                    } else if (accion.toLowerCase().includes('elimin')) {
+                        actionClass = 'action-delete';
+                    } else if (accion.toLowerCase().includes('inicio') || accion.toLowerCase().includes('login')) {
+                        actionClass = 'action-login';
+                    } else if (accion.toLowerCase().includes('registro') || accion.toLowerCase().includes('crear') || accion.toLowerCase().includes('nuevo')) {
+                        actionClass = 'action-create';
+                    }
+                    
+                    const usuario = m.usuario || 'Desconocido';
+                    const detalle = m.detalle || 'Sin detalles';
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="font-size:11px; color:#666;">${fechaStr}</td>
+                            <td><b style="color:#2c3e50;">${usuario}</b></td>
+                            <td><span class="action-badge ${actionClass}">${accion}</span></td>
+                            <td><span class="item-highlight">${itemBusqueda}</span></td>
+                            <td><span class="status-badge ${statusClass}">${statusPPAP}</span></td>
+                            <td style="font-size:11px; color:#555; max-width:200px; word-wrap:break-word;">${detalle}</td>
+                            <td>
+                                <button class="btn-view" onclick="verImagenHistorica('${nombreArchivoVersion}', '${isoFecha}', '${statusPPAP}')">
+                                    👁️ VIEW
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+            } catch(error) {
+                console.error("Error en consulta:", error);
+                tbody.innerHTML = `
                     <tr>
-                        <td>${fechaStr}</td>
-                        <td><b>${m.usuario}</b></td>
-                        <td><span class="badge bg-upd">${statusV}</span></td>
-                        <td>
-                            <button class="btn-view" onclick="verImagenHistorica('${nombreArchivoVersion}')">
-                                VER FOTO
-                            </button>
+                        <td colspan="7" style="text-align:center; color:#e74c3c; padding:40px;">
+                            <div style="background:#fee; padding:20px; border-radius:8px; border:1px solid #e74c3c;">
+                                <strong>Error al consultar la base de datos</strong><br>
+                                <span style="font-size:11px;">Verifica tu conexión a internet e intenta nuevamente</span>
+                            </div>
                         </td>
                     </tr>
                 `;
-            });
-
-            document.getElementById('content-view').style.display = 'grid';
+            }
         };
 
         // Función global para el botón de la tabla
-        window.verImagenHistorica = async (nombreImg) => {
+        window.verImagenHistorica = async (nombreImg, fecha, estado) => {
             const imgPreview = document.getElementById('drive-preview');
             const caption = document.getElementById('img-caption');
+            const filenameEl = document.getElementById('image-filename');
+            const dateEl = document.getElementById('image-date');
+            const statusEl = document.getElementById('image-status');
             
-            caption.innerText = "Buscando: " + nombreImg + ".jpg...";
-            imgPreview.src = "https://ssl.gstatic.com/docs/doclist/images/icon_10_image_list.png"; 
-
+            caption.innerHTML = `<span style="color:#3498db;">🔍 Buscando imagen...</span>`;
+            imgPreview.src = "imagenes/sin_foto.jpg";
+            filenameEl.textContent = nombreImg + '.jpg';
+            dateEl.textContent = fecha;
+            statusEl.textContent = estado;
+            
             try {
-                const res = await fetch(`${scriptURL}?itemName=${nombreImg}`);
+                const res = await fetch(`${scriptURL}?itemName=${encodeURIComponent(nombreImg)}`);
                 const data = await res.json();
                 
-                if(data.result === "success") {
-                    // ID de Drive directo a visualizador de miniaturas
+                if(data.result === "success" && data.id) {
+                    // Usar el visualizador de Google Drive
                     imgPreview.src = `https://lh3.googleusercontent.com/d/${data.id}`;
-                    caption.innerHTML = `<span style="color:green">✔ Foto encontrada:</span> ${nombreImg}`;
+                    caption.innerHTML = `<span style="color:#27ae60;">✅ Imagen encontrada</span>`;
+                    imgPreview.style.opacity = "1";
                 } else {
                     imgPreview.src = "imagenes/sin_foto.jpg";
-                    caption.innerText = "⚠️ No hay foto para esta fecha.";
+                    caption.innerHTML = `<span style="color:#e74c3c;">⚠️ No hay foto para esta versión</span>`;
+                    imgPreview.style.opacity = "0.5";
                 }
             } catch(e) {
                 console.error("Error Drive:", e);
-                caption.innerText = "Error de conexión con Drive";
+                imgPreview.src = "imagenes/sin_foto.jpg";
+                caption.innerHTML = `<span style="color:#e74c3c;">❌ Error de conexión con Drive</span>`;
+                imgPreview.style.opacity = "0.5";
             }
         };
+
+        // Permitir buscar con Enter
+        document.getElementById('inputSearch').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('btnConsultar').click();
+            }
+        });
+
+        // Mostrar ayuda inicial
+        window.addEventListener('load', function() {
+            document.getElementById('content-view').style.display = 'grid';
+        });
     </script>
 </body>
 </html>
