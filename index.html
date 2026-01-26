@@ -6,23 +6,8 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
     <style>
-        .bottom-preview {
-            margin-top: 20px; background: white; border-radius: 12px;
-            border: 3px solid #3498db; padding: 20px; display: flex;
-            align-items: center; gap: 30px; box-shadow: 0 -5px 25px rgba(0,0,0,0.1);
-        }
-        .preview-image-box { flex: 0 0 300px; text-align: center; }
-        #main-preview-img { max-width: 100%; max-height: 350px; object-fit: contain; border-radius: 8px; border: 1px solid #eee; }
-        .preview-info-box { flex: 1; color: #2c3e50; }
-        .preview-info-box h2 { margin: 0 0 10px 0; color: #3498db; border-bottom: 2px solid #3498db; display: inline-block; }
-        .table-wrapper { max-height: 400px; overflow-y: auto; border: 1px solid #ddd; }
-        
-        /* Ocultar botones por defecto para que la lógica los active */
-        #btnUsuarios, #btnHistorial, #btnRegistrar, #btnActualizar, #btnEliminar, #upload-container { 
-            display: none; 
-        }
-        
-        .loading-text { font-size: 10px; color: #3498db; font-style: italic; display: block; margin-top: 5px; }
+        .table-wrapper { max-height: 600px; overflow-y: auto; border: 1px solid #ddd; background: white; border-radius: 8px; }
+        #btnUsuarios, #btnHistorial, #btnRegistrar, #btnActualizar, #btnEliminar { display: none; }
     </style>
 </head>
 <body class="bg-blue">
@@ -45,23 +30,6 @@
                     <tbody id="inventory-body"></tbody>
                 </table>
             </div>
-
-            <div class="bottom-preview">
-                <div class="preview-image-box">
-                    <span id="status-drive" class="loading-text"></span>
-                    <img id="main-preview-img" src="imagenes/sin_foto.jpg" alt="Vista previa">
-                    <div id="upload-container">
-                        <p style="font-size: 9px; margin: 5px 0;">Subir foto a Drive:</p>
-                        <input type="file" id="fileDrive" style="width:100%;">
-                        <button id="btnSubirDrive" style="width:100%; margin-top:5px; background:#3498db; color:white; border:none; border-radius:3px; cursor:pointer; padding: 5px;">SUBIR A DRIVE</button>
-                    </div>
-                </div>
-                <div class="preview-info-box">
-                    <p style="text-transform: uppercase; font-size: 0.8em; font-weight: bold; color: #7f8c8d; margin-bottom: 5px;">Detalles del registro seleccionado:</p>
-                    <h2 id="prod-name-display">Selecciona un registro</h2>
-                    <p id="prod-detail-display" style="font-size: 1.1em; line-height: 1.5;">Haz clic en una fila para ver detalles.</p>
-                </div>
-            </div>
         </section>
     </div>
 
@@ -75,17 +43,12 @@
                     </div>
                     <div id="rep-fecha" style="font-size:12px; font-weight:bold;"></div>
                 </div>
-                <div style="display:flex; gap:20px;">
-                    <div style="flex: 0 0 250px; height: 250px; border: 1px solid #ddd; display:flex; align-items:center; justify-content:center; background:#f9f9f9;">
-                        <img id="rep-img-final" style="max-width:100%; max-height:100%; object-fit:contain;">
-                    </div>
-                    <div id="rep-data-main" style="flex:1; display:grid; grid-template-columns:1fr 1fr; gap:8px;"></div>
-                </div>
+                <div id="rep-data-main" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;"></div>
                 <h3 style="background:#2c3e50; color:white; padding:6px; margin-top:20px; font-size:14px;">CHECKLIST DE DOCUMENTACIÓN</h3>
                 <div id="rep-data-ppap" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; font-size:11px; background:#f8f9fa; padding:10px;"></div>
             </div>
             <div style="margin:15px; display:flex; gap:10px;">
-                <button id="btnDescargarPDF" style="flex:2; padding:15px; background:#27ae60; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">📥 GUARDAR PDF (CARTA)</button>
+                <button id="btnDescargarPDF" style="flex:2; padding:15px; background:#27ae60; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">📥 GUARDAR PDF</button>
                 <button onclick="document.getElementById('modalReporte').style.display='none'" style="flex:1; padding:15px; background:#e74c3c; color:white; border:none; border-radius:6px; cursor:pointer;">CERRAR</button>
             </div>
         </div>
@@ -93,29 +56,19 @@
 
     <script type="module">
         import { db, checkAuth } from './config.js';
-        import { collection, onSnapshot, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // --- LÓGICA DE PERMISOS REINCORPORADA ---
         const user = checkAuth();
-        let currentItemSeleccionado = null;
-
         if(user) {
             if(user.usuario === 'admin') {
-                document.getElementById('btnUsuarios').style.display = 'block';
-                document.getElementById('btnHistorial').style.display = 'block';
-                document.getElementById('btnRegistrar').style.display = 'block';
-                document.getElementById('btnActualizar').style.display = 'block';
-                document.getElementById('btnEliminar').style.display = 'block';
-                document.getElementById('upload-container').style.display = 'block';
+                document.querySelectorAll('#btnUsuarios, #btnHistorial, #btnRegistrar, #btnActualizar, #btnEliminar').forEach(b => b.style.display = 'block');
             } else if(user.permisos) {
-                if(user.permisos.registrar)   document.getElementById('btnRegistrar').style.display = 'block';
-                if(user.permisos.actualizar)  document.getElementById('btnActualizar').style.display = 'block';
-                if(user.permisos.eliminar)    document.getElementById('btnEliminar').style.display = 'block';
-                if(user.permisos.subirDrive)  document.getElementById('upload-container').style.display = 'block';
+                if(user.permisos.registrar) document.getElementById('btnRegistrar').style.display = 'block';
+                if(user.permisos.actualizar) document.getElementById('btnActualizar').style.display = 'block';
+                if(user.permisos.eliminar) document.getElementById('btnEliminar').style.display = 'block';
             }
         }
 
-        const scriptURL = "https://script.google.com/macros/s/AKfycbz-zqhnPq-ZCVv1miDE8lF6WkKfTrw4KMj2ikRm8ZYkncyOpSG0VAqEkbfbnThTIdmb/exec";
         const campos = ["Item #","Estatus","Programador","PPAP Part Number","Component Description","Razon de Cambio","PRP5/area","Lider de Calidad"," OE/AFTERMARKET ","Se entrego documentacion","Muestras Recibidas","Ubicacion Fisica ","Fecha de Programacion","Proceso","Update","Comments","Responsable","Instrucciones Especiales","PPAP Type OE / SM AFTER Market","PV Result","1-Design records","2-ECN document","3-Customer eng approval","4-Design FMEA","5-Process Flow Diagram","6-PFMEA","7-Control Plan","8-MSA Studies","9-Dimensional results","10-Material, performance test result","11-Initial Process Studies","12-Qualify Lab Documentation","13-Appereance Approval Report","14-Sample product","15-Checking Aids","16-Record de compliance","17-Bulk material checklist","18-PSW(Full or Interim)","Supplier PPAP package status","Validation run readiness","Samples on hand","Dimension status","FFF review status","AAR review status","PPAP overall status"];
         
         const head = document.getElementById('table-head');
@@ -134,111 +87,33 @@
             tbody.innerHTML = '';
             lista.forEach(p => {
                 const tr = document.createElement('tr');
-                tr.style.cursor = "pointer";
-                tr.onclick = async () => {
-                    currentItemSeleccionado = p; 
-                    const itemID = p["Item #"] || "sin_id";
-                    document.getElementById('prod-name-display').innerText = `Item: ${itemID}`;
-                    document.getElementById('prod-detail-display').innerHTML = `<b>No. Parte:</b> ${p["PPAP Part Number"]||'-'} <br> <b>Desc:</b> ${p["Component Description"]||'-'} <br> <b>Estatus:</b> ${p["Estatus"]||'-'}`;
-                    
-                    const imgPreview = document.getElementById('main-preview-img');
-                    const statusDrive = document.getElementById('status-drive');
-                    imgPreview.src = "imagenes/sin_foto.jpg";
-                    statusDrive.innerText = "Buscando imagen...";
-
-                    try {
-                        const res = await fetch(`${scriptURL}?itemName=${itemID}`);
-                        const data = await res.json();
-                        if(data.result === "success") {
-                            // RECUPERAMOS EL FORMATO QUE SÍ TE FUNCIONABA
-                            imgPreview.src = `https://lh3.googleusercontent.com/u/0/d/${data.id}`;
-                            statusDrive.innerText = "Imagen de Drive cargada";
-                        } else {
-                            statusDrive.innerText = "Sin imagen en Drive";
-                        }
-                    } catch (e) { 
-                        statusDrive.innerText = "Error al conectar con Drive";
-                        imgPreview.src = 'imagenes/sin_foto.jpg'; 
-                    }
-                };
-
                 campos.forEach(c => tr.innerHTML += `<td>${p[c]||'-'}</td>`);
                 const tdBtn = document.createElement('td');
                 const btn = document.createElement('button');
-                btn.innerText = "VER REPORTE"; btn.className = "btn-report-row";
-                btn.style.padding = "5px";
-                btn.onclick = (e) => { e.stopPropagation(); abrirReporte(p); };
+                btn.innerText = "REPORTE"; btn.onclick = () => abrirReporte(p);
                 tdBtn.appendChild(btn); tr.appendChild(tdBtn); tbody.appendChild(tr);
             });
         }
 
         window.abrirReporte = function(p) {
-            const modal = document.getElementById('modalReporte');
-            const imgReporte = document.getElementById('rep-img-final');
             document.getElementById('rep-fecha').innerText = "FECHA: " + new Date().toLocaleDateString();
-            imgReporte.src = document.getElementById('main-preview-img').src;
-            
             const rMain = document.getElementById('rep-data-main');
             const rPpap = document.getElementById('rep-data-ppap');
             rMain.innerHTML = ''; rPpap.innerHTML = '';
 
             campos.forEach((key, index) => {
                 const html = `<div style="border-bottom:1px solid #eee; padding:2px 0;">
-                    <b style="font-size:9px; color:#666; display:block; text-transform:uppercase;">${key}</b>
-                    <span style="font-size:13px; color:black;">${p[key] || '-'}</span>
+                    <b style="font-size:9px; color:#666; display:block;">${key}</b>
+                    <span style="font-size:12px;">${p[key] || '-'}</span>
                 </div>`;
-                if(index < 14) rMain.innerHTML += html;
-                else rPpap.innerHTML += html;
+                if(index < 15) rMain.innerHTML += html; else rPpap.innerHTML += html;
             });
-            modal.style.display = 'block';
+            document.getElementById('modalReporte').style.display = 'block';
         };
 
         document.getElementById('btnDescargarPDF').onclick = () => {
             const element = document.getElementById('reporte-print-area');
-            html2pdf().set({
-                margin: 10, filename: 'Reporte_PPAP.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 3, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
-            }).from(element).save();
-        };
-
-        document.getElementById('btnSubirDrive').onclick = async () => {
-            if(!currentItemSeleccionado) return alert("Primero selecciona un registro.");
-            const fileInput = document.getElementById('fileDrive');
-            const file = fileInput.files[0];
-            if(!file) return alert("Selecciona un archivo.");
-
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = async () => {
-                const base64 = reader.result.split(',')[1];
-                const btn = document.getElementById('btnSubirDrive');
-                btn.innerText = "SUBIENDO..."; btn.disabled = true;
-                
-                try {
-                    const res = await fetch(scriptURL, { 
-                        method: "POST", 
-                        body: JSON.stringify({ 
-                            itemName: currentItemSeleccionado["Item #"], 
-                            imageB64: base64 
-                        }) 
-                    });
-                    const data = await res.json();
-                    if(data.result === "success") {
-                        await addDoc(collection(db, "movimientos"), {
-                            usuario: user.usuario, 
-                            accion: "Subida de Imagen",
-                            detalle: `Item: ${currentItemSeleccionado["Item #"]}`, 
-                            fecha: serverTimestamp()
-                        });
-                        alert("¡Foto guardada!");
-                        // RECUPERAMOS EL FORMATO QUE SÍ TE FUNCIONABA AQUÍ TAMBIÉN
-                        document.getElementById('main-preview-img').src = `https://lh3.googleusercontent.com/u/0/d/${data.id}`;
-                    }
-                } catch(e) { alert("Error al conectar con Drive."); }
-                finally { btn.innerText = "SUBIR A DRIVE"; btn.disabled = false; fileInput.value = ""; }
-            };
+            html2pdf().set({ margin: 10, filename: 'PPAP.pdf', jsPDF: { format: 'letter' } }).from(element).save();
         };
 
         document.getElementById('mainSearch').oninput = (e) => {
