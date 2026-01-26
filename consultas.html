@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Consultas Históricas - Master Track</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .search-box { 
+            background: white; padding: 20px; border-radius: 10px; 
+            display: flex; gap: 10px; margin-bottom: 20px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+        }
+        .main-grid { 
+            display: grid; grid-template-columns: 1fr 450px; gap: 20px; 
+        }
+        .card { 
+            background: white; padding: 20px; border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+        }
+        
+        /* Tabla de historial de 3 columnas */
+        .history-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        .history-table th { background: #2c3e50; color: white; text-align: left; padding: 10px; }
+        .history-table td { padding: 10px; border-bottom: 1px solid #eee; }
+        
+        .status-badge { padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; text-transform: uppercase; }
+        .approved { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .rejected { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .pending { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+
+        .btn-view { 
+            background: #3498db; color: white; padding: 6px 12px; 
+            text-decoration: none; border-radius: 4px; font-size: 11px; 
+            cursor: pointer; border: none; font-weight: bold;
+        }
+        .btn-view:hover { background: #2980b9; }
+
+        #drive-preview { 
+            width: 100%; height: 280px; border-radius: 8px; 
+            object-fit: contain; background: #fafafa; border: 1px solid #ddd; 
+        }
+        .info-label { font-size: 11px; color: #888; font-weight: bold; display: block; margin-top: 5px; }
+        .info-value { font-size: 14px; color: #333; margin-bottom: 10px; display: block; }
+    </style>
+</head>
+<body class="bg-blue">
+    <div style="max-width: 1200px; margin: 30px auto; padding: 0 20px;">
+        <h2 style="color: white; text-align: center; margin-bottom: 25px;">Consulta de Items y Versiones</h2>
+        
+        <div class="search-box">
+            <input type="text" id="term" placeholder="Buscar por No. de Parte o Item #..." style="flex:1; padding:12px; border:1px solid #ddd; border-radius:5px;">
+            <button id="btnSearch" style="padding:12px 25px; background:#2ecc71; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">CONSULTAR</button>
+            <button onclick="location.href='index.html'" style="padding:12px; background:#95a5a6; color:white; border:none; border-radius:5px; cursor:pointer;">VOLVER</button>
+        </div>
+
+        <div id="content-view" style="display:none;" class="main-grid">
+            <div class="card">
+                <h3 id="display-title" style="margin-top:0; color:#2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px;"></h3>
+                <div id="data-fields" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:15px;"></div>
+            </div>
+
+            <div class="card">
+                <h4 style="margin-top:0; color:#3498db;">Vista de Imagen (Drive)</h4>
+                <img id="drive-preview" src="imagenes/sin_foto.jpg" alt="Vista previa">
+                
+                <h4 style="margin: 25px 0 10px 0; border-top: 1px solid #eee; padding-top:15px; color:#3498db;">Historial de Versiones</h4>
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>PPAP Overall Status</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-body">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db, checkAuth } from './config.js';
+        import { collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        checkAuth();
+        const scriptURL = "https://script.google.com/macros/s/AKfycbz-zqhnPq-ZCVv1miDE8lF6WkKfTrw4KMj2ikRm8ZYkncyOpSG0VAqEkbfbnThTIdmb/exec";
+
+        document.getElementById('btnSearch').onclick = async () => {
+            const val = document.getElementById('term').value.trim();
+            if(!val) return;
+
+            // Buscar en la colección de productos
+            const qItem = query(collection(db, "productos"), where("Item #", "==", val));
+            let snap = await getDocs(qItem);
+            
+            if(snap.empty) {
+                const qPart = query(collection(db, "productos"), where("PPAP Part Number", "==", val));
+                snap = await getDocs(qPart);
+            }
+
+            if(snap.empty) { 
+                alert("No se encontró ningún registro con ese ID o Número de Parte."); 
+                return; 
+            }
+
+            const prodData = snap.docs[0].data();
+            const itemID = prodData["Item #"];
+
+            // Mostrar información básica a la izquierda
+            document.getElementById('display-title').innerText = "Parte: " + (prodData["PPAP Part Number"] || "N/A");
+            const camposParaMostrar = ["Item #", "Estatus", "Responsable", "PPAP overall status", "Component Description", "Proceso"];
+            const container = document.getElementById('data-fields');
+            container.innerHTML = '';
+            camposParaMostrar.forEach(f => {
+                container.innerHTML += `<div><span class="info-label">${f.toUpperCase()}</span><span class="info-value">${prodData[f] || '-'}</span></div>`;
+            });
+
+            // Consultar Imagen en Drive
+            const imgPreview = document.getElementById('drive-preview');
+            imgPreview.src = "imagenes/sin_foto.jpg"; // Reset temporal
+            try {
+                const res = await fetch(`${scriptURL}?itemName=${itemID}`);
+                const driveResult = await res.json();
+                if(driveResult.result === "success") {
+                    imgPreview.src = `https://lh3.googleusercontent.com/u/0/d/${driveResult.id}`;
+                }
+            } catch(e) { console.error("Error al cargar drive"); }
+
+            // Cargar HISTORIAL de 3 COLUMNAS (Fecha | Status Histórico | View)
+            const hBody = document.getElementById('history-body');
+            hBody.innerHTML = '<tr><td colspan="3">Cargando versiones...</td></tr>';
+            
+            const qLogs = query(collection(db, "movimientos"), where("detalle", "==", `Item: ${itemID}`), orderBy("fecha", "desc"));
+            const logSnap = await getDocs(qLogs);
+
+            hBody.innerHTML = '';
+            if(logSnap.empty) {
+                hBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No hay cambios registrados para este item.</td></tr>';
+            } else {
+                logSnap.forEach(docLog => {
+                    const log = docLog.data();
+                    const fecha = log.fecha ? new Date(log.fecha.seconds * 1000).toLocaleDateString() : '---';
+                    
+                    // Usamos el status que se guardó en ese momento exacto
+                    const statusHistorico = log.statusMomento || "N/A"; 
+                    
+                    // Color dinámico según el texto
+                    let badgeClass = 'pending';
+                    if(statusHistorico.toLowerCase().includes('aprob')) badgeClass = 'approved';
+                    if(statusHistorico.toLowerCase().includes('rechaz') || statusHistorico.toLowerCase().includes('reject')) badgeClass = 'rejected';
+
+                    hBody.innerHTML += `
+                        <tr>
+                            <td>${fecha}</td>
+                            <td><span class="status-badge ${badgeClass}">${statusHistorico}</span></td>
+                            <td><button class="btn-view" onclick="alert('Abriendo archivo de la versión: ${fecha}')">VIEW</button></td>
+                        </tr>
+                    `;
+                });
+            }
+
+            document.getElementById('content-view').style.display = 'grid';
+        };
+    </script>
+</body>
+</html>
