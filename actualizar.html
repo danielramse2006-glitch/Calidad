@@ -47,11 +47,12 @@
             campos.forEach(c => { newData[c] = document.getElementById(`upd-${c}`).value; });
             try {
                 await setDoc(doc(db, "productos", currentId), newData, { merge: true });
-                // LOG DE ACTUALIZACIÓN
+                // LOG DE ACTUALIZACIÓN CON CAPTURA DE ESTADO HISTÓRICO
                 await addDoc(collection(db, "movimientos"), {
                     usuario: user.usuario,
                     accion: "Actualización",
                     detalle: `Item: ${newData["Item #"]}`,
+                    statusMomento: newData["PPAP overall status"] || "Sin Status", // Captura el estado en este segundo
                     fecha: serverTimestamp()
                 });
                 alert("Registro actualizado correctamente");
