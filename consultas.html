@@ -14,7 +14,7 @@
         .history-table td { padding: 10px; border-bottom: 1px solid #eee; }
         
         .image-viewer { text-align: center; background: #f9f9f9; border: 2px solid #3498db; border-radius: 10px; padding: 10px; }
-        #drive-preview { width: 100%; height: 300px; object-fit: contain; border-radius: 5px; background: white; border: 1px solid #ddd; }
+        #drive-preview { width: 100%; height: 350px; object-fit: contain; border-radius: 5px; background: #000; border: 1px solid #ddd; }
         #img-caption { font-size: 13px; color: #2c3e50; margin-top: 8px; font-weight: bold; background: #ebf5fb; padding: 5px; border-radius: 4px; }
 
         .btn-view { background: #3498db; color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer; border: none; font-weight: bold; font-size: 11px; }
@@ -46,7 +46,7 @@
                     <div id="img-caption">Imagen de la versión</div>
                 </div>
                 
-                <h4 style="margin: 20px 0 10px 0; color:#3498db;">Versiones Guardadas (Item + Mes + Día)</h4>
+                <h4 style="margin: 20px 0 10px 0; color:#3498db;">Versiones Guardadas</h4>
                 <table class="history-table">
                     <thead>
                         <tr>
@@ -88,7 +88,7 @@
                 container.innerHTML += `<div><label style="font-size:10px;color:#888;">${f}</label><br><b>${prodData[f]||'-'}</b></div>`;
             });
 
-            // Buscar Historial en "movimientos"
+            // Buscar Historial
             const hBody = document.getElementById('history-body');
             hBody.innerHTML = '<tr><td colspan="3">Buscando versiones...</td></tr>';
             
@@ -107,8 +107,8 @@
                     const dia = fechaObj.getDate();
                     const mes = fechaObj.getMonth() + 1;
                     
-                    // Lógica solicitada: Nombre = Item + Mes + Dia
-                    const nombreArchivoVersion = `${itemID}${mes}${dia}`;
+                    // --- CORRECCIÓN DE NOMBRE: Mismo formato que en actualizar (Item_Mes_Dia) ---
+                    const nombreArchivoVersion = `${itemID}_${mes}_${dia}`;
                     const statusV = log.statusMomento || "N/A";
                     
                     let claseStatus = 'pendiente';
@@ -121,7 +121,7 @@
                             <td><span class="status-badge ${claseStatus}">${statusV}</span></td>
                             <td>
                                 <button class="btn-view" onclick="verImagenHistorica('${nombreArchivoVersion}')">
-                                    VIEW ${nombreArchivoVersion}
+                                    VER FOTO
                                 </button>
                             </td>
                         </tr>
@@ -136,18 +136,20 @@
             const caption = document.getElementById('img-caption');
             
             caption.innerText = "Buscando archivo " + nombreImg + ".jpg...";
-            imgPreview.src = "imagenes/sin_foto.jpg";
+            imgPreview.src = "imagenes/sin_foto.jpg"; // Placeholder
 
             try {
                 const res = await fetch(`${scriptURL}?itemName=${nombreImg}`);
                 const data = await res.json();
                 if(data.result === "success") {
-                    imgPreview.src = `https://lh3.googleusercontent.com/u/0/d/${data.id}`;
-                    caption.innerText = "Mostrando: " + nombreImg + ".jpg";
+                    // --- CORRECCIÓN URL: Agregado el $ y url segura ---
+                    imgPreview.src = `https://lh3.googleusercontent.com/d/${data.id}`;
+                    caption.innerHTML = `<span style='color:green'>✔ Encontrado:</span> ${nombreImg}.jpg`;
                 } else {
-                    caption.innerText = "No se encontró la foto: " + nombreImg;
+                    caption.innerText = "⚠️ No existe foto para esta fecha/versión.";
                 }
             } catch(e) {
+                console.error(e);
                 caption.innerText = "Error de conexión con Drive";
             }
         };

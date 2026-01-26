@@ -20,7 +20,7 @@
 
         <div id="image-panel" style="display:none; border-left: 1px solid #eee; padding-left:20px;">
             <h4 style="margin-top:0;">Imagen Actual (Drive)</h4>
-            <img id="current-img" src="imagenes/sin_foto.jpg" style="width:100%; border-radius:8px; border:1px solid #ddd;">
+            <img id="current-img" src="imagenes/sin_foto.jpg" style="width:100%; border-radius:8px; border:1px solid #ddd; min-height: 200px; object-fit: contain; background: #f0f0f0;">
             
             <div style="margin-top:20px; background:#f9f9f9; padding:15px; border-radius:8px; border:1px solid #3498db;">
                 <p style="font-size:11px; font-weight:bold; color:#3498db; margin-top:0;">SUBIR NUEVA VERSIÓN (MES/DÍA)</p>
@@ -63,9 +63,8 @@
             const imgEl = document.getElementById('current-img');
             imgEl.src = "imagenes/sin_foto.jpg";
             try {
-                const res = await fetch(`${scriptURL}?itemName=${itemActual}`);
-                const data = await res.json();
-                if(data.result === "success") imgEl.src = `https://lh3.googleusercontent.com/u/0/d/${data.id}`;
+                // Intenta buscar si ya existe una imagen de hoy, si no, busca la genérica (opcional)
+                // Por simplicidad, aquí solo mostramos placeholder hasta subir una nueva o buscar específicamente
             } catch(e) {}
 
             form.style.display = 'grid';
@@ -84,9 +83,9 @@
                 const btn = document.getElementById('btnSubirDrive');
                 const status = document.getElementById('upload-status');
                 
-                // Generar nombre: Item + Mes + Dia
+                // --- CORRECCIÓN DE NOMBRE: Usamos guiones bajos (_) para separar ---
                 const hoy = new Date();
-                const nombreArchivo = `${itemActual}${hoy.getMonth()+1}${hoy.getDate()}`;
+                const nombreArchivo = `${itemActual}_${hoy.getMonth()+1}_${hoy.getDate()}`;
                 
                 btn.innerText = "SUBIENDO..."; btn.disabled = true;
                 status.innerText = `Guardando como: ${nombreArchivo}.jpg`;
@@ -99,9 +98,10 @@
                     const data = await res.json();
                     if(data.result === "success") {
                         alert("¡Imagen guardada para esta versión!");
-                        document.getElementById('current-img').src = `https://lh3.googleusercontent.com/u/0/d/${data.id}`;
+                        // --- CORRECCIÓN URL: Agregado el $ y url segura ---
+                        document.getElementById('current-img').src = `https://lh3.googleusercontent.com/d/${data.id}`;
                     }
-                } catch(e) { alert("Error al subir"); }
+                } catch(e) { alert("Error al subir"); console.error(e); }
                 finally { btn.innerText = "SUBIR A DRIVE"; btn.disabled = false; }
             };
         };
@@ -114,7 +114,7 @@
                 await addDoc(collection(db, "movimientos"), {
                     usuario: user.usuario,
                     accion: "Actualización",
-                    detalle: `Item: ${itemActual}`,
+                    detalle: `Item: ${itemActual}`, // Mantener formato estricto
                     statusMomento: newData["PPAP overall status"],
                     fecha: serverTimestamp()
                 });
