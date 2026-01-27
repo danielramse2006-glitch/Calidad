@@ -1,3 +1,5 @@
+[file name]: consultas.html
+[file content begin]
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -516,10 +518,15 @@
     </div>
 
     <script type="module">
-        import { db, checkAuth } from './config.js';
+        import { db, checkAuth, redirectIfNoPermission } from './config.js';
         import { collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        checkAuth();
+        // Verificar permiso de consultar
+        if (!redirectIfNoPermission('consultar')) {
+            // Ya redirige automáticamente
+        }
+        
+        const user = checkAuth();
         const scriptURL = "https://script.google.com/macros/s/AKfycbz-zqhnPq-ZCVv1miDE8lF6WkKfTrw4KMj2ikRm8ZYkncyOpSG0VAqEkbfbnThTIdmb/exec";
 
         let currentImageUrl = '';
@@ -775,3 +782,4 @@
     </script>
 </body>
 </html>
+[file content end]
