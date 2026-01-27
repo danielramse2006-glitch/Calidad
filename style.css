@@ -1,3 +1,54 @@
+/* --- LOGO CORPORATIVO --- */
+.corporate-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 25px;
+    background: linear-gradient(135deg, #003366 0%, #0056a9 100%);
+    box-shadow: 0 4px 12px rgba(0, 51, 102, 0.15);
+    border-bottom: 4px solid #0099cc;
+}
+
+.company-logo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.company-logo h1 {
+    color: white;
+    font-size: 18px;
+    margin: 0;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    line-height: 1.2;
+}
+
+.company-logo .subtitle {
+    font-size: 11px;
+    opacity: 0.9;
+    font-weight: normal;
+    margin-top: 3px;
+}
+
+.logo-container {
+    background: white;
+    padding: 6px;
+    border-radius: 5px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.logo-container:hover {
+    transform: scale(1.05);
+}
+
+.logo-container img {
+    height: 40px;
+    width: auto;
+    display: block;
+}
 
 /* --- CONFIGURACIÓN GENERAL --- */
 body { 
@@ -6,37 +57,67 @@ body {
     background-color: #f4f7f6; 
 }
 
-.bg-blue { 
-    background-color: #0080ff; 
-    color: white; 
-    min-height: 100vh; 
+header { 
+    background: linear-gradient(135deg, #003366 0%, #004c8c 100%);
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    border-radius: 0 0 10px 10px;
+    box-shadow: 0 4px 12px rgba(0, 51, 102, 0.2);
+    border-bottom: 3px solid #0099cc;
 }
 
 header h1 { 
-    text-align: center; color: white; padding: 20px; margin: 0;
-    text-transform: uppercase; letter-spacing: 2px;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    text-align: center; 
+    color: white; 
+    padding: 10px; 
+    margin: 0;
+    text-transform: uppercase; 
+    letter-spacing: 1.5px;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.bg-blue { 
+    background-color: #f0f7ff !important; /* Fondo azul muy claro */
+    background-image: linear-gradient(to bottom, #f0f7ff, #ffffff);
+    color: #333; 
+    min-height: 100vh; 
 }
 
 /* --- DISEÑO DE CONTENEDORES --- */
-.main-container { display: flex; padding: 20px; gap: 20px; }
+.main-container { display: flex; padding: 20px; gap: 20px; max-width: 1400px; margin: 0 auto; }
 
 .side-menu { display: flex; flex-direction: column; gap: 12px; width: 220px; flex-shrink: 0; }
 
 .side-menu button { 
-    padding: 14px; font-weight: bold; cursor: pointer; background: white; 
-    border: none; border-radius: 8px; transition: 0.3s;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1); color: #2c3e50;
+    padding: 14px; 
+    font-weight: bold; 
+    cursor: pointer; 
+    background: linear-gradient(to right, #003366, #0056a9);
+    border: none; 
+    border-radius: 6px; 
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 8px rgba(0,51,102,0.2); 
+    color: white;
+    text-align: left;
+    margin-bottom: 8px;
+    border-left: 4px solid #0099cc;
 }
-.side-menu button:hover { background: #ecf0f1; transform: translateX(5px); }
+.side-menu button:hover { 
+    background: linear-gradient(to right, #004c8c, #0066cc); 
+    transform: translateX(5px); 
+    box-shadow: 0 5px 12px rgba(0,51,102,0.3);
+}
 
 /* Estilo específico para el botón de Historial */
 #btnHistorial {
-    background: #9b59b6 !important; /* Morado */
+    background: linear-gradient(to right, #6a11cb, #2575fc) !important; /* Morado */
+    border-left: 4px solid #ff9900 !important;
     color: white !important;
 }
 #btnHistorial:hover {
-    background: #8e44ad !important;
+    background: linear-gradient(to right, #5a0cb5, #1c67e8) !important;
 }
 
 /* --- CUADRO DE CONTENIDO --- */
@@ -44,16 +125,22 @@ header h1 {
     flex: 1; 
     background: white; 
     color: #333; 
-    padding: 30px; 
+    padding: 25px; 
     border-radius: 10px; 
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2); 
+    box-shadow: 0 5px 20px rgba(0,51,102,0.08);
+    border: 1px solid #e1ecff;
 }
 
 /* --- TABLA CON SCROLL --- */
 .table-wrapper { 
-    overflow-x: auto; overflow-y: auto; background: white; 
-    border-radius: 10px; padding: 10px; max-height: 80vh; 
-    border: 1px solid #ddd;
+    overflow-x: auto; 
+    overflow-y: auto; 
+    background: white; 
+    border-radius: 10px; 
+    padding: 10px; 
+    max-height: 80vh; 
+    border: 1px solid #e1ecff;
+    box-shadow: 0 3px 10px rgba(0,51,102,0.05);
 }
 
 table { width: 100%; min-width: 7000px; border-collapse: collapse; }
@@ -62,8 +149,16 @@ table { width: 100%; min-width: 7000px; border-collapse: collapse; }
 .log-table { min-width: 800px !important; }
 
 th { 
-    background: #2c3e50; color: white; padding: 12px; text-align: left; 
-    position: sticky; top: 0; z-index: 100; font-size: 12px;
+    background: linear-gradient(to bottom, #003366, #004c8c) !important; 
+    color: white !important; 
+    padding: 12px; 
+    text-align: left; 
+    position: sticky; 
+    top: 0; 
+    z-index: 100; 
+    font-size: 12px;
+    font-weight: 600;
+    border: none !important;
 }
 
 td { border: 1px solid #ddd; padding: 10px; color: #333 !important; font-size: 13px; }
@@ -81,29 +176,98 @@ tr:hover { background: #f2f2f2; }
     color: white; 
     text-transform: uppercase;
 }
-.bg-login { background: #2ecc71; } /* Verde para Login */
-.bg-reg { background: #3498db; }   /* Azul para Registro */
-.bg-upd { background: #f39c12; }   /* Naranja para Actualizar */
-.bg-del { background: #e74c3c; }   /* Rojo para Eliminar */
-.bg-img { background: #9b59b6; }   /* Morado para Imágenes */
-.bg-usr { background: #34495e; }   /* Gris oscuro para Usuarios */
+.bg-login { background: linear-gradient(135deg, #00b09b, #96c93d); }
+.bg-reg { background: linear-gradient(135deg, #0056a9, #0099cc); }
+.bg-upd { background: linear-gradient(135deg, #ff9900, #ffcc00); }
+.bg-del { background: linear-gradient(135deg, #ff416c, #ff4b2b); }
+.bg-img { background: linear-gradient(135deg, #6a11cb, #2575fc); }
+.bg-usr { background: linear-gradient(135deg, #667eea, #764ba2); }
 
 /* --- BOTONES VARIOS --- */
 .btn-report-row { 
-    background: #27ae60; color: white; border: none; 
-    padding: 5px 10px; border-radius: 4px; cursor: pointer; 
+    background: linear-gradient(135deg, #0099cc, #006699);
+    color: white; 
+    border: none; 
+    padding: 6px 12px; 
+    border-radius: 4px; 
+    cursor: pointer; 
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.btn-report-row:hover {
+    background: linear-gradient(135deg, #0088bb, #005577);
 }
 
 .btn-action { 
-    padding: 12px 30px; font-weight: bold; cursor: pointer; 
-    border-radius: 5px; border: 1px solid #999; 
-    background: #f0f0f0; transition: 0.2s;
+    padding: 12px 30px; 
+    font-weight: bold; 
+    cursor: pointer; 
+    border-radius: 5px; 
+    border: 1px solid #999; 
+    background: #f0f0f0; 
+    transition: 0.2s;
 }
 .btn-action:hover { background: #e0e0e0; }
 
 /* Inputs generales */
 input, select, textarea { 
-    padding: 11px; border: 1px solid #ccc; border-radius: 5px; 
-    font-size: 14px; width: 100%; box-sizing: border-box; 
+    padding: 11px; 
+    border: 1px solid #ccc; 
+    border-radius: 5px; 
+    font-size: 14px; 
+    width: 100%; 
+    box-sizing: border-box; 
 }
 input:focus { outline: none; border-color: #3498db; }
+
+/* Footer corporativo */
+.corporate-footer {
+    text-align: center;
+    padding: 15px;
+    color: #666;
+    font-size: 12px;
+    margin-top: 30px;
+    border-top: 1px solid #e1ecff;
+}
+
+.corporate-footer strong {
+    color: #003366;
+}
+
+/* Información de usuario en header */
+.user-header-info {
+    text-align: right;
+    color: white;
+    font-size: 13px;
+}
+
+.user-header-info .user-name {
+    font-weight: bold;
+    margin-bottom: 3px;
+}
+
+.user-header-info .current-date {
+    font-size: 11px;
+    opacity: 0.9;
+}
+
+/* Permisos en side menu */
+.permission-badge {
+    font-size: 9px;
+    background: #27ae60;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: 5px;
+}
+
+.permission-denied {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.permission-denied:hover {
+    transform: none !important;
+    background: white !important;
+}

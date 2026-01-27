@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -40,14 +39,33 @@
         }
     </style>
 </head>
-<body style="background:#f4f7f6;">
-    <h2 style="text-align:center; background:#f1c40f; color:#333; padding:20px; margin:0;">Panel de Control: Administrar Usuarios</h2>
+<body class="bg-blue">
+    <!-- HEADER CORPORATIVO -->
+    <div class="corporate-header">
+        <div class="company-logo" onclick="location.href='index.html'" style="cursor:pointer;">
+            <div class="logo-container">
+                <img src="logos/logo_smp.png" alt="SMP Engine Management Logo">
+            </div>
+            <div>
+                <h1>PPAP Master Track System</h1>
+                <div class="subtitle">SMP Engine Management, S. de R.L. de C.V</div>
+            </div>
+        </div>
+        
+        <div class="user-header-info">
+            <div id="current-user-display" class="user-name">👤 Cargando...</div>
+            <div id="current-date" class="current-date"></div>
+        </div>
+    </div>
+
+    <header><h1>Panel de Control: Administrar Usuarios</h1></header>
+    
     <div class="main-container" style="flex-direction: column; align-items: center;">
         <div style="background:white; padding:30px; border-radius:10px; width:100%; max-width:500px; margin-bottom: 30px;">
-            <h3>Crear Nuevo Perfil</h3>
+            <h3 style="color: #2c3e50;">Crear Nuevo Perfil</h3>
             <div style="display:flex; flex-direction:column; gap:15px; margin-top:20px;">
-                <input type="text" id="u" placeholder="Usuario" style="width:100%; padding:10px;">
-                <input type="password" id="p" placeholder="Contraseña" style="width:100%; padding:10px;">
+                <input type="text" id="u" placeholder="Usuario" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px;">
+                <input type="password" id="p" placeholder="Contraseña" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px;">
                 
                 <div class="permissions-grid">
                     <h4 style="grid-column: span 3; margin: 0 0 10px 0; color: #2c3e50; font-size: 14px;">Permisos:</h4>
@@ -89,13 +107,13 @@
                     </div>
                 </div>
                 
-                <button id="btnSave" class="btn-action" style="background:#27ae60; color:white; width:100%; padding:12px; border:none; border-radius:8px; cursor:pointer;">CREAR USUARIO</button>
-                <button onclick="location.href='index.html'" class="btn-action" style="width:100%; padding:10px; border:none; border-radius:8px; cursor:pointer;">VOLVER AL INICIO</button>
+                <button id="btnSave" class="btn-action" style="background:linear-gradient(135deg, #27ae60, #2ecc71); color:white; width:100%; padding:12px; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">CREAR USUARIO</button>
+                <button onclick="location.href='index.html'" class="btn-action" style="width:100%; padding:10px; background:#95a5a6; color:white; border:none; border-radius:8px; cursor:pointer;">VOLVER AL INICIO</button>
             </div>
         </div>
         
         <div style="background:white; padding:30px; border-radius:10px; width:100%; max-width:500px;">
-            <h3>Usuarios Registrados</h3>
+            <h3 style="color: #2c3e50;">Usuarios Registrados</h3>
             <p style="font-size: 11px; color: #7f8c8d; margin-top: -10px; margin-bottom: 15px;">
                 * El usuario "admin" no se puede modificar/eliminar
             </p>
@@ -103,11 +121,27 @@
         </div>
     </div>
     
+    <!-- FOOTER CORPORATIVO -->
+    <div class="corporate-footer">
+        <strong>SMP Engine Management, S. de R.L. de C.V</strong> | Sistema PPAP Master Track v2.0<br>
+        <span style="font-size: 11px;">© 2024 - Todos los derechos reservados</span>
+    </div>
+    
     <script type="module">
         import { db, checkAuth } from './config.js';
         import { collection, addDoc, query, where, getDocs, onSnapshot, doc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         
+        // Mostrar fecha actual
+        const now = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('current-date').textContent = now.toLocaleDateString('es-MX', options);
+        
+        // Mostrar usuario actual
         const user = checkAuth();
+        if(user) {
+            document.getElementById('current-user-display').textContent = `👤 ${user.usuario}`;
+        }
+
         if(!user || user.usuario !== 'admin') { 
             alert("Acceso denegado. Solo el administrador puede gestionar usuarios."); 
             window.location.href = "index.html"; 

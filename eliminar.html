@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -6,7 +5,27 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-blue">
-    <div style="padding:20px; max-width:600px; margin:auto; background:white; color:black; border-radius:10px; margin-top:50px;">
+    <!-- HEADER CORPORATIVO -->
+    <div class="corporate-header">
+        <div class="company-logo" onclick="location.href='index.html'" style="cursor:pointer;">
+            <div class="logo-container">
+                <img src="logos/logo_smp.png" alt="SMP Engine Management Logo">
+            </div>
+            <div>
+                <h1>PPAP Master Track System</h1>
+                <div class="subtitle">SMP Engine Management, S. de R.L. de C.V</div>
+            </div>
+        </div>
+        
+        <div class="user-header-info">
+            <div id="current-user-display" class="user-name">👤 Cargando...</div>
+            <div id="current-date" class="current-date"></div>
+        </div>
+    </div>
+
+    <header><h1>Eliminar Registro PPAP</h1></header>
+    
+    <div style="padding:20px; max-width:600px; margin:auto; background:white; color:black; border-radius:10px; margin-top:20px;">
         <h2 style="color:#c0392b;">Eliminar Registro PPAP</h2>
         <p>Ingresa el <b>Item #</b> del registro que deseas borrar permanentemente.</p>
         <div style="margin-bottom:20px;">
@@ -20,16 +39,32 @@
         <button onclick="location.href='index.html'" style="width:100%; margin-top:20px; padding:10px; background:#bdc3c7; border:none; border-radius:5px; cursor:pointer;">VOLVER AL INICIO</button>
     </div>
 
+    <!-- FOOTER CORPORATIVO -->
+    <div class="corporate-footer">
+        <strong>SMP Engine Management, S. de R.L. de C.V</strong> | Sistema PPAP Master Track v2.0<br>
+        <span style="font-size: 11px;">© 2024 - Todos los derechos reservados</span>
+    </div>
+
     <script type="module">
         import { db, checkAuth, redirectIfNoPermission } from './config.js';
         import { collection, query, where, getDocs, doc, deleteDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         
+        // Mostrar fecha actual
+        const now = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('current-date').textContent = now.toLocaleDateString('es-MX', options);
+        
+        // Mostrar usuario actual
+        const user = checkAuth();
+        if(user) {
+            document.getElementById('current-user-display').textContent = `👤 ${user.usuario}`;
+        }
+
         // Verificar permiso de eliminar
         if (!redirectIfNoPermission('eliminar')) {
             // Ya redirige automáticamente
         }
         
-        const user = checkAuth();
         let docIdToDelete = null;
         let itemNumToDelete = null;
 

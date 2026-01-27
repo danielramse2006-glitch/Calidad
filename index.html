@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -35,7 +34,27 @@
     </style>
 </head>
 <body class="bg-blue">
-    <header><h1>PPAP Master Track System</h1></header>
+    <!-- HEADER CORPORATIVO -->
+    <div class="corporate-header">
+        <div class="company-logo" onclick="location.href='index.html'" style="cursor:pointer;">
+            <div class="logo-container">
+                <!-- Cambia la ruta según donde tengas tu logo -->
+                <img src="logos/logo_smp.png" alt="SMP Engine Management Logo">
+            </div>
+            <div>
+                <h1>PPAP Master Track System</h1>
+                <div class="subtitle">SMP Engine Management, S. de R.L. de C.V</div>
+            </div>
+        </div>
+        
+        <div class="user-header-info">
+            <div id="current-user-display" class="user-name">👤 Cargando...</div>
+            <div id="current-date" class="current-date"></div>
+        </div>
+    </div>
+
+    <header><h1>Sistema de Gestión PPAP</h1></header>
+    
     <div class="main-container">
         <nav class="side-menu">
             <!-- Botón de Usuarios (solo admin) -->
@@ -116,14 +135,21 @@
         </div>
     </div>
 
+    <!-- FOOTER CORPORATIVO -->
+    <div class="corporate-footer">
+        <strong>SMP Engine Management, S. de R.L. de C.V</strong> | Sistema PPAP Master Track v2.0<br>
+        <span style="font-size: 11px;">© 2024 - Todos los derechos reservados</span>
+    </div>
+
     <script type="module">
         import { db, checkAuth } from './config.js';
         import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const user = checkAuth();
         
-        // Mostrar información del usuario
+        // Mostrar información del usuario en header
         if(user) {
+            document.getElementById('current-user-display').textContent = `👤 ${user.usuario}`;
             document.getElementById('current-user').textContent = user.usuario;
             
             // Mostrar permisos del usuario
@@ -142,6 +168,11 @@
                 permissionsDiv.innerHTML = '🔐 Permisos: <strong>' + (permisos.length > 0 ? permisos.join(', ') : 'Básicos') + '</strong>';
             }
         }
+        
+        // Mostrar fecha actual
+        const now = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('current-date').textContent = now.toLocaleDateString('es-MX', options);
         
         // CONFIGURAR BOTONES SEGÚN PERMISOS
         if(user) {

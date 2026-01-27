@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -7,22 +6,38 @@
     <style>
         /* Estilos específicos para la tabla de historial */
         .log-table { width:100%; min-width:700px; border-collapse: collapse; }
-        .log-table th { background:#2c3e50; color:white; padding:12px; border:1px solid #ddd; }
+        .log-table th { background:linear-gradient(to bottom, #003366, #004c8c) !important; color:white; padding:12px; border:1px solid #ddd; }
         .log-table td { padding:10px; border:1px solid #ddd; font-size:13px; }
         .log-table tr:nth-child(even) { background: #f2f2f2; }
         .badge { padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold; color:white; }
-        .bg-login { background: #2ecc71; }
-        .bg-reg { background: #3498db; }
-        .bg-upd { background: #f39c12; }
-        .bg-del { background: #e74c3c; }
-        .bg-img { background: #9b59b6; }
-        .bg-usr { background: #34495e; }
+        .bg-login { background: linear-gradient(135deg, #00b09b, #96c93d); }
+        .bg-reg { background: linear-gradient(135deg, #0056a9, #0099cc); }
+        .bg-upd { background: linear-gradient(135deg, #ff9900, #ffcc00); }
+        .bg-del { background: linear-gradient(135deg, #ff416c, #ff4b2b); }
+        .bg-img { background: linear-gradient(135deg, #6a11cb, #2575fc); }
+        .bg-usr { background: linear-gradient(135deg, #667eea, #764ba2); }
     </style>
 </head>
-<body style="background:#f4f7f6;">
-    <h2 style="text-align:center; background:#2c3e50; color:white; padding:20px; margin:0;">
-        Historial de Actividad del Sistema
-    </h2>
+<body class="bg-blue">
+    <!-- HEADER CORPORATIVO -->
+    <div class="corporate-header">
+        <div class="company-logo" onclick="location.href='index.html'" style="cursor:pointer;">
+            <div class="logo-container">
+                <img src="logos/logo_smp.png" alt="SMP Engine Management Logo">
+            </div>
+            <div>
+                <h1>PPAP Master Track System</h1>
+                <div class="subtitle">SMP Engine Management, S. de R.L. de C.V</div>
+            </div>
+        </div>
+        
+        <div class="user-header-info">
+            <div id="current-user-display" class="user-name">👤 Cargando...</div>
+            <div id="current-date" class="current-date"></div>
+        </div>
+    </div>
+
+    <header><h1>Historial de Actividad del Sistema</h1></header>
 
     <div class="main-container" style="flex-direction: column; align-items: center; padding: 20px;">
         <button onclick="location.href='index.html'" style="margin-bottom:20px; padding:10px 20px; cursor:pointer; border-radius:8px; border:none; background:#3498db; color:white; font-weight:bold;">
@@ -46,11 +61,27 @@
         </div>
     </div>
 
+    <!-- FOOTER CORPORATIVO -->
+    <div class="corporate-footer">
+        <strong>SMP Engine Management, S. de R.L. de C.V</strong> | Sistema PPAP Master Track v2.0<br>
+        <span style="font-size: 11px;">© 2024 - Todos los derechos reservados</span>
+    </div>
+
     <script type="module">
         import { db, checkAuth } from './config.js';
         import { collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // Mostrar fecha actual
+        const now = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('current-date').textContent = now.toLocaleDateString('es-MX', options);
+        
+        // Mostrar usuario actual
         const user = checkAuth();
+        if(user) {
+            document.getElementById('current-user-display').textContent = `👤 ${user.usuario}`;
+        }
+
         // Solo el admin puede ver esto
         if(!user || user.usuario !== 'admin') {
             alert("Acceso denegado");

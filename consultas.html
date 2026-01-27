@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -17,17 +16,9 @@
         }
         
         .bg-blue {
-            background: #0080ff;
+            background: #f0f7ff !important;
             min-height: 100vh;
             padding: 5px;
-        }
-        
-        header h1 {
-            text-align: center;
-            color: white;
-            padding: 12px;
-            margin: 0;
-            font-size: 14px;
         }
         
         .search-box { 
@@ -74,7 +65,7 @@
         
         /* ENCABEZADOS MUY DELGADOS */
         .history-table th { 
-            background: #2c3e50; 
+            background: linear-gradient(to bottom, #003366, #004c8c) !important; 
             color: white; 
             text-align: center; 
             padding: 3px 2px !important; 
@@ -446,6 +437,24 @@
     </style>
 </head>
 <body class="bg-blue">
+    <!-- HEADER CORPORATIVO -->
+    <div class="corporate-header">
+        <div class="company-logo" onclick="location.href='index.html'" style="cursor:pointer;">
+            <div class="logo-container">
+                <img src="logos/logo_smp.png" alt="SMP Engine Management Logo">
+            </div>
+            <div>
+                <h1>PPAP Master Track System</h1>
+                <div class="subtitle">SMP Engine Management, S. de R.L. de C.V</div>
+            </div>
+        </div>
+        
+        <div class="user-header-info">
+            <div id="current-user-display" class="user-name">👤 Cargando...</div>
+            <div id="current-date" class="current-date"></div>
+        </div>
+    </div>
+
     <header><h1>Consultas Históricas</h1></header>
 
     <div style="padding: 8px; max-width: 800px; margin: auto;">
@@ -516,16 +525,32 @@
         </div>
     </div>
 
+    <!-- FOOTER CORPORATIVO -->
+    <div class="corporate-footer">
+        <strong>SMP Engine Management, S. de R.L. de C.V</strong> | Sistema PPAP Master Track v2.0<br>
+        <span style="font-size: 11px;">© 2024 - Todos los derechos reservados</span>
+    </div>
+
     <script type="module">
         import { db, checkAuth, redirectIfNoPermission } from './config.js';
         import { collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Mostrar fecha actual
+        const now = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('current-date').textContent = now.toLocaleDateString('es-MX', options);
+        
+        // Mostrar usuario actual
+        const user = checkAuth();
+        if(user) {
+            document.getElementById('current-user-display').textContent = `👤 ${user.usuario}`;
+        }
 
         // Verificar permiso de consultar
         if (!redirectIfNoPermission('consultar')) {
             // Ya redirige automáticamente
         }
         
-        const user = checkAuth();
         const scriptURL = "https://script.google.com/macros/s/AKfycbz-zqhnPq-ZCVv1miDE8lF6WkKfTrw4KMj2ikRm8ZYkncyOpSG0VAqEkbfbnThTIdmb/exec";
 
         let currentImageUrl = '';
