@@ -1,0 +1,407 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Comentarios - Master Track</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .bg-blue { background-color: #0080ff; min-height: 100vh; }
+        header h1 { text-align: center; color: white; padding: 20px; margin: 0; }
+        
+        .main-container {
+            max-width: 900px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .search-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .search-section input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .search-section button {
+            padding: 12px 25px;
+            background: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .item-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 5px solid #3498db;
+            display: none;
+        }
+        
+        .fields-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .field-group {
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .field-group label {
+            font-size: 11px;
+            color: #666;
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .field-group input,
+        .field-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            background: white;
+        }
+        
+        .field-group .readonly-field {
+            background: #f0f0f0;
+            color: #666;
+            border: 1px solid #ddd;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 13px;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .comments-field {
+            grid-column: span 3;
+        }
+        
+        .comments-field textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .action-buttons button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        #btnGuardarComentario {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            flex: 3;
+        }
+        
+        #btnCancelar {
+            background: #95a5a6;
+            color: white;
+            flex: 1;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .status-approved { background: #d4edda; color: #155724; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-rejected { background: #f8d7da; color: #721c24; }
+        .status-inprogress { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body class="bg-blue">
+    <header><h1>✏️ Editar Comentarios - Solo Lectura/Edición Limitada</h1></header>
+    
+    <div class="main-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="color: #2c3e50; margin: 0;">Editar Comentarios del Item</h2>
+            <button onclick="location.href='index.html'" style="padding: 10px 20px; background: #95a5a6; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                ← VOLVER
+            </button>
+        </div>
+        
+        <div class="search-section">
+            <input type="text" id="searchItem" placeholder="Ingrese Item # para buscar (ej: 15)">
+            <button id="btnBuscar">🔍 BUSCAR ITEM</button>
+        </div>
+        
+        <div id="item-info" class="item-info">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h3 style="margin: 0 0 5px 0; color: #2c3e50;">
+                        Item: <span id="current-item" style="font-weight: bold;"></span>
+                    </h3>
+                    <p style="margin: 0; font-size: 13px; color: #666;">
+                        Estado PPAP: <span id="current-status" class="status-badge status-pending"></span>
+                    </p>
+                </div>
+                <div style="font-size: 11px; color: #95a5a6;">
+                    Última actualización: <span id="last-update"></span>
+                </div>
+            </div>
+        </div>
+        
+        <div id="fields-container" class="fields-container">
+            <!-- Los campos se generan dinámicamente aquí -->
+        </div>
+        
+        <div id="action-buttons" class="action-buttons">
+            <button id="btnGuardarComentario">💾 GUARDAR COMENTARIOS</button>
+            <button id="btnCancelar">CANCELAR</button>
+        </div>
+        
+        <div style="margin-top: 30px; padding: 15px; background: #f0f7ff; border-radius: 8px; border-left: 4px solid #3498db;">
+            <h4 style="margin: 0 0 10px 0; color: #3498db;">⚠️ Notas importantes:</h4>
+            <ul style="margin: 0; padding-left: 20px; font-size: 12px; color: #555;">
+                <li>Solo el campo <strong>"Comments"</strong> es editable en esta vista</li>
+                <li>Los demás campos son de solo lectura para referencia</li>
+                <li>Los cambios se registrarán en el historial con tu usuario</li>
+                <li>Esta función requiere permiso especial "editarComentarios"</li>
+            </ul>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db, checkAuth, redirectIfNoPermission } from './config.js';
+        import { collection, query, where, getDocs, doc, setDoc, addDoc, serverTimestamp, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Verificar permiso
+        if (!redirectIfNoPermission('editarComentarios')) {
+            // Ya redirige automáticamente
+        }
+        
+        const user = checkAuth();
+        let currentId = null;
+        let itemActual = null;
+        
+        // Campos básicos para mostrar (solo lectura)
+        const camposLectura = [
+            "Item #", "Estatus", "Programador", "PPAP Part Number", 
+            "Component Description", "Razon para el cambio", "Target Date",
+            "PPAP overall status"
+        ];
+        
+        // Campo editable
+        const campoEditable = "Comments";
+        
+        // BUSCAR ITEM
+        document.getElementById('btnBuscar').onclick = async () => {
+            const val = document.getElementById('searchItem').value.trim();
+            if(!val) {
+                alert("Por favor ingresa un número de Item");
+                return;
+            }
+            
+            const btnBuscar = document.getElementById('btnBuscar');
+            btnBuscar.innerHTML = "🔍 BUSCANDO...";
+            btnBuscar.disabled = true;
+            
+            try {
+                const q = query(collection(db, "productos"), where("Item #", "==", val));
+                const snap = await getDocs(q);
+                
+                if(snap.empty) {
+                    alert("❌ No se encontró el Item. Verifica el número.");
+                    resetForm();
+                    return;
+                }
+                
+                const d = snap.docs[0];
+                currentId = d.id;
+                const data = d.data();
+                itemActual = data["Item #"];
+                
+                // Mostrar información del item
+                document.getElementById('item-info').style.display = 'block';
+                document.getElementById('current-item').textContent = itemActual;
+                
+                // Mostrar estado
+                const currentStatus = data["PPAP overall status"] || "Sin estado";
+                const statusElement = document.getElementById('current-status');
+                statusElement.textContent = currentStatus;
+                
+                // Aplicar color según estado
+                statusElement.className = "status-badge ";
+                if (currentStatus.toLowerCase().includes("aprobado") || currentStatus.toLowerCase().includes("approved")) {
+                    statusElement.classList.add("status-approved");
+                } else if (currentStatus.toLowerCase().includes("pendiente") || currentStatus.toLowerCase().includes("pending")) {
+                    statusElement.classList.add("status-pending");
+                } else if (currentStatus.toLowerCase().includes("rechazado") || currentStatus.toLowerCase().includes("rejected")) {
+                    statusElement.classList.add("status-rejected");
+                } else {
+                    statusElement.classList.add("status-inprogress");
+                }
+                
+                // Buscar última actualización
+                try {
+                    const historyQuery = query(
+                        collection(db, "movimientos"),
+                        where("detalle", "==", `Item: ${itemActual}`),
+                        orderBy("fecha", "desc"),
+                        limit(1)
+                    );
+                    const historySnap = await getDocs(historyQuery);
+                    if (!historySnap.empty) {
+                        const lastUpdate = historySnap.docs[0].data();
+                        const lastDate = lastUpdate.fecha ? 
+                            new Date(lastUpdate.fecha.seconds * 1000).toLocaleDateString() : 
+                            "Fecha desconocida";
+                        document.getElementById('last-update').textContent = lastDate;
+                    }
+                } catch (historyError) {
+                    console.log("No se pudo obtener historial:", historyError);
+                }
+                
+                // Generar campos de solo lectura
+                const container = document.getElementById('fields-container');
+                container.innerHTML = '';
+                
+                camposLectura.forEach(campo => {
+                    const div = document.createElement('div');
+                    div.className = 'field-group';
+                    
+                    div.innerHTML = `
+                        <label>${campo}</label>
+                        <div class="readonly-field">${data[campo] || 'N/A'}</div>
+                    `;
+                    
+                    container.appendChild(div);
+                });
+                
+                // Agregar campo editable para Comments
+                const commentsDiv = document.createElement('div');
+                commentsDiv.className = 'field-group comments-field';
+                commentsDiv.innerHTML = `
+                    <label>${campoEditable} (EDITABLE)</label>
+                    <textarea id="editable-comments" placeholder="Ingrese comentarios aquí...">${data[campoEditable] || ''}</textarea>
+                `;
+                
+                container.appendChild(commentsDiv);
+                container.style.display = 'grid';
+                document.getElementById('action-buttons').style.display = 'flex';
+                
+            } catch(error) {
+                console.error("Error al buscar:", error);
+                alert("Error al conectar con la base de datos.");
+            } finally {
+                btnBuscar.innerHTML = "🔍 BUSCAR ITEM";
+                btnBuscar.disabled = false;
+            }
+        };
+        
+        // Función para resetear formulario
+        function resetForm() {
+            document.getElementById('fields-container').innerHTML = '';
+            document.getElementById('fields-container').style.display = 'none';
+            document.getElementById('action-buttons').style.display = 'none';
+            document.getElementById('item-info').style.display = 'none';
+            currentId = null;
+            itemActual = null;
+        }
+        
+        // Cancelar edición
+        document.getElementById('btnCancelar').onclick = resetForm;
+        
+        // GUARDAR COMENTARIOS
+        document.getElementById('btnGuardarComentario').onclick = async () => {
+            if (!currentId) {
+                alert("Primero busca un registro para editar");
+                return;
+            }
+            
+            const nuevoComentario = document.getElementById('editable-comments').value.trim();
+            
+            if (!nuevoComentario) {
+                if (!confirm("¿Deseas dejar el campo de comentarios vacío?")) {
+                    return;
+                }
+            }
+            
+            if (!confirm("¿Estás seguro de actualizar los comentarios? Los cambios se guardarán en el historial.")) {
+                return;
+            }
+            
+            const btnGuardar = document.getElementById('btnGuardarComentario');
+            btnGuardar.innerHTML = "⏳ GUARDANDO...";
+            btnGuardar.disabled = true;
+            
+            try {
+                // Actualizar solo el campo Comments
+                await setDoc(doc(db, "productos", currentId), {
+                    [campoEditable]: nuevoComentario
+                }, { merge: true });
+                
+                // Registrar en historial
+                await addDoc(collection(db, "movimientos"), {
+                    usuario: user.usuario,
+                    accion: "Edición de Comentarios",
+                    detalle: `Item: ${itemActual}`,
+                    comentario: nuevoComentario.substring(0, 100) + (nuevoComentario.length > 100 ? "..." : ""),
+                    fecha: serverTimestamp()
+                });
+                
+                alert("✅ Comentarios actualizados con éxito");
+                // Recargar los datos para ver los cambios
+                document.getElementById('btnBuscar').click();
+            } catch(e) { 
+                console.error("Error al actualizar:", e);
+                alert("❌ Error al actualizar en la base de datos"); 
+            } finally {
+                btnGuardar.innerHTML = "💾 GUARDAR COMENTARIOS";
+                btnGuardar.disabled = false;
+            }
+        };
+        
+        // Permitir buscar con Enter
+        document.getElementById('searchItem').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('btnBuscar').click();
+            }
+        });
+        
+        // Enfocar en el campo de búsqueda al cargar
+        window.addEventListener('load', function() {
+            document.getElementById('searchItem').focus();
+        });
+    </script>
+</body>
+</html>
