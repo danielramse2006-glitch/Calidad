@@ -103,31 +103,71 @@
                 </label>
                 <input type="text" id="ins-${c}" 
                        placeholder="Enter ${camposUI[index] || c}" 
-                       style="width:100%; padding:8px; box-sizing:border-box; border:1px solid #ddd; border-radius:4px;">
+                       style="width:100%; padding:8px; box-sizing:border-box; border:1px solid #ddd; border-radius:4px;"
+                       ${c === "Item #" || c === "PPAP Part Number" ? 'class="required-field"' : ''}>
             `;
             container.appendChild(div);
         });
 
         document.getElementById('btnGuardar').onclick = async () => {
             const data = {};
+            let errores = [];
+            
+            // Recoger y validar datos
             camposDB.forEach(c => { 
-                data[c] = document.getElementById(`ins-${c}`).value; 
+                const valor = document.getElementById(`ins-${c}`).value.trim();
+                data[c] = valor;
+                
+                // VALIDACIONES ESPECÍFICAS
+                if (c === "Item #" && !valor) {
+                    errores.push("Item # is required");
+                    document.getElementById(`ins-${c}`).style.borderColor = "#e74c3c";
+                } else if (c === "Item #") {
+                    document.getElementById(`ins-${c}`).style.borderColor = "#ddd";
+                }
+                
+                if (c === "PPAP Part Number") {
+                    if (!valor) {
+                        errores.push("PPAP Part Number is required");
+                        document.getElementById(`ins-${c}`).style.borderColor = "#e74c3c";
+                    } else {
+                        // Validar que no sea un status
+                        const statusValues = ["Pending", "In Process", "Approved", "Rejected", "Completed", "On Hold"];
+                        if (statusValues.includes(valor)) {
+                            errores.push("PPAP Part Number must be a part number (like P-001), not a status");
+                            document.getElementById(`ins-${c}`).style.borderColor = "#e74c3c";
+                        } else {
+                            document.getElementById(`ins-${c}`).style.borderColor = "#ddd";
+                        }
+                    }
+                }
             });
             
+            if (errores.length > 0) {
+                alert("Errors:\n" + errores.join("\n"));
+                return;
+            }
+            
             try {
+                // Guardar producto
                 await addDoc(collection(db, "productos"), data);
-                // LOG REGISTRATION
+                
+                // LOG REGISTRATION - FORMATO MEJORADO PARA BÚSQUEDA
                 await addDoc(collection(db, "movimientos"), {
                     usuario: user.usuario,
                     accion: "New Registration",
-                    detalle: `Item: ${data["Item #"]}`,
-                    fecha: serverTimestamp()
+                    detalle: `Item: ${data["Item #"]} | PPAP: ${data["PPAP Part Number"]} | Desc: ${data["Component Description"] || 'No description'}`,
+                    statusMomento: data["PPAP overall status"] || "Pending",
+                    fecha: serverTimestamp(),
+                    itemId: data["Item #"],
+                    ppapNumber: data["PPAP Part Number"]
                 });
-                alert("Saved successfully.");
+                
+                alert("✅ Saved successfully.");
                 location.href = 'index.html';
             } catch(e) { 
-                console.error(e); 
-                alert("Error saving"); 
+                console.error("Save error:", e);
+                alert("❌ Error saving: " + e.message); 
             }
         };
     </script>
