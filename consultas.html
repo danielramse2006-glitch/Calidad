@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Consultas Históricas - Master Track</title>
+    <title>Historical Queries - Master Track</title>
     <link rel="stylesheet" href="style.css">
     <style>
         * {
@@ -45,7 +45,7 @@
             flex-direction: column;
         }
         
-        /* TABLA MUY COMPACTA */
+        /* VERY COMPACT TABLE */
         .table-container {
             flex: 1;
             overflow-y: auto;
@@ -63,7 +63,7 @@
             min-width: 280px;
         }
         
-        /* ENCABEZADOS MUY DELGADOS */
+        /* VERY THIN HEADERS */
         .history-table th { 
             background: linear-gradient(to bottom, #003366, #004c8c) !important; 
             color: white; 
@@ -84,7 +84,7 @@
             border-right: none;
         }
         
-        /* CELDAS MUY DELGADAS */
+        /* VERY THIN CELLS */
         .history-table td { 
             padding: 2px 1px !important; 
             border-bottom: 1px solid #eee; 
@@ -102,21 +102,21 @@
             border-right: none;
         }
         
-        /* ANCHOS MUY ESTRECHOS */
+        /* VERY NARROW WIDTHS */
         .history-table th:nth-child(1), 
         .history-table td:nth-child(1) { 
             width: 70px !important; 
-        } /* Fecha/Hora */
+        } /* Date/Time */
         
         .history-table th:nth-child(2), 
         .history-table td:nth-child(2) { 
             width: 35px !important; 
-        } /* Usuario */
+        } /* User */
         
         .history-table th:nth-child(3), 
         .history-table td:nth-child(3) { 
             width: 45px !important; 
-        } /* Acción */
+        } /* Action */
         
         .history-table th:nth-child(4), 
         .history-table td:nth-child(4) { 
@@ -126,14 +126,14 @@
         .history-table th:nth-child(5), 
         .history-table td:nth-child(5) { 
             width: 55px !important; 
-        } /* Estado PPAP */
+        } /* Status */
         
         .history-table th:nth-child(6), 
         .history-table td:nth-child(6) { 
             width: 30px !important; 
-        } /* Imagen */
+        } /* IMG */
         
-        /* Total: 70+35+45+30+55+30 = 265px (MUY COMPACTO) */
+        /* Total: 70+35+45+30+55+30 = 265px (VERY COMPACT) */
         
         .image-viewer { 
             background: #f9f9f9; 
@@ -147,7 +147,7 @@
             flex-direction: column;
         }
         
-        /* BOTÓN VIEW MUY PEQUEÑO */
+        /* VERY SMALL VIEW BUTTON */
         .btn-view { 
             background: #3498db; 
             color: white; 
@@ -163,7 +163,7 @@
             margin: 0 auto;
         }
         
-        /* BADGES MUY PEQUEÑOS */
+        /* VERY SMALL BADGES */
         .status-badge {
             padding: 1px 2px !important;
             border-radius: 1px;
@@ -222,7 +222,7 @@
             font-size: 8px;
         }
         
-        /* MODAL PARA IMAGEN GRANDE */
+        /* MODAL FOR FULL IMAGE */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -324,7 +324,7 @@
             word-break: break-all;
         }
         
-        /* VISTA PREVIA */
+        /* PREVIEW */
         .image-preview-container {
             flex: 1;
             border: 1px solid #ddd; 
@@ -381,7 +381,7 @@
             color: #2c3e50;
         }
         
-        /* SCROLLBAR MUY DELGADA */
+        /* VERY THIN SCROLLBAR */
         .table-container::-webkit-scrollbar {
             width: 3px;
             height: 3px;
@@ -396,7 +396,7 @@
             background: #f1f1f1;
         }
         
-        /* INPUTS PEQUEÑOS */
+        /* SMALL INPUTS */
         input, button {
             font-size: 10px !important;
         }
@@ -425,7 +425,7 @@
             }
         }
         
-        /* FORZAR COMPACIDAD */
+        /* FORCE COMPACTNESS */
         .history-table * {
             max-height: 20px !important;
         }
@@ -437,7 +437,7 @@
     </style>
 </head>
 <body class="bg-blue">
-    <!-- HEADER CORPORATIVO -->
+    <!-- CORPORATE HEADER -->
     <div class="corporate-header">
         <div class="company-logo" onclick="location.href='index.html'" style="cursor:pointer;">
             <div class="logo-container">
@@ -450,42 +450,42 @@
         </div>
         
         <div class="user-header-info">
-            <div id="current-user-display" class="user-name">👤 Cargando...</div>
+            <div id="current-user-display" class="user-name">👤 Loading...</div>
             <div id="current-date" class="current-date"></div>
         </div>
     </div>
 
-    <header><h1>Consultas Históricas</h1></header>
+    <header><h1>Historical Queries</h1></header>
 
     <div style="padding: 8px; max-width: 800px; margin: auto;">
         <div class="search-box">
             <input type="text" id="inputSearch" placeholder="Item #..." style="flex:1; padding:5px; border:1px solid #ccc; border-radius:2px;">
-            <button id="btnConsultar" style="padding:5px 8px; background:#2c3e50; color:white; border:none; border-radius:2px; cursor:pointer; font-weight:bold;">BUSCAR</button>
-            <button onclick="location.href='index.html'" style="padding:5px; background:#95a5a6; color:white; border:none; border-radius:2px; cursor:pointer;">VOLVER</button>
+            <button id="btnConsultar" style="padding:5px 8px; background:#2c3e50; color:white; border:none; border-radius:2px; cursor:pointer; font-weight:bold;">SEARCH</button>
+            <button onclick="location.href='index.html'" style="padding:5px; background:#95a5a6; color:white; border:none; border-radius:2px; cursor:pointer;">BACK</button>
         </div>
 
         <div id="content-view" class="main-grid" style="display:none;">
             <div class="card">
                 <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <h3>📋 Historial</h3>
-                    <span id="item-counter" class="record-count">0 registros</span>
+                    <h3>📋 History</h3>
+                    <span id="item-counter" class="record-count">0 records</span>
                 </div>
                 <div class="table-container">
                     <table class="history-table">
                         <thead>
                             <tr>
-                                <th>Fecha/Hora</th>
-                                <th>Usuario</th>
-                                <th>Acción</th>
+                                <th>Date/Time</th>
+                                <th>User</th>
+                                <th>Action</th>
                                 <th>Item #</th>
-                                <th>Estado</th>
+                                <th>Status</th>
                                 <th>IMG</th>
                             </tr>
                         </thead>
                         <tbody id="historial-body">
                             <tr>
                                 <td colspan="6" class="empty-state">
-                                    <p>Ingrese Item # y haga clic en BUSCAR</p>
+                                    <p>Enter Item # and click SEARCH</p>
                                 </td>
                             </tr>
                         </tbody>
@@ -494,61 +494,61 @@
             </div>
 
             <div class="image-viewer">
-                <h3 id="img-caption">Vista Previa</h3>
+                <h3 id="img-caption">Preview</h3>
                 <div class="image-preview-container">
                     <img id="drive-preview" src="imagenes/sin_foto.jpg" class="image-preview">
                 </div>
                 <div id="image-info">
-                    <p class="compact-label"><strong>Archivo:</strong> <span id="image-filename" class="compact-value">N/A</span></p>
-                    <p class="compact-label"><strong>Fecha:</strong> <span id="image-date" class="compact-value">N/A</span></p>
+                    <p class="compact-label"><strong>File:</strong> <span id="image-filename" class="compact-value">N/A</span></p>
+                    <p class="compact-label"><strong>Date:</strong> <span id="image-date" class="compact-value">N/A</span></p>
                 </div>
-                <p class="compact-label" style="margin-top: 4px; text-align: center;">Click VIEW para imagen completa</p>
+                <p class="compact-label" style="margin-top: 4px; text-align: center;">Click VIEW for full image</p>
             </div>
         </div>
     </div>
 
-    <!-- Modal para imagen grande -->
+    <!-- Modal for full image -->
     <div id="imageModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Imagen Completa</h3>
+                <h3>Full Image</h3>
                 <button class="close-btn" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body">
-                <img id="modal-image" src="" class="modal-image" alt="Imagen completa">
+                <img id="modal-image" src="" class="modal-image" alt="Full image">
                 <div id="image-filename-modal"></div>
             </div>
             <div class="modal-footer">
-                <button class="btn-modal btn-download" onclick="downloadImage()">📥 DESCARGAR</button>
-                <button class="btn-modal btn-close" onclick="closeModal()">CERRAR</button>
+                <button class="btn-modal btn-download" onclick="downloadImage()">📥 DOWNLOAD</button>
+                <button class="btn-modal btn-close" onclick="closeModal()">CLOSE</button>
             </div>
         </div>
     </div>
 
-    <!-- FOOTER CORPORATIVO -->
+    <!-- CORPORATE FOOTER -->
     <div class="corporate-footer">
-        <strong>SMP Engine Management, S. de R.L. de C.V</strong> | Sistema PPAP Master Track v2.0<br>
-        <span style="font-size: 11px;">© 2024 - Todos los derechos reservados</span>
+        <strong>SMP Engine Management, S. de R.L. de C.V</strong> | PPAP Master Track System v2.0<br>
+        <span style="font-size: 11px;">© 2024 - All rights reserved</span>
     </div>
 
     <script type="module">
         import { db, checkAuth, redirectIfNoPermission } from './config.js';
         import { collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Mostrar fecha actual
+        // Show current date
         const now = new Date();
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('current-date').textContent = now.toLocaleDateString('es-MX', options);
+        document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
         
-        // Mostrar usuario actual
+        // Show current user
         const user = checkAuth();
         if(user) {
             document.getElementById('current-user-display').textContent = `👤 ${user.usuario}`;
         }
 
-        // Verificar permiso de consultar
+        // Verify query permission
         if (!redirectIfNoPermission('consultar')) {
-            // Ya redirige automáticamente
+            // Already redirects automatically
         }
         
         const scriptURL = "https://script.google.com/macros/s/AKfycbz-zqhnPq-ZCVv1miDE8lF6WkKfTrw4KMj2ikRm8ZYkncyOpSG0VAqEkbfbnThTIdmb/exec";
@@ -559,17 +559,17 @@
         document.getElementById('btnConsultar').onclick = async () => {
             const itemBusqueda = document.getElementById('inputSearch').value.trim();
             if(!itemBusqueda) {
-                alert("Por favor ingresa un Item #");
+                alert("Please enter an Item #");
                 return;
             }
 
             const tbody = document.getElementById('historial-body');
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:10px; font-size:9px;"><div style="display:inline-block; padding:6px; background:#f8f9fa; border-radius:3px;">🔍 Buscando...</div></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:10px; font-size:9px;"><div style="display:inline-block; padding:6px; background:#f8f9fa; border-radius:3px;">🔍 Searching...</div></td></tr>';
             
             document.getElementById('content-view').style.display = 'grid';
 
             try {
-                // Buscar todos los movimientos
+                // Search all movements
                 const q = query(
                     collection(db, "movimientos"), 
                     orderBy("fecha", "desc")
@@ -581,15 +581,15 @@
                     tbody.innerHTML = `
                         <tr>
                             <td colspan="6" class="empty-state">
-                                <p>No hay movimientos registrados</p>
+                                <p>No movements registered</p>
                             </td>
                         </tr>
                     `;
-                    document.getElementById('item-counter').textContent = "0 registros";
+                    document.getElementById('item-counter').textContent = "0 records";
                     return;
                 }
 
-                // Filtrar movimientos que contengan el item buscado
+                // Filter movements containing the searched item
                 const movimientosFiltrados = [];
                 snap.forEach(doc => {
                     const m = doc.data();
@@ -607,35 +607,35 @@
                     }
                 });
 
-                // Actualizar contador
-                document.getElementById('item-counter').textContent = `${movimientosFiltrados.length} registros`;
+                // Update counter
+                document.getElementById('item-counter').textContent = `${movimientosFiltrados.length} records`;
 
                 if(movimientosFiltrados.length === 0) {
                     tbody.innerHTML = `
                         <tr>
                             <td colspan="6" class="empty-state">
-                                <p>No hay movimientos para el Item: <strong>${itemBusqueda}</strong></p>
+                                <p>No movements for Item: <strong>${itemBusqueda}</strong></p>
                             </td>
                         </tr>
                     `;
                     return;
                 }
 
-                // Ordenar por fecha (más reciente primero)
+                // Sort by date (most recent first)
                 movimientosFiltrados.sort((a, b) => {
                     const fechaA = a.fecha ? a.fecha.seconds : 0;
                     const fechaB = b.fecha ? b.fecha.seconds : 0;
                     return fechaB - fechaA;
                 });
 
-                // Mostrar resultados
+                // Show results
                 tbody.innerHTML = '';
                 const maxRecords = Math.min(movimientosFiltrados.length, 150);
                 
                 for(let i = 0; i < maxRecords; i++) {
                     const m = movimientosFiltrados[i];
                     const fechaFull = m.fecha ? new Date(m.fecha.seconds * 1000) : new Date();
-                    const fechaStr = fechaFull.toLocaleDateString('es-ES', {
+                    const fechaStr = fechaFull.toLocaleDateString('en-US', {
                         day: '2-digit',
                         month: '2-digit',
                         year: '2-digit',
@@ -643,42 +643,42 @@
                         minute: '2-digit'
                     });
                     
-                    // Extraer fecha para nombre de imagen
+                    // Extract date for image name
                     const isoFecha = fechaFull.toISOString().split('T')[0];
                     const nombreArchivoVersion = `${itemBusqueda}_${isoFecha}`;
                     
-                    // Determinar estado PPAP
+                    // Determine PPAP status
                     const statusPPAP = m.statusMomento || m.accion || 'N/A';
                     const statusDisplay = statusPPAP.length > 8 ? statusPPAP.substring(0, 7) + '..' : statusPPAP;
                     
-                    // Determinar clase de estado
+                    // Determine status class
                     let statusClass = 'status-na';
                     const statusLower = statusPPAP.toLowerCase();
-                    if (statusLower.includes('aprob') || statusLower.includes('complete')) {
+                    if (statusLower.includes('approved') || statusLower.includes('complete')) {
                         statusClass = 'status-approved';
-                    } else if (statusLower.includes('pend') || statusLower.includes('process')) {
+                    } else if (statusLower.includes('pending') || statusLower.includes('process')) {
                         statusClass = 'status-pending';
-                    } else if (statusLower.includes('rech') || statusLower.includes('fail')) {
+                    } else if (statusLower.includes('rejected') || statusLower.includes('fail')) {
                         statusClass = 'status-rejected';
                     }
                     
-                    // Determinar clase de acción
+                    // Determine action class
                     let actionClass = 'action-update';
                     const accion = m.accion || '';
                     const accionLower = accion.toLowerCase();
                     const accionDisplay = accion.length > 6 ? accion.substring(0, 5) + '..' : accion;
                     
-                    if (accionLower.includes('imagen') || accionLower.includes('foto')) {
+                    if (accionLower.includes('image') || accionLower.includes('photo')) {
                         actionClass = 'action-image';
-                    } else if (accionLower.includes('elimin')) {
+                    } else if (accionLower.includes('delete') || accionLower.includes('elimin')) {
                         actionClass = 'action-delete';
-                    } else if (accionLower.includes('inicio') || accionLower.includes('login')) {
+                    } else if (accionLower.includes('login') || accionLower.includes('inicio')) {
                         actionClass = 'action-login';
-                    } else if (accionLower.includes('registro') || accionLower.includes('crear') || accionLower.includes('nuevo')) {
+                    } else if (accionLower.includes('register') || accionLower.includes('create') || accionLower.includes('new')) {
                         actionClass = 'action-create';
                     }
                     
-                    const usuario = m.usuario || 'Desconocido';
+                    const usuario = m.usuario || 'Unknown';
                     const usuarioDisplay = usuario.length > 5 ? usuario.substring(0, 4) + '..' : usuario;
                     
                     tbody.innerHTML += `
@@ -689,7 +689,7 @@
                             <td><span class="item-highlight">${itemBusqueda}</span></td>
                             <td><span class="status-badge ${statusClass}" title="${statusPPAP}">${statusDisplay}</span></td>
                             <td>
-                                <button class="btn-view" onclick="verImagen('${nombreArchivoVersion}', '${isoFecha}')" title="Ver imagen">
+                                <button class="btn-view" onclick="verImagen('${nombreArchivoVersion}', '${isoFecha}')" title="View image">
                                     VIEW
                                 </button>
                             </td>
@@ -701,33 +701,33 @@
                     tbody.innerHTML += `
                         <tr>
                             <td colspan="6" style="text-align:center; padding:3px; font-size:7px; color:#7f8c8d;">
-                                Mostrando 150 de ${movimientosFiltrados.length} registros
+                                Showing 150 of ${movimientosFiltrados.length} records
                             </td>
                         </tr>
                     `;
                 }
 
             } catch(error) {
-                console.error("Error en consulta:", error);
+                console.error("Error in query:", error);
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="6" style="text-align:center; color:#e74c3c; padding:10px; font-size:9px;">
-                            Error al consultar.
+                            Error querying.
                         </td>
                     </tr>
                 `;
             }
         };
 
-        // Función para ver imagen en modal
+        // Function to view image in modal
         window.verImagen = async (nombreImg, fecha) => {
             const modal = document.getElementById('imageModal');
             const modalImage = document.getElementById('modal-image');
             const filenameEl = document.getElementById('image-filename-modal');
             
-            // Mostrar loading en modal
+            // Show loading in modal
             modalImage.src = "";
-            filenameEl.innerHTML = `Cargando: ${nombreImg}.jpg...`;
+            filenameEl.innerHTML = `Loading: ${nombreImg}.jpg...`;
             modal.style.display = 'flex';
             
             try {
@@ -735,38 +735,38 @@
                 const data = await res.json();
                 
                 if(data.result === "success" && data.id) {
-                    // Guardar URL para descarga
+                    // Save URL for download
                     currentImageUrl = `https://drive.google.com/uc?export=download&id=${data.id}`;
                     currentImageFilename = `${nombreImg}.jpg`;
                     
-                    // Mostrar imagen en modal
+                    // Show image in modal
                     modalImage.src = `https://lh3.googleusercontent.com/d/${data.id}`;
-                    filenameEl.innerHTML = `<strong>Archivo:</strong> ${nombreImg}.jpg<br>
-                                           <strong>Fecha:</strong> ${fecha}`;
+                    filenameEl.innerHTML = `<strong>File:</strong> ${nombreImg}.jpg<br>
+                                           <strong>Date:</strong> ${fecha}`;
                 } else {
                     modalImage.src = "imagenes/sin_foto.jpg";
-                    filenameEl.innerHTML = "Sin imagen";
+                    filenameEl.innerHTML = "No image";
                     currentImageUrl = '';
                     currentImageFilename = '';
                 }
             } catch(e) {
                 console.error("Error Drive:", e);
                 modalImage.src = "imagenes/sin_foto.jpg";
-                filenameEl.innerHTML = "Error al cargar";
+                filenameEl.innerHTML = "Error loading";
                 currentImageUrl = '';
                 currentImageFilename = '';
             }
         };
 
-        // Función para cerrar modal
+        // Function to close modal
         window.closeModal = function() {
             document.getElementById('imageModal').style.display = 'none';
         };
 
-        // Función para descargar imagen
+        // Function to download image
         window.downloadImage = function() {
             if(currentImageUrl && currentImageFilename) {
-                // Crear enlace temporal para descarga
+                // Create temporary link for download
                 const link = document.createElement('a');
                 link.href = currentImageUrl;
                 link.download = currentImageFilename;
@@ -774,32 +774,32 @@
                 link.click();
                 document.body.removeChild(link);
             } else {
-                alert("No hay imagen para descargar");
+                alert("No image to download");
             }
         };
 
-        // Cerrar modal con ESC
+        // Close modal with ESC
         document.addEventListener('keydown', function(e) {
             if(e.key === 'Escape') {
                 closeModal();
             }
         });
 
-        // Cerrar modal al hacer clic fuera
+        // Close modal when clicking outside
         document.getElementById('imageModal').addEventListener('click', function(e) {
             if(e.target === this) {
                 closeModal();
             }
         });
 
-        // Permitir buscar con Enter
+        // Allow search with Enter
         document.getElementById('inputSearch').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 document.getElementById('btnConsultar').click();
             }
         });
 
-        // Mostrar ayuda inicial
+        // Show initial help
         window.addEventListener('load', function() {
             document.getElementById('content-view').style.display = 'grid';
         });

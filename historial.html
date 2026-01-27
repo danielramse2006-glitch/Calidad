@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
-    <meta charset="UTF-8"><title>Log de Movimientos - PPAP</title>
+    <meta charset="UTF-8"><title>Activity Log - PPAP</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Estilos específicos para la tabla de historial */
         .log-table { width:100%; min-width:700px; border-collapse: collapse; }
         .log-table th { background:linear-gradient(to bottom, #003366, #004c8c) !important; color:white; padding:12px; border:1px solid #ddd; }
         .log-table td { padding:10px; border:1px solid #ddd; font-size:13px; }
@@ -19,7 +18,7 @@
     </style>
 </head>
 <body class="bg-blue">
-    <!-- HEADER CORPORATIVO -->
+    <!-- CORPORATE HEADER -->
     <div class="corporate-header">
         <div class="company-logo" onclick="location.href='index.html'" style="cursor:pointer;">
             <div class="logo-container">
@@ -32,59 +31,59 @@
         </div>
         
         <div class="user-header-info">
-            <div id="current-user-display" class="user-name">👤 Cargando...</div>
+            <div id="current-user-display" class="user-name">👤 Loading...</div>
             <div id="current-date" class="current-date"></div>
         </div>
     </div>
 
-    <header><h1>Historial de Actividad del Sistema</h1></header>
+    <header><h1>System Activity Log</h1></header>
 
     <div class="main-container" style="flex-direction: column; align-items: center; padding: 20px;">
         <button onclick="location.href='index.html'" style="margin-bottom:20px; padding:10px 20px; cursor:pointer; border-radius:8px; border:none; background:#3498db; color:white; font-weight:bold;">
-            VOLVER AL INICIO
+            BACK TO HOME
         </button>
 
         <div style="background:white; padding:20px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); width:100%; max-width:950px; overflow-x:auto;">
             <table class="log-table">
                 <thead>
                     <tr>
-                        <th>FECHA Y HORA</th>
-                        <th>USUARIO</th>
-                        <th>ACCIÓN</th>
-                        <th>DETALLE / ITEM</th>
+                        <th>DATE AND TIME</th>
+                        <th>USER</th>
+                        <th>ACTION</th>
+                        <th>DETAIL / ITEM</th>
                     </tr>
                 </thead>
                 <tbody id="lista-movimientos" style="text-align:center;">
-                    <tr><td colspan="4">Cargando movimientos...</td></tr>
+                    <tr><td colspan="4">Loading activities...</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- FOOTER CORPORATIVO -->
+    <!-- CORPORATE FOOTER -->
     <div class="corporate-footer">
-        <strong>SMP Engine Management, S. de R.L. de C.V</strong> | Sistema PPAP Master Track v2.0<br>
-        <span style="font-size: 11px;">© 2024 - Todos los derechos reservados</span>
+        <strong>SMP Engine Management, S. de R.L. de C.V</strong> | PPAP Master Track System v2.0<br>
+        <span style="font-size: 11px;">© 2024 - All rights reserved</span>
     </div>
 
     <script type="module">
         import { db, checkAuth } from './config.js';
         import { collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Mostrar fecha actual
+        // Show current date
         const now = new Date();
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('current-date').textContent = now.toLocaleDateString('es-MX', options);
+        document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
         
-        // Mostrar usuario actual
+        // Show current user
         const user = checkAuth();
         if(user) {
             document.getElementById('current-user-display').textContent = `👤 ${user.usuario}`;
         }
 
-        // Solo el admin puede ver esto
+        // Only admin can see this
         if(!user || user.usuario !== 'admin') {
-            alert("Acceso denegado");
+            alert("Access denied");
             window.location.href = "index.html";
         }
 
@@ -94,7 +93,7 @@
         onSnapshot(q, (snap) => {
             tbody.innerHTML = '';
             if(snap.empty) {
-                tbody.innerHTML = '<tr><td colspan="4">No hay registros aún.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4">No records yet.</td></tr>';
                 return;
             }
 
@@ -102,14 +101,14 @@
                 const m = doc.data();
                 const f = m.fecha ? new Date(m.fecha.seconds * 1000).toLocaleString() : '---';
                 
-                // Asignar color según acción
+                // Assign color based on action
                 let badgeClass = 'bg-usr';
                 const act = (m.accion || '').toLowerCase();
-                if(act.includes('inicio')) badgeClass = 'bg-login';
-                else if(act.includes('registro') || act.includes('nuevo')) badgeClass = 'bg-reg';
-                else if(act.includes('actualiz')) badgeClass = 'bg-upd';
-                else if(act.includes('elimin')) badgeClass = 'bg-del';
-                else if(act.includes('imagen') || act.includes('foto')) badgeClass = 'bg-img';
+                if(act.includes('login') || act.includes('inicio')) badgeClass = 'bg-login';
+                else if(act.includes('register') || act.includes('registro') || act.includes('new')) badgeClass = 'bg-reg';
+                else if(act.includes('update') || act.includes('actualiz')) badgeClass = 'bg-upd';
+                else if(act.includes('delete') || act.includes('elimin')) badgeClass = 'bg-del';
+                else if(act.includes('image') || act.includes('foto')) badgeClass = 'bg-img';
 
                 tbody.innerHTML += `
                     <tr>

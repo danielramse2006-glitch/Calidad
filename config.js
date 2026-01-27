@@ -1,4 +1,3 @@
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -15,26 +14,26 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 
-// FUNCIÓN DE SEGURIDAD OBLIGATORIA
+// MANDATORY SECURITY FUNCTION
 export function checkAuth() {
     const sesion = sessionStorage.getItem("currentUser");
     if (!sesion) { 
-        // Si no hay sesión, redirigir al login y detener todo
+        // If no session, redirect to login and stop everything
         window.location.href = "login.html"; 
         return null; 
     }
     return JSON.parse(sesion);
 }
 
-// SISTEMA DE PERMISOS MEJORADO
+// IMPROVED PERMISSIONS SYSTEM
 export function checkPermission(action) {
     const user = checkAuth();
     if (!user) return false;
     
-    // Admin tiene todos los permisos
+    // Admin has all permissions
     if (user.usuario === 'admin') return true;
     
-    // Verificar permisos específicos
+    // Verify specific permissions
     if (user.permisos && user.permisos[action]) {
         return true;
     }
@@ -42,10 +41,10 @@ export function checkPermission(action) {
     return false;
 }
 
-// REDIRIGIR SI NO TIENE PERMISO
+// REDIRECT IF NO PERMISSION
 export function redirectIfNoPermission(action) {
     if (!checkPermission(action)) {
-        alert("No tienes permiso para acceder a esta función");
+        alert("You don't have permission to access this function");
         window.location.href = "index.html";
         return false;
     }

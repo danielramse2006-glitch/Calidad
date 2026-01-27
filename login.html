@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8"><title>Login - PPAP Master Track</title>
     <link rel="stylesheet" href="style.css">
@@ -103,10 +103,10 @@
         </div>
         
         <div class="login-box">
-            <h2>INICIAR SESIÓN</h2>
-            <input type="text" id="user" placeholder="Usuario">
-            <input type="password" id="pass" placeholder="Contraseña">
-            <button id="btnLogin">ENTRAR AL SISTEMA</button>
+            <h2>LOGIN</h2>
+            <input type="text" id="user" placeholder="Username">
+            <input type="password" id="pass" placeholder="Password">
+            <button id="btnLogin">ENTER SYSTEM</button>
         </div>
         
         <div class="company-name">
@@ -125,15 +125,15 @@
             const u = document.getElementById('user').value.trim();
             const p = document.getElementById('pass').value.trim();
 
-            if (!u || !p) return alert("Ingresa datos");
+            if (!u || !p) return alert("Enter data");
 
-            // Función interna para registrar log de login
+            // Internal function to log login
             const logLogin = async (usuario) => {
                 try {
                     await addDoc(collection(db, "movimientos"), {
                         usuario: usuario,
-                        accion: "Inicio de Sesión",
-                        detalle: "Acceso Exitoso",
+                        accion: "Login",
+                        detalle: "Successful Access",
                         fecha: serverTimestamp()
                     });
                 } catch(e) { console.error("Error log login", e); }
@@ -165,22 +165,22 @@
                     await logLogin(userData.usuario);
                     window.location.href = "index.html";
                 } else {
-                    alert("Usuario o contraseña incorrectos");
+                    alert("Incorrect username or password");
                 }
             } catch (e) {
                 console.error(e);
-                alert("Error de conexión");
+                alert("Connection error");
             }
         };
         
-        // Permitir login con Enter
+        // Allow login with Enter
         document.getElementById('pass').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 document.getElementById('btnLogin').click();
             }
         });
         
-        // Enfocar en el campo de usuario al cargar
+        // Focus on username field on load
         window.addEventListener('load', function() {
             document.getElementById('user').focus();
         });

@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Editar Comentarios - Master Track</title>
+    <title>Edit Comments - Master Track</title>
     <link rel="stylesheet" href="style.css">
     <style>
         .bg-blue { background-color: #f0f7ff; min-height: 100vh; }
@@ -147,7 +147,7 @@
     </style>
 </head>
 <body class="bg-blue">
-    <!-- HEADER CORPORATIVO -->
+    <!-- CORPORATE HEADER -->
     <div class="corporate-header">
         <div class="company-logo" onclick="location.href='index.html'" style="cursor:pointer;">
             <div class="logo-container">
@@ -160,24 +160,24 @@
         </div>
         
         <div class="user-header-info">
-            <div id="current-user-display" class="user-name">👤 Cargando...</div>
+            <div id="current-user-display" class="user-name">👤 Loading...</div>
             <div id="current-date" class="current-date"></div>
         </div>
     </div>
 
-    <header><h1>✏️ Editar Comentarios - Solo Lectura/Edición Limitada</h1></header>
+    <header><h1>✏️ Edit Comments - Read Only/Limited Edition</h1></header>
     
     <div class="main-container">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="color: #2c3e50; margin: 0;">Editar Comentarios del Item</h2>
+            <h2 style="color: #2c3e50; margin: 0;">Edit Item Comments</h2>
             <button onclick="location.href='index.html'" style="padding: 10px 20px; background: #95a5a6; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                ← VOLVER
+                ← BACK
             </button>
         </div>
         
         <div class="search-section">
-            <input type="text" id="searchItem" placeholder="Ingrese Item # para buscar (ej: 15)">
-            <button id="btnBuscar">🔍 BUSCAR ITEM</button>
+            <input type="text" id="searchItem" placeholder="Enter Item # to search (ex: 15)">
+            <button id="btnBuscar">🔍 SEARCH ITEM</button>
         </div>
         
         <div id="item-info" class="item-info">
@@ -187,84 +187,93 @@
                         Item: <span id="current-item" style="font-weight: bold;"></span>
                     </h3>
                     <p style="margin: 0; font-size: 13px; color: #666;">
-                        Estado PPAP: <span id="current-status" class="status-badge status-pending"></span>
+                        PPAP Status: <span id="current-status" class="status-badge status-pending"></span>
                     </p>
                 </div>
                 <div style="font-size: 11px; color: #95a5a6;">
-                    Última actualización: <span id="last-update"></span>
+                    Last update: <span id="last-update"></span>
                 </div>
             </div>
         </div>
         
         <div id="fields-container" class="fields-container">
-            <!-- Los campos se generan dinámicamente aquí -->
+            <!-- Fields generated dynamically here -->
         </div>
         
         <div id="action-buttons" class="action-buttons">
-            <button id="btnGuardarComentario">💾 GUARDAR COMENTARIOS</button>
-            <button id="btnCancelar">CANCELAR</button>
+            <button id="btnGuardarComentario">💾 SAVE COMMENTS</button>
+            <button id="btnCancelar">CANCEL</button>
         </div>
         
         <div style="margin-top: 30px; padding: 15px; background: #f0f7ff; border-radius: 8px; border-left: 4px solid #3498db;">
-            <h4 style="margin: 0 0 10px 0; color: #3498db;">⚠️ Notas importantes:</h4>
+            <h4 style="margin: 0 0 10px 0; color: #3498db;">⚠️ Important notes:</h4>
             <ul style="margin: 0; padding-left: 20px; font-size: 12px; color: #555;">
-                <li>Solo el campo <strong>"Comments"</strong> es editable en esta vista</li>
-                <li>Los demás campos son de solo lectura para referencia</li>
-                <li>Los cambios se registrarán en el historial con tu usuario</li>
-                <li>Esta función requiere permiso especial "editarComentarios"</li>
+                <li>Only the <strong>"Comments(detalle)"</strong> field is editable in this view</li>
+                <li>Other fields are read-only for reference</li>
+                <li>Changes will be recorded in history with your user</li>
+                <li>This function requires special "editarComentarios" permission</li>
             </ul>
         </div>
     </div>
 
-    <!-- FOOTER CORPORATIVO -->
+    <!-- CORPORATE FOOTER -->
     <div class="corporate-footer">
-        <strong>SMP Engine Management, S. de R.L. de C.V</strong> | Sistema PPAP Master Track v2.0<br>
-        <span style="font-size: 11px;">© 2024 - Todos los derechos reservados</span>
+        <strong>SMP Engine Management, S. de R.L. de C.V</strong> | PPAP Master Track System v2.0<br>
+        <span style="font-size: 11px;">© 2024 - All rights reserved</span>
     </div>
 
     <script type="module">
         import { db, checkAuth, redirectIfNoPermission } from './config.js';
         import { collection, query, where, getDocs, doc, setDoc, addDoc, serverTimestamp, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Mostrar fecha actual
+        // Show current date
         const now = new Date();
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('current-date').textContent = now.toLocaleDateString('es-MX', options);
+        document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
         
-        // Mostrar usuario actual
+        // Show current user
         const user = checkAuth();
         if(user) {
             document.getElementById('current-user-display').textContent = `👤 ${user.usuario}`;
         }
 
-        // Verificar permiso
+        // Verify permission
         if (!redirectIfNoPermission('editarComentarios')) {
-            // Ya redirige automáticamente
+            // Already redirects automatically
         }
         
         let currentId = null;
         let itemActual = null;
         
-        // Campos básicos para mostrar (solo lectura)
-        const camposLectura = [
+        // DB FIELDS (read only)
+        const camposDB = [
             "Item #", "Estatus", "Programador", "PPAP Part Number", 
-            "Component Description", "Razon para el cambio", "Target Date",
+            "Component Description", "Razon de Cambio", "Fecha de Programacion",
             "PPAP overall status"
         ];
         
-        // Campo editable
-        const campoEditable = "Comments";
+        // NEW NAMES FOR UI
+        const camposUI = [
+            "Item #", "Estatus", "Programmer", "PPAP Part Number", 
+            "Component description", "Reason for Change", "Validation date",
+            "PPAP overall status"
+        ];
         
-        // BUSCAR ITEM
+        // Editable field (DB original)
+        const campoEditableDB = "Comments";
+        // Display name for editable field
+        const campoEditableUI = "Comments(detalle)";
+        
+        // SEARCH ITEM
         document.getElementById('btnBuscar').onclick = async () => {
             const val = document.getElementById('searchItem').value.trim();
             if(!val) {
-                alert("Por favor ingresa un número de Item");
+                alert("Please enter an Item number");
                 return;
             }
             
             const btnBuscar = document.getElementById('btnBuscar');
-            btnBuscar.innerHTML = "🔍 BUSCANDO...";
+            btnBuscar.innerHTML = "🔍 SEARCHING...";
             btnBuscar.disabled = true;
             
             try {
@@ -272,7 +281,7 @@
                 const snap = await getDocs(q);
                 
                 if(snap.empty) {
-                    alert("❌ No se encontró el Item. Verifica el número.");
+                    alert("❌ Item not found. Check the number.");
                     resetForm();
                     return;
                 }
@@ -282,28 +291,28 @@
                 const data = d.data();
                 itemActual = data["Item #"];
                 
-                // Mostrar información del item
+                // Show item information
                 document.getElementById('item-info').style.display = 'block';
                 document.getElementById('current-item').textContent = itemActual;
                 
-                // Mostrar estado
-                const currentStatus = data["PPAP overall status"] || "Sin estado";
+                // Show status
+                const currentStatus = data["PPAP overall status"] || "No status";
                 const statusElement = document.getElementById('current-status');
                 statusElement.textContent = currentStatus;
                 
-                // Aplicar color según estado
+                // Apply color based on status
                 statusElement.className = "status-badge ";
-                if (currentStatus.toLowerCase().includes("aprobado") || currentStatus.toLowerCase().includes("approved")) {
+                if (currentStatus.toLowerCase().includes("approved") || currentStatus.toLowerCase().includes("aprobado")) {
                     statusElement.classList.add("status-approved");
-                } else if (currentStatus.toLowerCase().includes("pendiente") || currentStatus.toLowerCase().includes("pending")) {
+                } else if (currentStatus.toLowerCase().includes("pending") || currentStatus.toLowerCase().includes("pendiente")) {
                     statusElement.classList.add("status-pending");
-                } else if (currentStatus.toLowerCase().includes("rechazado") || currentStatus.toLowerCase().includes("rejected")) {
+                } else if (currentStatus.toLowerCase().includes("rejected") || currentStatus.toLowerCase().includes("rechazado")) {
                     statusElement.classList.add("status-rejected");
                 } else {
                     statusElement.classList.add("status-inprogress");
                 }
                 
-                // Buscar última actualización
+                // Find last update
                 try {
                     const historyQuery = query(
                         collection(db, "movimientos"),
@@ -316,35 +325,36 @@
                         const lastUpdate = historySnap.docs[0].data();
                         const lastDate = lastUpdate.fecha ? 
                             new Date(lastUpdate.fecha.seconds * 1000).toLocaleDateString() : 
-                            "Fecha desconocida";
+                            "Unknown date";
                         document.getElementById('last-update').textContent = lastDate;
                     }
                 } catch (historyError) {
-                    console.log("No se pudo obtener historial:", historyError);
+                    console.log("Could not get history:", historyError);
                 }
                 
-                // Generar campos de solo lectura
+                // Generate read-only fields
                 const container = document.getElementById('fields-container');
                 container.innerHTML = '';
                 
-                camposLectura.forEach(campo => {
+                camposDB.forEach((campoDB, index) => {
+                    const campoUI = camposUI[index] || campoDB;
                     const div = document.createElement('div');
                     div.className = 'field-group';
                     
                     div.innerHTML = `
-                        <label>${campo}</label>
-                        <div class="readonly-field">${data[campo] || 'N/A'}</div>
+                        <label>${campoUI}</label>
+                        <div class="readonly-field">${data[campoDB] || 'N/A'}</div>
                     `;
                     
                     container.appendChild(div);
                 });
                 
-                // Agregar campo editable para Comments
+                // Add editable field for Comments
                 const commentsDiv = document.createElement('div');
                 commentsDiv.className = 'field-group comments-field';
                 commentsDiv.innerHTML = `
-                    <label>${campoEditable} (EDITABLE)</label>
-                    <textarea id="editable-comments" placeholder="Ingrese comentarios aquí...">${data[campoEditable] || ''}</textarea>
+                    <label>${campoEditableUI} (EDITABLE)</label>
+                    <textarea id="editable-comments" placeholder="Enter comments here...">${data[campoEditableDB] || ''}</textarea>
                 `;
                 
                 container.appendChild(commentsDiv);
@@ -352,15 +362,15 @@
                 document.getElementById('action-buttons').style.display = 'flex';
                 
             } catch(error) {
-                console.error("Error al buscar:", error);
-                alert("Error al conectar con la base de datos.");
+                console.error("Error searching:", error);
+                alert("Error connecting to database.");
             } finally {
-                btnBuscar.innerHTML = "🔍 BUSCAR ITEM";
+                btnBuscar.innerHTML = "🔍 SEARCH ITEM";
                 btnBuscar.disabled = false;
             }
         };
         
-        // Función para resetear formulario
+        // Function to reset form
         function resetForm() {
             document.getElementById('fields-container').innerHTML = '';
             document.getElementById('fields-container').style.display = 'none';
@@ -370,67 +380,67 @@
             itemActual = null;
         }
         
-        // Cancelar edición
+        // Cancel edit
         document.getElementById('btnCancelar').onclick = resetForm;
         
-        // GUARDAR COMENTARIOS
+        // SAVE COMMENTS
         document.getElementById('btnGuardarComentario').onclick = async () => {
             if (!currentId) {
-                alert("Primero busca un registro para editar");
+                alert("First search for a record to edit");
                 return;
             }
             
             const nuevoComentario = document.getElementById('editable-comments').value.trim();
             
             if (!nuevoComentario) {
-                if (!confirm("¿Deseas dejar el campo de comentarios vacío?")) {
+                if (!confirm("Do you want to leave the comments field empty?")) {
                     return;
                 }
             }
             
-            if (!confirm("¿Estás seguro de actualizar los comentarios? Los cambios se guardarán en el historial.")) {
+            if (!confirm("Are you sure you want to update the comments? Changes will be saved in history.")) {
                 return;
             }
             
             const btnGuardar = document.getElementById('btnGuardarComentario');
-            btnGuardar.innerHTML = "⏳ GUARDANDO...";
+            btnGuardar.innerHTML = "⏳ SAVING...";
             btnGuardar.disabled = true;
             
             try {
-                // Actualizar solo el campo Comments
+                // Update only the Comments field (using original DB name)
                 await setDoc(doc(db, "productos", currentId), {
-                    [campoEditable]: nuevoComentario
+                    [campoEditableDB]: nuevoComentario
                 }, { merge: true });
                 
-                // Registrar en historial
+                // Record in history
                 await addDoc(collection(db, "movimientos"), {
                     usuario: user.usuario,
-                    accion: "Edición de Comentarios",
+                    accion: "Comments Edit",
                     detalle: `Item: ${itemActual}`,
                     comentario: nuevoComentario.substring(0, 100) + (nuevoComentario.length > 100 ? "..." : ""),
                     fecha: serverTimestamp()
                 });
                 
-                alert("✅ Comentarios actualizados con éxito");
-                // Recargar los datos para ver los cambios
+                alert("✅ Comments updated successfully");
+                // Reload data to see changes
                 document.getElementById('btnBuscar').click();
             } catch(e) { 
-                console.error("Error al actualizar:", e);
-                alert("❌ Error al actualizar en la base de datos"); 
+                console.error("Error updating:", e);
+                alert("❌ Error updating in database"); 
             } finally {
-                btnGuardar.innerHTML = "💾 GUARDAR COMENTARIOS";
+                btnGuardar.innerHTML = "💾 SAVE COMMENTS";
                 btnGuardar.disabled = false;
             }
         };
         
-        // Permitir buscar con Enter
+        // Allow search with Enter
         document.getElementById('searchItem').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 document.getElementById('btnBuscar').click();
             }
         });
         
-        // Enfocar en el campo de búsqueda al cargar
+        // Focus on search field on load
         window.addEventListener('load', function() {
             document.getElementById('searchItem').focus();
         });

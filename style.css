@@ -1,4 +1,4 @@
-/* --- LOGO CORPORATIVO --- */
+/* --- CORPORATE LOGO --- */
 .corporate-header {
     display: flex;
     justify-content: space-between;
@@ -50,7 +50,7 @@
     display: block;
 }
 
-/* --- CONFIGURACIÓN GENERAL --- */
+/* --- GENERAL CONFIGURATION --- */
 body { 
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
     margin: 0; padding: 0; 
@@ -79,13 +79,13 @@ header h1 {
 }
 
 .bg-blue { 
-    background-color: #f0f7ff !important; /* Fondo azul muy claro */
+    background-color: #f0f7ff !important; /* Very light blue background */
     background-image: linear-gradient(to bottom, #f0f7ff, #ffffff);
     color: #333; 
     min-height: 100vh; 
 }
 
-/* --- DISEÑO DE CONTENEDORES --- */
+/* --- CONTAINER DESIGN --- */
 .main-container { display: flex; padding: 20px; gap: 20px; max-width: 1400px; margin: 0 auto; }
 
 .side-menu { display: flex; flex-direction: column; gap: 12px; width: 220px; flex-shrink: 0; }
@@ -110,9 +110,9 @@ header h1 {
     box-shadow: 0 5px 12px rgba(0,51,102,0.3);
 }
 
-/* Estilo específico para el botón de Historial */
+/* Specific style for History button */
 #btnHistorial {
-    background: linear-gradient(to right, #6a11cb, #2575fc) !important; /* Morado */
+    background: linear-gradient(to right, #6a11cb, #2575fc) !important; /* Purple */
     border-left: 4px solid #ff9900 !important;
     color: white !important;
 }
@@ -120,7 +120,7 @@ header h1 {
     background: linear-gradient(to right, #5a0cb5, #1c67e8) !important;
 }
 
-/* --- CUADRO DE CONTENIDO --- */
+/* --- CONTENT BOX --- */
 .content { 
     flex: 1; 
     background: white; 
@@ -131,7 +131,7 @@ header h1 {
     border: 1px solid #e1ecff;
 }
 
-/* --- TABLA CON SCROLL --- */
+/* --- TABLE WITH SCROLL --- */
 .table-wrapper { 
     overflow-x: auto; 
     overflow-y: auto; 
@@ -145,7 +145,7 @@ header h1 {
 
 table { width: 100%; min-width: 7000px; border-collapse: collapse; }
 
-/* Para la tabla de historial (más pequeña) */
+/* For history table (smaller) */
 .log-table { min-width: 800px !important; }
 
 th { 
@@ -163,11 +163,11 @@ th {
 
 td { border: 1px solid #ddd; padding: 10px; color: #333 !important; font-size: 13px; }
 
-/* Efecto de clic en filas */
+/* Click effect on rows */
 tr { cursor: pointer; transition: background 0.2s; }
 tr:hover { background: #f2f2f2; }
 
-/* --- BADGES PARA EL HISTORIAL --- */
+/* --- BADGES FOR HISTORY --- */
 .badge { 
     padding: 4px 8px; 
     border-radius: 4px; 
@@ -183,7 +183,7 @@ tr:hover { background: #f2f2f2; }
 .bg-img { background: linear-gradient(135deg, #6a11cb, #2575fc); }
 .bg-usr { background: linear-gradient(135deg, #667eea, #764ba2); }
 
-/* --- BOTONES VARIOS --- */
+/* --- VARIOUS BUTTONS --- */
 .btn-report-row { 
     background: linear-gradient(135deg, #0099cc, #006699);
     color: white; 
@@ -210,7 +210,7 @@ tr:hover { background: #f2f2f2; }
 }
 .btn-action:hover { background: #e0e0e0; }
 
-/* Inputs generales */
+/* General inputs */
 input, select, textarea { 
     padding: 11px; 
     border: 1px solid #ccc; 
@@ -221,7 +221,7 @@ input, select, textarea {
 }
 input:focus { outline: none; border-color: #3498db; }
 
-/* Footer corporativo */
+/* Corporate footer */
 .corporate-footer {
     text-align: center;
     padding: 15px;
@@ -235,7 +235,7 @@ input:focus { outline: none; border-color: #3498db; }
     color: #003366;
 }
 
-/* Información de usuario en header */
+/* User information in header */
 .user-header-info {
     text-align: right;
     color: white;
@@ -252,7 +252,7 @@ input:focus { outline: none; border-color: #3498db; }
     opacity: 0.9;
 }
 
-/* Permisos en side menu */
+/* Permissions in side menu */
 .permission-badge {
     font-size: 9px;
     background: #27ae60;
