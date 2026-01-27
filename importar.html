@@ -2,225 +2,173 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Import Excel - PPAP Master Track</title>
+    <title>Data Import - PPAP Master Track</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        .upload-area {
-            border: 3px dashed #3498db;
-            border-radius: 15px;
+        .import-container {
+            max-width: 900px;
+            margin: 20px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,51,102,0.1);
+        }
+        
+        .import-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e1ecff;
+        }
+        
+        .import-header h2 {
+            color: #003366;
+            margin-bottom: 10px;
+        }
+        
+        .import-header p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        .file-upload-area {
+            border: 3px dashed #0099cc;
+            border-radius: 10px;
             padding: 40px;
             text-align: center;
-            background: #f8f9fa;
+            background: #f8fbff;
+            margin-bottom: 20px;
             cursor: pointer;
             transition: all 0.3s;
-            margin: 20px 0;
-            min-height: 200px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
         }
         
-        .upload-area:hover {
-            background: #e3f2fd;
-            border-color: #2980b9;
+        .file-upload-area:hover {
+            background: #f0f7ff;
+            border-color: #0056a9;
         }
         
-        .upload-area.drag-over {
-            background: #d4edda;
-            border-color: #27ae60;
-        }
-        
-        .upload-icon {
-            font-size: 60px;
-            color: #3498db;
-            margin-bottom: 15px;
-        }
-        
-        .file-list {
-            margin-top: 20px;
-            background: white;
-            border-radius: 8px;
-            padding: 15px;
-            border: 1px solid #ddd;
-        }
-        
-        .file-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .file-item:last-child {
-            border-bottom: none;
+        .file-upload-area.dragover {
+            background: #e8f4ff;
+            border-color: #003366;
         }
         
         .file-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .file-size {
-            font-size: 12px;
-            color: #7f8c8d;
-        }
-        
-        .progress-container {
-            margin-top: 20px;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
+            background: #f0f7ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
             display: none;
         }
         
+        .progress-container {
+            display: none;
+            margin: 20px 0;
+        }
+        
         .progress-bar {
-            height: 20px;
-            background: #e0e0e0;
-            border-radius: 10px;
+            width: 100%;
+            height: 30px;
+            background: #ecf0f1;
+            border-radius: 15px;
             overflow: hidden;
             margin-bottom: 10px;
         }
         
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #27ae60, #2ecc71);
+            background: linear-gradient(to right, #27ae60, #2ecc71);
             width: 0%;
             transition: width 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 12px;
             font-weight: bold;
-        }
-        
-        .status-message {
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-            font-size: 14px;
-        }
-        
-        .status-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .status-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .status-info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-        
-        .preview-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
             font-size: 12px;
-            max-height: 300px;
-            overflow-y: auto;
-            display: block;
         }
         
-        .preview-table th {
+        .log-area {
             background: #2c3e50;
-            color: white;
-            padding: 8px;
-            position: sticky;
-            top: 0;
-        }
-        
-        .preview-table td {
-            padding: 6px;
-            border: 1px solid #ddd;
-        }
-        
-        .preview-container {
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
             max-height: 300px;
             overflow-y: auto;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.6;
             display: none;
         }
         
-        .step-indicator {
+        .log-area .success { color: #2ecc71; }
+        .log-area .error { color: #e74c3c; }
+        .log-area .warning { color: #f39c12; }
+        .log-area .info { color: #3498db; }
+        
+        .mapping-preview {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .mapping-item {
             display: flex;
             justify-content: space-between;
-            margin: 20px 0;
-            position: relative;
+            padding: 5px 0;
+            font-size: 11px;
+            border-bottom: 1px solid #eee;
         }
         
-        .step {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-            z-index: 2;
-            flex: 1;
+        .mapping-item:last-child {
+            border-bottom: none;
         }
         
-        .step-circle {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #e0e0e0;
-            color: #7f8c8d;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            margin-bottom: 10px;
-            border: 3px solid white;
-        }
-        
-        .step.active .step-circle {
-            background: #3498db;
+        .btn-import {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
             color: white;
-        }
-        
-        .step.completed .step-circle {
-            background: #27ae60;
-            color: white;
-        }
-        
-        .step-label {
-            font-size: 12px;
-            text-align: center;
-            color: #7f8c8d;
-        }
-        
-        .step.active .step-label {
-            color: #3498db;
+            border: none;
+            border-radius: 8px;
             font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
         }
         
-        .step-line {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            right: 20px;
-            height: 3px;
-            background: #e0e0e0;
-            z-index: 1;
+        .btn-import:hover {
+            background: linear-gradient(135deg, #229954, #27ae60);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
         }
         
-        .step-line-fill {
-            height: 100%;
-            background: #27ae60;
-            width: 0%;
-            transition: width 0.3s;
+        .btn-import:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .warning-box h4 {
+            color: #856404;
+            margin-top: 0;
+        }
+        
+        .warning-box ul {
+            margin: 10px 0;
+            padding-left: 20px;
         }
     </style>
 </head>
@@ -243,164 +191,61 @@
         </div>
     </div>
 
-    <header><h1>Import Excel Data</h1></header>
-    
-    <div class="main-container" style="flex-direction: column; align-items: center; padding: 20px;">
-        <button onclick="location.href='index.html'" style="margin-bottom:20px; padding:10px 20px; cursor:pointer; border-radius:8px; border:none; background:#95a5a6; color:white; font-weight:bold;">
-            ← BACK TO HOME
-        </button>
-        
-        <div style="background:white; padding:30px; border-radius:10px; width:100%; max-width:800px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
-            <h2 style="color: #2c3e50; text-align: center; margin-bottom: 20px;">📊 Import Excel to Database</h2>
-            
-            <!-- Step Indicator -->
-            <div class="step-indicator">
-                <div class="step active" id="step1">
-                    <div class="step-circle">1</div>
-                    <div class="step-label">Upload File</div>
-                </div>
-                <div class="step" id="step2">
-                    <div class="step-circle">2</div>
-                    <div class="step-label">Preview Data</div>
-                </div>
-                <div class="step" id="step3">
-                    <div class="step-circle">3</div>
-                    <div class="step-label">Import</div>
-                </div>
-                <div class="step-line">
-                    <div class="step-line-fill" id="step-progress"></div>
-                </div>
+    <header><h1>Bulk Data Import</h1></header>
+
+    <div class="import-container">
+        <div class="import-header">
+            <h2>📦 Import JSON Data to Firebase</h2>
+            <p>Upload your JSON file to import PPAP records in bulk</p>
+        </div>
+
+        <div class="warning-box">
+            <h4>⚠️ Important Notes:</h4>
+            <ul>
+                <li>Only JSON files (.json) are accepted</li>
+                <li>Data will be mapped according to the field mapping configuration</li>
+                <li>Each import will be logged in the activity history</li>
+                <li>Duplicates (by Item #) will be skipped</li>
+                <li>Only admin users can perform bulk imports</li>
+            </ul>
+        </div>
+
+        <div class="file-upload-area" id="dropArea">
+            <div style="font-size: 48px; margin-bottom: 10px;">📄</div>
+            <h3 style="color: #003366; margin: 10px 0;">Drop JSON file here</h3>
+            <p style="color: #7f8c8d;">or click to select</p>
+            <input type="file" id="fileInput" accept=".json" style="display: none;">
+        </div>
+
+        <div class="file-info" id="fileInfo">
+            <strong>File loaded:</strong> <span id="fileName"></span><br>
+            <strong>Records found:</strong> <span id="recordCount">0</span>
+        </div>
+
+        <div class="mapping-preview" id="mappingPreview">
+            <h4 style="margin-top: 0; color: #003366;">📋 Field Mapping Preview:</h4>
+            <div id="mappingList"></div>
+        </div>
+
+        <div class="progress-container" id="progressContainer">
+            <h4 style="color: #003366;">Import Progress:</h4>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill">0%</div>
             </div>
-            
-            <!-- Step 1: Upload -->
-            <div id="step1-content">
-                <div class="upload-area" id="dropArea">
-                    <div class="upload-icon">📁</div>
-                    <h3 style="color: #2c3e50; margin-bottom: 10px;">Drop Excel file here or click to browse</h3>
-                    <p style="color: #7f8c8d; margin-bottom: 20px;">Supports .xlsx, .xls, .csv files</p>
-                    <button id="browseBtn" style="padding: 10px 25px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
-                        Browse Files
-                    </button>
-                    <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display: none;">
-                </div>
-                
-                <div class="file-list" id="fileList" style="display: none;">
-                    <h4 style="color: #2c3e50; margin-bottom: 15px;">Selected File:</h4>
-                    <div class="file-item">
-                        <div class="file-info">
-                            <span style="font-size: 20px;">📊</span>
-                            <div>
-                                <strong id="fileName"></strong>
-                                <div class="file-size" id="fileSize"></div>
-                            </div>
-                        </div>
-                        <button id="removeFile" style="background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">
-                            Remove
-                        </button>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 20px; text-align: center;">
-                    <button id="nextStep1" style="padding: 12px 30px; background: #3498db; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; display: none;">
-                        Continue to Preview →
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Step 2: Preview -->
-            <div id="step2-content" style="display: none;">
-                <h3 style="color: #2c3e50; margin-bottom: 15px;">Data Preview (First 10 rows)</h3>
-                <div id="previewContainer" class="preview-container">
-                    <table class="preview-table" id="previewTable">
-                        <thead></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-                
-                <div id="previewStats" style="margin: 15px 0; padding: 15px; background: #f8f9fa; border-radius: 5px; display: none;">
-                    <p><strong>File:</strong> <span id="statsFileName"></span></p>
-                    <p><strong>Total Rows:</strong> <span id="statsRowCount"></span></p>
-                    <p><strong>Columns:</strong> <span id="statsColCount"></span></p>
-                    <p><strong>Sheet:</strong> <span id="statsSheetName"></span></p>
-                </div>
-                
-                <div style="display: flex; gap: 10px; margin-top: 20px; justify-content: center;">
-                    <button id="prevStep2" style="padding: 12px 25px; background: #95a5a6; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
-                        ← Back
-                    </button>
-                    <button id="nextStep2" style="padding: 12px 25px; background: #3498db; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
-                        Continue to Import →
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Step 3: Import -->
-            <div id="step3-content" style="display: none;">
-                <h3 style="color: #2c3e50; margin-bottom: 15px;">Import Configuration</h3>
-                
-                <div style="background: #f0f7ff; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                        <div>
-                            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #2c3e50;">Collection Name:</label>
-                            <input type="text" id="collectionName" value="productos" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;" readonly>
-                        </div>
-                        <div>
-                            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #2c3e50;">Batch Size:</label>
-                            <select id="batchSize" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
-                                <option value="100">100 records per batch</option>
-                                <option value="200" selected>200 records per batch</option>
-                                <option value="400">400 records per batch</option>
-                                <option value="500">500 records (max)</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                            <input type="checkbox" id="skipDuplicates" checked>
-                            <span>Skip duplicate records (based on Item #)</span>
-                        </label>
-                    </div>
-                    
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                            <input type="checkbox" id="logImport" checked>
-                            <span>Log import activity in history</span>
-                        </label>
-                    </div>
-                </div>
-                
-                <div class="progress-container" id="progressContainer">
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progressFill">0%</div>
-                    </div>
-                    <div id="progressText" style="text-align: center; font-size: 14px; color: #2c3e50;">Preparing import...</div>
-                    <div id="progressDetails" style="text-align: center; font-size: 12px; color: #7f8c8d; margin-top: 5px;"></div>
-                    
-                    <div id="statusMessages"></div>
-                </div>
-                
-                <div style="display: flex; gap: 10px; margin-top: 20px; justify-content: center;">
-                    <button id="prevStep3" style="padding: 12px 25px; background: #95a5a6; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
-                        ← Back
-                    </button>
-                    <button id="startImport" style="padding: 12px 25px; background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
-                        🚀 Start Import
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Import Summary -->
-            <div id="importSummary" style="display: none; margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px; border-left: 5px solid #27ae60;">
-                <h3 style="color: #27ae60; margin-bottom: 15px;">✅ Import Completed Successfully</h3>
-                <div id="summaryContent"></div>
-                <div style="margin-top: 20px; text-align: center;">
-                    <button onclick="location.href='index.html'" style="padding: 12px 25px; background: #3498db; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
-                        View Data in Home
-                    </button>
-                </div>
+            <div style="text-align: center; color: #7f8c8d; font-size: 14px;" id="progressText">
+                Preparing...
             </div>
         </div>
+
+        <div class="log-area" id="logArea"></div>
+
+        <button class="btn-import" id="btnImport" disabled>
+            START IMPORT
+        </button>
+
+        <button onclick="location.href='index.html'" style="width:100%; margin-top:10px; padding:12px; background:#95a5a6; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">
+            BACK TO HOME
+        </button>
     </div>
 
     <!-- CORPORATE FOOTER -->
@@ -411,527 +256,311 @@
 
     <script type="module">
         import { db, checkAuth } from './config.js';
-        import { collection, addDoc, query, where, getDocs, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { collection, addDoc, serverTimestamp, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // Show current date
         const now = new Date();
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
         
-        // Show current user
+        // Check authentication and permissions
         const user = checkAuth();
         if(user) {
             document.getElementById('current-user-display').textContent = `👤 ${user.usuario}`;
         }
 
-        // Only admin can access
+        // Only admin can import
         if(!user || user.usuario !== 'admin') {
-            alert("Access denied. Only administrator can import data.");
+            alert("❌ Access denied. Only administrator can perform bulk imports.");
             window.location.href = "index.html";
         }
 
-        // Variables
-        let excelData = [];
-        let worksheetData = [];
-        let fileObject = null;
-        let columns = [];
-        let currentStep = 1;
+        // FIELD MAPPING - Maps JSON fields to Firebase fields
+        const FIELD_MAPPING = {
+            "Item #": "Item #",
+            "PPAP Part Number": "PPAP Part Number",
+            "Component description ": "Component description",
+            "Reason for Change": "Reason for Change",
+            "Product type": "Product type",
+            "PRP5/Area": "PRP5/Area",
+            "OE/AFTERMARKET": "OE/AFTERMARKET",
+            "documentation": "documentation",
+            "Samples received": "Samples received",
+            "Location ": "Location",
+            "Dimensional": "Dimensional",
+            "Special instruccions": "Special instruccions",
+            "Validation date  ": "Validation date",
+            "Programmer ": "Programmer",
+            "Quality Lead ": "Quality Lead",
+            "Reason ": "Reason",
+            "Comments(detalle)": "Comments(detalle)",
+            "Responsible ": "Responsible",
+            "Estatus": "Estatus",
+            "PPAP type \n\nOE / SM\nAfter Market": "PPAP type OE / SM\nAfter Market",
+            "1\nDesign records": "1 Design records",
+            "2\nECN document": "2\nECN document",
+            "3\nCustomer eng approval": "3\nCustomer eng approval",
+            "4\nDesign FMEA": "4\nDesign FMEA",
+            "5\nProcess Flow Diagram": "5\nProcess Flow Diagram",
+            "6\nPFMEA": "6\nPFMEA",
+            "7\nControl Plan": "7\nControl Plan",
+            "8\nMSA Studies": "8\nMSA Studies",
+            "9\nDimensional results": "9\nDimensional results",
+            "10\nMaterial, performance test result": "10\nMaterial, performance test result",
+            "11\nInitial Process Studies": "11\nInitial Process Studies",
+            "12\nQualify Lab Documentation": "12\nQualify Lab Documentation",
+            "13\nAppereance Approval Report": "13\nAppereance Approval Report",
+            "14\nSample product": "14\nSample product",
+            "15\nChecking Aids": "15\nChecking Aids",
+            "16\nRecord of compliance": "16\nRecord of compliance",
+            "17\nBulk material checklist": "17\nBulk material checklist",
+            "18\nPSW\n(Full or Interim)": "18\nPSW\n(Full or Interim)",
+            "Supplier PPAP package status": "Supplier PPAP package status",
+            "Validation run readiness": "Validation run readiness",
+            "Samples on hand": "Samples on hand",
+            "Dimension status": "Dimension status",
+            "FFF review status": "FFF review status",
+            "AAR review status": "AAR review status",
+            "PPAP overall status": "PPAP overall status"
+        };
 
-        // DOM Elements
+        let jsonData = null;
+        let validRecords = [];
+
+        // Elements
         const dropArea = document.getElementById('dropArea');
         const fileInput = document.getElementById('fileInput');
-        const browseBtn = document.getElementById('browseBtn');
-        const fileList = document.getElementById('fileList');
+        const fileInfo = document.getElementById('fileInfo');
         const fileName = document.getElementById('fileName');
-        const fileSize = document.getElementById('fileSize');
-        const removeFile = document.getElementById('removeFile');
-        const nextStep1 = document.getElementById('nextStep1');
-        
-        const step1Content = document.getElementById('step1-content');
-        const step2Content = document.getElementById('step2-content');
-        const step3Content = document.getElementById('step3-content');
-        
-        const previewContainer = document.getElementById('previewContainer');
-        const previewTable = document.getElementById('previewTable');
-        const previewStats = document.getElementById('previewStats');
-        const statsFileName = document.getElementById('statsFileName');
-        const statsRowCount = document.getElementById('statsRowCount');
-        const statsColCount = document.getElementById('statsColCount');
-        const statsSheetName = document.getElementById('statsSheetName');
-        
-        const prevStep2 = document.getElementById('prevStep2');
-        const nextStep2 = document.getElementById('nextStep2');
-        const prevStep3 = document.getElementById('prevStep3');
-        const startImport = document.getElementById('startImport');
-        
+        const recordCount = document.getElementById('recordCount');
+        const mappingPreview = document.getElementById('mappingPreview');
+        const mappingList = document.getElementById('mappingList');
         const progressContainer = document.getElementById('progressContainer');
         const progressFill = document.getElementById('progressFill');
         const progressText = document.getElementById('progressText');
-        const progressDetails = document.getElementById('progressDetails');
-        const statusMessages = document.getElementById('statusMessages');
-        
-        const importSummary = document.getElementById('importSummary');
-        const summaryContent = document.getElementById('summaryContent');
-        
-        // Step elements
-        const step1 = document.getElementById('step1');
-        const step2 = document.getElementById('step2');
-        const step3 = document.getElementById('step3');
-        const stepProgress = document.getElementById('step-progress');
+        const logArea = document.getElementById('logArea');
+        const btnImport = document.getElementById('btnImport');
 
-        // Step navigation functions
-        function updateStepProgress() {
-            const progress = ((currentStep - 1) / 2) * 100;
-            stepProgress.style.width = `${progress}%`;
+        // Logging function
+        function log(message, type = 'info') {
+            logArea.style.display = 'block';
+            const timestamp = new Date().toLocaleTimeString();
+            const line = document.createElement('div');
+            line.className = type;
+            line.textContent = `[${timestamp}] ${message}`;
+            logArea.appendChild(line);
+            logArea.scrollTop = logArea.scrollHeight;
         }
 
-        function goToStep(step) {
-            currentStep = step;
-            
-            // Update step indicators
-            [step1, step2, step3].forEach((s, index) => {
-                s.classList.remove('active', 'completed');
-                if (index + 1 < step) {
-                    s.classList.add('completed');
-                } else if (index + 1 === step) {
-                    s.classList.add('active');
-                }
-            });
-            
-            // Show/hide content
-            step1Content.style.display = step === 1 ? 'block' : 'none';
-            step2Content.style.display = step === 2 ? 'block' : 'none';
-            step3Content.style.display = step === 3 ? 'block' : 'none';
-            
-            updateStepProgress();
-        }
+        // Drag and drop handlers
+        dropArea.onclick = () => fileInput.click();
 
-        // File upload handlers
-        browseBtn.addEventListener('click', () => fileInput.click());
-
-        fileInput.addEventListener('change', handleFileSelect);
-
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropArea.addEventListener(eventName, preventDefaults, false);
-        });
-
-        function preventDefaults(e) {
+        dropArea.addEventListener('dragover', (e) => {
             e.preventDefault();
-            e.stopPropagation();
-        }
-
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropArea.addEventListener(eventName, highlight, false);
+            dropArea.classList.add('dragover');
         });
 
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropArea.addEventListener(eventName, unhighlight, false);
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.classList.remove('dragover');
         });
 
-        function highlight() {
-            dropArea.classList.add('drag-over');
-        }
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
 
-        function unhighlight() {
-            dropArea.classList.remove('drag-over');
-        }
+        fileInput.onchange = (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        };
 
-        dropArea.addEventListener('drop', handleDrop, false);
-
-        function handleDrop(e) {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            handleFiles(files);
-        }
-
-        function handleFileSelect(e) {
-            const files = e.target.files;
-            handleFiles(files);
-        }
-
-        function handleFiles(files) {
-            if (files.length === 0) return;
-            
-            fileObject = files[0];
-            
-            // Validate file type
-            const validTypes = ['application/vnd.ms-excel', 
-                               'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 
-                               'text/csv',
-                               'application/csv',
-                               'text/x-csv',
-                               'application/x-csv'];
-            
-            if (!validTypes.includes(fileObject.type) && 
-                !fileObject.name.match(/\.(xlsx|xls|csv)$/i)) {
-                alert('Please upload an Excel file (.xlsx, .xls, .csv)');
+        // Handle file upload
+        function handleFile(file) {
+            if (!file.name.endsWith('.json')) {
+                alert('❌ Please select a valid JSON file');
                 return;
             }
-            
-            // Update file info
-            fileName.textContent = fileObject.name;
-            fileSize.textContent = formatFileSize(fileObject.size);
-            fileList.style.display = 'block';
-            nextStep1.style.display = 'inline-block';
-            
-            // Read the file
-            readExcelFile(fileObject);
-        }
 
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
-
-        removeFile.addEventListener('click', () => {
-            fileObject = null;
-            fileInput.value = '';
-            fileList.style.display = 'none';
-            nextStep1.style.display = 'none';
-            excelData = [];
-            worksheetData = [];
-            columns = [];
-        });
-
-        // Read Excel file
-        function readExcelFile(file) {
             const reader = new FileReader();
-            
-            reader.onload = function(e) {
+            reader.onload = (e) => {
                 try {
-                    const data = e.target.result;
-                    const workbook = XLSX.read(data, { type: 'binary' });
+                    jsonData = JSON.parse(e.target.result);
                     
-                    // Get first sheet name
-                    const firstSheetName = workbook.SheetNames[0];
-                    
-                    // Convert sheet to JSON
-                    const worksheet = workbook.Sheets[firstSheetName];
-                    worksheetData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-                    
-                    if (worksheetData.length === 0) {
-                        alert('The Excel file is empty or cannot be read.');
+                    if (!Array.isArray(jsonData)) {
+                        alert('❌ JSON file must contain an array of objects');
                         return;
                     }
-                    
-                    // Extract headers (first row)
-                    columns = worksheetData[0];
-                    
-                    // Convert data rows to objects
-                    excelData = [];
-                    for (let i = 1; i < worksheetData.length; i++) {
-                        const row = worksheetData[i];
-                        const rowObj = {};
-                        
-                        columns.forEach((col, index) => {
-                            if (col && row[index] !== undefined) {
-                                // Clean column names (remove spaces, special chars)
-                                const cleanCol = col.toString().trim()
-                                    .replace(/\n/g, ' ')
-                                    .replace(/\s+/g, ' ')
-                                    .replace(/[^\w\s]/g, '')
-                                    .trim();
-                                
-                                rowObj[cleanCol] = row[index];
-                            }
-                        });
-                        
-                        // Skip empty rows
-                        if (Object.keys(rowObj).length > 0) {
-                            excelData.push(rowObj);
-                        }
-                    }
-                    
-                    // Show preview
-                    showDataPreview();
-                    
+
+                    fileName.textContent = file.name;
+                    recordCount.textContent = jsonData.length;
+                    fileInfo.style.display = 'block';
+
+                    // Show mapping preview
+                    showMappingPreview();
+
+                    // Validate and prepare records
+                    prepareRecords();
+
+                    btnImport.disabled = false;
+                    log(`✅ File loaded: ${file.name} with ${jsonData.length} records`, 'success');
+
                 } catch (error) {
-                    console.error('Error reading Excel file:', error);
-                    alert('Error reading Excel file. Please make sure it is a valid Excel file.');
+                    alert('❌ Error reading JSON file: ' + error.message);
+                    log(`❌ Error: ${error.message}`, 'error');
                 }
             };
-            
-            reader.onerror = function() {
-                alert('Error reading file. Please try again.');
-            };
-            
-            reader.readAsBinaryString(file);
+            reader.readAsText(file);
         }
 
-        // Show data preview
-        function showDataPreview() {
-            if (excelData.length === 0) {
-                alert('No data found in the Excel file.');
-                return;
-            }
-            
-            // Update stats
-            statsFileName.textContent = fileObject.name;
-            statsRowCount.textContent = excelData.length;
-            statsColCount.textContent = columns.length;
-            statsSheetName.textContent = 'First sheet';
-            previewStats.style.display = 'block';
-            
-            // Build preview table (first 10 rows)
-            const thead = previewTable.querySelector('thead');
-            const tbody = previewTable.querySelector('tbody');
-            
-            // Clear existing content
-            thead.innerHTML = '';
-            tbody.innerHTML = '';
-            
-            // Create header
-            const headerRow = document.createElement('tr');
-            columns.forEach(col => {
-                if (col) {
-                    const th = document.createElement('th');
-                    th.textContent = col.toString().substring(0, 20) + (col.toString().length > 20 ? '...' : '');
-                    th.title = col.toString();
-                    headerRow.appendChild(th);
+        // Show mapping preview
+        function showMappingPreview() {
+            mappingPreview.style.display = 'block';
+            mappingList.innerHTML = '';
+
+            const sampleRecord = jsonData[0];
+            const mappedFields = [];
+
+            for (const [jsonField, fbField] of Object.entries(FIELD_MAPPING)) {
+                if (sampleRecord.hasOwnProperty(jsonField)) {
+                    const item = document.createElement('div');
+                    item.className = 'mapping-item';
+                    item.innerHTML = `
+                        <span style="color: #7f8c8d;">${jsonField}</span>
+                        <span style="color: #27ae60;">→ ${fbField}</span>
+                    `;
+                    mappingList.appendChild(item);
+                    mappedFields.push(jsonField);
                 }
-            });
-            thead.appendChild(headerRow);
-            
-            // Create rows (max 10)
-            const previewRows = Math.min(10, excelData.length);
-            for (let i = 0; i < previewRows; i++) {
-                const row = excelData[i];
-                const tr = document.createElement('tr');
-                
-                columns.forEach(col => {
-                    const td = document.createElement('td');
-                    const value = row[col] !== undefined ? row[col].toString() : '';
-                    td.textContent = value.substring(0, 30) + (value.length > 30 ? '...' : '');
-                    td.title = value;
-                    tr.appendChild(td);
-                });
-                
-                tbody.appendChild(tr);
             }
-            
-            previewContainer.style.display = 'block';
+
+            log(`📋 ${mappedFields.length} fields will be mapped`, 'info');
         }
 
-        // Step navigation
-        nextStep1.addEventListener('click', () => {
-            if (excelData.length === 0) {
-                alert('Please upload a valid Excel file first.');
+        // Prepare and validate records
+        function prepareRecords() {
+            validRecords = [];
+            let skipped = 0;
+
+            for (const record of jsonData) {
+                // Check if Item # exists
+                if (!record["Item #"]) {
+                    skipped++;
+                    continue;
+                }
+
+                // Map fields
+                const mappedRecord = {};
+                for (const [jsonField, fbField] of Object.entries(FIELD_MAPPING)) {
+                    if (record.hasOwnProperty(jsonField)) {
+                        // Convert to string and trim if it's a string
+                        let value = record[jsonField];
+                        if (typeof value === 'string') {
+                            value = value.trim();
+                        } else if (typeof value === 'number') {
+                            value = value.toString();
+                        }
+                        mappedRecord[fbField] = value || "";
+                    } else {
+                        mappedRecord[fbField] = "";
+                    }
+                }
+
+                validRecords.push(mappedRecord);
+            }
+
+            if (skipped > 0) {
+                log(`⚠️ ${skipped} records skipped (missing Item #)`, 'warning');
+            }
+
+            log(`✅ ${validRecords.length} valid records ready to import`, 'success');
+        }
+
+        // Check if record already exists
+        async function recordExists(itemNumber) {
+            const q = query(collection(db, "productos"), where("Item #", "==", itemNumber));
+            const snap = await getDocs(q);
+            return !snap.empty;
+        }
+
+        // Import data
+        btnImport.onclick = async () => {
+            if (!validRecords || validRecords.length === 0) {
+                alert('❌ No valid records to import');
                 return;
             }
-            goToStep(2);
-        });
 
-        prevStep2.addEventListener('click', () => goToStep(1));
-        prevStep3.addEventListener('click', () => goToStep(2));
-
-        nextStep2.addEventListener('click', () => {
-            if (excelData.length === 0) {
-                alert('No data to import.');
+            if (!confirm(`⚠️ You are about to import ${validRecords.length} records.\n\nThis action cannot be undone. Continue?`)) {
                 return;
             }
-            goToStep(3);
-        });
 
-        // Start import
-        startImport.addEventListener('click', async () => {
-            if (excelData.length === 0) {
-                alert('No data to import.');
-                return;
-            }
-            
-            // Disable button and show progress
-            startImport.disabled = true;
-            startImport.innerHTML = '⏳ Importing...';
+            btnImport.disabled = true;
             progressContainer.style.display = 'block';
             
-            // Get configuration
-            const collectionName = document.getElementById('collectionName').value;
-            const batchSize = parseInt(document.getElementById('batchSize').value);
-            const skipDuplicates = document.getElementById('skipDuplicates').checked;
-            const logImport = document.getElementById('logImport').checked;
-            
-            try {
-                // Import data
-                const result = await importDataToFirestore(
-                    excelData, 
-                    collectionName, 
-                    batchSize, 
-                    skipDuplicates,
-                    logImport
-                );
-                
-                // Show success message
-                showSuccessSummary(result);
-                
-            } catch (error) {
-                console.error('Import error:', error);
-                addStatusMessage(`❌ Import failed: ${error.message}`, 'error');
-                startImport.disabled = false;
-                startImport.innerHTML = '🚀 Start Import';
-            }
-        });
+            let imported = 0;
+            let skipped = 0;
+            let errors = 0;
 
-        // Import data to Firestore
-        async function importDataToFirestore(data, collectionName, batchSize, skipDuplicates, logImport) {
-            let importedCount = 0;
-            let skippedCount = 0;
-            let errorCount = 0;
-            
-            // Map Excel columns to DB fields if needed
-            const fieldMapping = {
-                // Add field mappings if Excel column names differ from DB field names
-                // Example: 'ExcelColumnName': 'DBFieldName'
-            };
-            
-            // Process in batches
-            const batches = [];
-            for (let i = 0; i < data.length; i += batchSize) {
-                batches.push(data.slice(i, i + batchSize));
-            }
-            
-            for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
-                const batch = batches[batchIndex];
-                const firestoreBatch = writeBatch(db);
-                let batchOperations = 0;
+            log(`🚀 Starting import of ${validRecords.length} records...`, 'info');
+
+            for (let i = 0; i < validRecords.length; i++) {
+                const record = validRecords[i];
+                const progress = Math.round(((i + 1) / validRecords.length) * 100);
                 
-                // Update progress
-                const progress = ((batchIndex + 1) / batches.length) * 100;
-                progressFill.style.width = `${progress}%`;
-                progressFill.textContent = `${Math.round(progress)}%`;
-                progressText.textContent = `Processing batch ${batchIndex + 1} of ${batches.length}`;
-                progressDetails.textContent = `Total: ${importedCount + skippedCount + errorCount} of ${data.length} records`;
-                
-                for (const record of batch) {
-                    try {
-                        // Transform record keys based on mapping
-                        const transformedRecord = {};
-                        Object.keys(record).forEach(key => {
-                            const dbField = fieldMapping[key] || key;
-                            transformedRecord[dbField] = record[key];
-                        });
-                        
-                        // Add metadata
-                        transformedRecord.importDate = serverTimestamp();
-                        transformedRecord.importedBy = user.usuario;
-                        transformedRecord.importSource = fileObject.name;
-                        
-                        // Check for duplicates if enabled
-                        let shouldImport = true;
-                        if (skipDuplicates && transformedRecord['Item #']) {
-                            try {
-                                const q = query(
-                                    collection(db, collectionName),
-                                    where("Item #", "==", transformedRecord['Item #'])
-                                );
-                                const querySnapshot = await getDocs(q);
-                                if (!querySnapshot.empty) {
-                                    shouldImport = false;
-                                    skippedCount++;
-                                }
-                            } catch (queryError) {
-                                console.warn('Duplicate check failed:', queryError);
-                            }
-                        }
-                        
-                        if (shouldImport) {
-                            // Create document reference
-                            const docRef = collection(db, collectionName).doc();
-                            firestoreBatch.set(docRef, transformedRecord);
-                            batchOperations++;
-                            importedCount++;
-                        }
-                        
-                    } catch (recordError) {
-                        console.error('Error processing record:', recordError, record);
-                        errorCount++;
-                        addStatusMessage(`Error in record ${importedCount + skippedCount + errorCount}: ${recordError.message}`, 'error');
-                    }
-                }
-                
-                // Commit batch if there are operations
-                if (batchOperations > 0) {
-                    try {
-                        await firestoreBatch.commit();
-                        addStatusMessage(`✅ Batch ${batchIndex + 1} imported successfully (${batchOperations} records)`, 'success');
-                    } catch (batchError) {
-                        console.error('Batch commit error:', batchError);
-                        errorCount += batchOperations;
-                        addStatusMessage(`❌ Batch ${batchIndex + 1} failed: ${batchError.message}`, 'error');
-                    }
-                }
-                
-                // Small delay to prevent overwhelming Firestore
-                await new Promise(resolve => setTimeout(resolve, 100));
-            }
-            
-            // Log import activity if enabled
-            if (logImport && importedCount > 0) {
+                progressFill.style.width = progress + '%';
+                progressFill.textContent = progress + '%';
+                progressText.textContent = `Processing ${i + 1} of ${validRecords.length}...`;
+
                 try {
+                    // Check if already exists
+                    const exists = await recordExists(record["Item #"]);
+                    
+                    if (exists) {
+                        log(`⚠️ Skipped ${record["Item #"]} - already exists`, 'warning');
+                        skipped++;
+                        continue;
+                    }
+
+                    // Add to Firebase
+                    await addDoc(collection(db, "productos"), record);
+                    
+                    // Log the import
                     await addDoc(collection(db, "movimientos"), {
                         usuario: user.usuario,
-                        accion: "Excel Import",
-                        detalle: `Imported ${importedCount} records from ${fileObject.name}. Skipped: ${skippedCount}, Errors: ${errorCount}`,
+                        accion: "Bulk Import",
+                        detalle: `Item: ${record["Item #"]} | PPAP: ${record["PPAP Part Number"]}`,
                         fecha: serverTimestamp()
                     });
-                } catch (logError) {
-                    console.error('Failed to log import:', logError);
+
+                    imported++;
+                    log(`✅ Imported: ${record["Item #"]} - ${record["PPAP Part Number"]}`, 'success');
+
+                } catch (error) {
+                    errors++;
+                    log(`❌ Error importing ${record["Item #"]}: ${error.message}`, 'error');
                 }
+
+                // Small delay to avoid overwhelming Firebase
+                await new Promise(resolve => setTimeout(resolve, 100));
             }
-            
-            return {
-                total: data.length,
-                imported: importedCount,
-                skipped: skippedCount,
-                errors: errorCount
-            };
-        }
 
-        // Helper functions
-        function addStatusMessage(message, type = 'info') {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `status-message status-${type}`;
-            msgDiv.textContent = message;
-            statusMessages.appendChild(msgDiv);
-            statusMessages.scrollTop = statusMessages.scrollHeight;
-        }
+            // Final summary
+            progressText.textContent = 'Import completed!';
+            log(`\n========================================`, 'info');
+            log(`📊 IMPORT SUMMARY:`, 'info');
+            log(`✅ Successfully imported: ${imported}`, 'success');
+            log(`⚠️ Skipped (duplicates): ${skipped}`, 'warning');
+            log(`❌ Errors: ${errors}`, 'error');
+            log(`========================================\n`, 'info');
 
-        function showSuccessSummary(result) {
-            progressContainer.style.display = 'none';
-            startImport.style.display = 'none';
-            prevStep3.style.display = 'none';
+            alert(`✅ Import completed!\n\n✅ Imported: ${imported}\n⚠️ Skipped: ${skipped}\n❌ Errors: ${errors}`);
             
-            summaryContent.innerHTML = `
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
-                    <div style="background: #d4edda; padding: 15px; border-radius: 8px; text-align: center;">
-                        <div style="font-size: 24px; font-weight: bold; color: #155724;">${result.imported}</div>
-                        <div style="font-size: 14px; color: #155724;">Records Imported</div>
-                    </div>
-                    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; text-align: center;">
-                        <div style="font-size: 24px; font-weight: bold; color: #856404;">${result.skipped}</div>
-                        <div style="font-size: 14px; color: #856404;">Records Skipped</div>
-                    </div>
-                    <div style="background: #f8d7da; padding: 15px; border-radius: 8px; text-align: center;">
-                        <div style="font-size: 24px; font-weight: bold; color: #721c24;">${result.errors}</div>
-                        <div style="font-size: 14px; color: #721c24;">Errors</div>
-                    </div>
-                    <div style="background: #d1ecf1; padding: 15px; border-radius: 8px; text-align: center;">
-                        <div style="font-size: 24px; font-weight: bold; color: #0c5460;">${result.total}</div>
-                        <div style="font-size: 14px; color: #0c5460;">Total Records</div>
-                    </div>
-                </div>
-                <p style="text-align: center; color: #7f8c8d; font-size: 14px;">
-                    Import completed on ${new Date().toLocaleString()}
-                </p>
-            `;
-            
-            importSummary.style.display = 'block';
-        }
-
-        // Initialize
-        goToStep(1);
+            btnImport.textContent = 'IMPORT COMPLETED ✓';
+        };
     </script>
 </body>
 </html>
