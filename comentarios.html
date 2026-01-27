@@ -247,22 +247,28 @@
         
         // DB FIELDS (read only)
         const camposDB = [
-            "Item #", "Estatus", "Programador", "PPAP Part Number", 
-            "Component Description", "Razon de Cambio", "Fecha de Programacion",
+            "Item #",
+            "Estatus",
+            "Programmer", 
+            "PPAP Part Number",
+            "Component description",
+            "Reason for Change",
+            "Validation date",
             "PPAP overall status"
         ];
         
-        // NEW NAMES FOR UI
-        const camposUI = [
-            "Item #", "Estatus", "Programmer", "PPAP Part Number", 
-            "Component description", "Reason for Change", "Validation date",
-            "PPAP overall status"
-        ];
+        // UI NAMES (replace line breaks with spaces for display)
+        const camposUI = camposDB.map(field => field.replace(/\n/g, " "));
         
         // Editable field (DB original)
-        const campoEditableDB = "Comments";
+        const campoEditableDB = "Comments(detalle)";
         // Display name for editable field
         const campoEditableUI = "Comments(detalle)";
+        
+        // Function to create safe ID
+        function createSafeId(fieldName) {
+            return fieldName.replace(/\n/g, "_").replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_]/g, "");
+        }
         
         // SEARCH ITEM
         document.getElementById('btnBuscar').onclick = async () => {
@@ -407,7 +413,7 @@
             btnGuardar.disabled = true;
             
             try {
-                // Update only the Comments field (using original DB name)
+                // Update only the Comments field
                 await setDoc(doc(db, "productos", currentId), {
                     [campoEditableDB]: nuevoComentario
                 }, { merge: true });
