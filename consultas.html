@@ -593,19 +593,67 @@
                 const movimientosFiltrados = [];
                 snap.forEach(doc => {
                     const m = doc.data();
-                    if (m.detalle && m.detalle.includes(itemBusqueda)) {
-                        const itemMatch = m.detalle.match(/Item:\s*(\d+)/i);
-                        const itemNum = itemMatch ? itemMatch[1] : '';
-                        
-                        if (itemNum === itemBusqueda) {
-                            movimientosFiltrados.push({ 
-                                id: doc.id, 
-                                ...m,
-                                itemNum: itemNum
-                            });
+                    const detalle = m.detalle || '';
+                    
+                    // BUSCAR DE MÚLTIPLES FORMAS:
+                    // 1. Buscar directamente el número de ítem en el detalle
+                    // 2. Buscar "Item: X" donde X puede contener números y letras
+                    // 3. Buscar en cualquier parte del detalle
+                    
+                    let encontrado = false;
+                    
+                    // Método 1: Si el detalle contiene el item buscado directamente
+                    if (detalle.includes(itemBusqueda)) {
+                        encontrado = true;
+                    }
+                    
+                    // Método 2: Extraer número de item de formatos comunes
+                    const patrones = [
+                        /Item:\s*([^\s,]+)/i,           // Item: P-001
+                        /Item\s*#?\s*:\s*([^\s,]+)/i,   // Item #: P-001
+                        /PPAP:\s*([^\s,]+)/i,           // PPAP: P-001
+                        /Item\s*([^\s,]+)/i             // Item P-001
+                    ];
+                    
+                    for (const patron of patrones) {
+                        const match = detalle.match(patron);
+                        if (match && match[1] === itemBusqueda) {
+                            encontrado = true;
+                            break;
                         }
                     }
+                    
+                    if (encontrado) {
+                        movimientosFiltrados.push({ 
+                            id: doc.id, 
+                            ...m,
+                            itemNum: itemBusqueda
+                        });
+                    }
                 });
+
+                // Si no hay movimientos, buscar en productos directamente
+                if (movimientosFiltrados.length === 0) {
+                    try {
+                        const qProductos = query(collection(db, "productos"), where("Item #", "==", itemBusqueda));
+                        const snapProductos = await getDocs(qProductos);
+                        
+                        if (!snapProductos.empty) {
+                            const producto = snapProductos.docs[0].data();
+                            // Crear movimiento simulado para mostrar
+                            movimientosFiltrados.push({
+                                id: 'current',
+                                usuario: 'System',
+                                accion: 'Current Status',
+                                detalle: `Item: ${itemBusqueda} - Found in database`,
+                                fecha: { seconds: Math.floor(Date.now() / 1000) },
+                                statusMomento: producto["PPAP overall status"] || 'Unknown'
+                            });
+                        }
+                    } catch (productoError) {
+                        console.log("No se encontró en productos:", productoError);
+                    }
+                }
 
                 // Update counter
                 document.getElementById('item-counter').textContent = `${movimientosFiltrados.length} records`;
