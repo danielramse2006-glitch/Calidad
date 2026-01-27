@@ -37,6 +37,11 @@
             border-radius: 10px;
             margin-left: 5px;
         }
+        
+        .username-validation-error {
+            border-color: #e74c3c !important;
+            background-color: #ffe6e6 !important;
+        }
     </style>
 </head>
 <body class="bg-blue">
@@ -150,7 +155,10 @@
         document.getElementById('btnSave').onclick = async () => {
             const u = document.getElementById('u').value.trim();
             const p = document.getElementById('p').value.trim();
-            if(!u || !p) return alert("Incomplete data.");
+            if(!u || !p) {
+                alert("Incomplete data.");
+                return;
+            }
             
             // Validate not "admin"
             if(u.toLowerCase() === 'admin') {
@@ -158,9 +166,32 @@
                 return;
             }
             
+            // Validar que el usuario no tenga espacios
+            if(u.includes(' ')) {
+                alert("Username cannot contain spaces");
+                document.getElementById('u').classList.add('username-validation-error');
+                return;
+            } else {
+                document.getElementById('u').classList.remove('username-validation-error');
+            }
+            
+            // Validar longitud mínima
+            if(u.length < 3) {
+                alert("Username must be at least 3 characters long");
+                return;
+            }
+            
+            if(p.length < 4) {
+                alert("Password must be at least 4 characters long");
+                return;
+            }
+            
             const q = query(collection(db, "usuarios"), where("usuario", "==", u));
             const snap = await getDocs(q);
-            if(!snap.empty) return alert("User already exists.");
+            if(!snap.empty) {
+                alert("User already exists.");
+                return;
+            }
             
             try {
                 await addDoc(collection(db, "usuarios"), {

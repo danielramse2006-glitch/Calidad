@@ -52,6 +52,14 @@
             font-weight: bold;
             margin-left: 10px;
         }
+        .ppap-validation-ok {
+            border-color: #27ae60 !important;
+            background-color: #f0fff4 !important;
+        }
+        .ppap-validation-error {
+            border-color: #e74c3c !important;
+            background-color: #ffe6e6 !important;
+        }
     </style>
 </head>
 <body class="bg-blue">
@@ -228,7 +236,29 @@
         ];
 
         // Important fields (to highlight)
-        const importantFields = ["Item #", "Estatus", "PPAP overall status", "Target Date", "Recibido"];
+        const importantFields = ["Item #", "Estatus", "PPAP overall status", "PPAP Part Number"];
+
+        // Función para validar PPAP Part Number
+        window.validarPPAPPartNumber = function(input) {
+            const valor = input.value.trim();
+            const statusValues = ["Pending", "In Process", "Approved", "Rejected", "Completed", "On Hold"];
+            
+            if (statusValues.includes(valor)) {
+                input.classList.add("ppap-validation-error");
+                input.classList.remove("ppap-validation-ok");
+                input.title = "⚠️ PPAP Part Number should be a part number (like P-001), not a status";
+                return false;
+            } else if (valor) {
+                input.classList.add("ppap-validation-ok");
+                input.classList.remove("ppap-validation-error");
+                input.title = "✓ Valid part number";
+                return true;
+            } else {
+                input.classList.remove("ppap-validation-ok", "ppap-validation-error");
+                input.title = "";
+                return false;
+            }
+        };
 
         // SEARCH ITEM
         document.getElementById('btnBuscar').onclick = async () => {
@@ -313,7 +343,7 @@
                     
                     // For status fields, use select
                     if (campoDB === "PPAP overall status" || campoDB === "Estatus") {
-                        const options = ["Pending", "In Process", "Approved", "Rejected", "Completed"];
+                        const options = ["Pending", "In Process", "Approved", "Rejected", "Completed", "On Hold"];
                         const currentValue = data[campoDB] || "";
                         
                         div.innerHTML = `
@@ -326,6 +356,19 @@
                                     `<option value="${opt}" ${currentValue === opt ? 'selected' : ''}>${opt}</option>`
                                 ).join('')}
                             </select>
+                        `;
+                    } else if (campoDB === "PPAP Part Number") {
+                        // PPAP Part Number DEBE SER INPUT DE TEXTO, NO SELECT
+                        div.innerHTML = `
+                            <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 5px; color: #2c3e50;">
+                                ${campoUI}${isRequired ? '<span style="color:#e74c3c;"> *</span>' : ''}
+                            </label>
+                            <input type="text" 
+                                   id="upd-${campoDB}" 
+                                   value="${data[campoDB] || ''}" 
+                                   style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px; font-size:13px;"
+                                   placeholder="Example: P-001, 12345-ABC, ABC-2024"
+                                   onkeyup="validarPPAPPartNumber(this)">
                         `;
                     } else {
                         div.innerHTML = `
@@ -347,6 +390,12 @@
                 document.getElementById('action-buttons').style.display = 'block';
                 document.getElementById('btnSubirDrive').style.display = 'block';
 
+                // Validar PPAP Part Number inicialmente
+                const ppapInput = document.getElementById('upd-PPAP Part Number');
+                if (ppapInput) {
+                    validarPPAPPartNumber(ppapInput);
+                }
+
                 // Update image if exists
                 const hoy = new Date().toISOString().split('T')[0];
                 const nombreArchivo = `${itemActual}_${hoy}`;
@@ -356,10 +405,14 @@
                     if(imgData.result === "success" && imgData.id) {
                         document.getElementById('current-img').src = `https://lh3.googleusercontent.com/d/${imgData.id}`;
                         document.getElementById('upload-status').innerHTML = `<span style="color:#27ae60;">✅ Current image found</span>`;
+                    } else {
+                        document.getElementById('current-img').src = "imagenes/sin_foto.jpg";
+                        document.getElementById('upload-status').innerHTML = `<span style="color:#7f8c8d;">No image for today</span>`;
                     }
                 } catch (imgError) {
                     // No image, show default
                     document.getElementById('current-img').src = "imagenes/sin_foto.jpg";
+                    document.getElementById('upload-status').innerHTML = `<span style="color:#7f8c8d;">Error loading image</span>`;
                 }
 
                 // Smooth scroll to form
@@ -478,6 +531,20 @@
                 return;
             }
 
+            // VALIDAR PPAP Part Number
+            const ppapPartNumberInput = document.getElementById('upd-PPAP Part Number');
+            if (ppapPartNumberInput) {
+                const ppapValue = ppapPartNumberInput.value.trim();
+                const statusValues = ["Pending", "In Process", "Approved", "Rejected", "Completed", "On Hold"];
+                
+                if (statusValues.includes(ppapValue)) {
+                    alert("❌ ERROR: 'PPAP Part Number' must be a part number (like P-001, ABC-123), not a status like '" + ppapValue + "'");
+                    ppapPartNumberInput.focus();
+                    ppapPartNumberInput.classList.add("ppap-validation-error");
+                    return;
+                }
+            }
+
             // Validate important fields
             const importantValues = {};
             let hasError = false;
@@ -524,7 +591,7 @@
                 await addDoc(collection(db, "movimientos"), {
                     usuario: user.usuario,
                     accion: "PPAP Update",
-                    detalle: `Item: ${itemActual}`,
+                    detalle: `Item: ${itemActual} | PPAP: ${newData["PPAP Part Number"] || 'No PPAP'}`,
                     statusMomento: newData["PPAP overall status"],
                     fecha: serverTimestamp()
                 });

@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyATai9WFMURB7cSleo1vY8_l6a_VdPmsPo",
@@ -49,4 +49,57 @@ export function redirectIfNoPermission(action) {
         return false;
     }
     return true;
+}
+
+// LOG ERRORS TO FIRESTORE
+export async function logError(usuario, accion, error, detalle = "") {
+    try {
+        await addDoc(collection(db, "errores"), {
+            usuario: usuario,
+            accion: accion,
+            error: error.toString(),
+            detalle: detalle,
+            fecha: serverTimestamp(),
+            timestamp: Date.now()
+        });
+        console.error(`[ERROR LOGGED] ${usuario} - ${accion}:`, error);
+    } catch(e) {
+        console.error("Failed to log error:", e);
+    }
+}
+
+// DEBUG LOGGING (only in development)
+export function debugLog(mensaje, data = null) {
+    const isLocal = window.location.hostname === "localhost" || 
+                   window.location.hostname === "127.0.0.1" ||
+                   window.location.hostname.includes("192.168");
+    
+    if (isLocal) {
+        console.log(`[DEBUG ${new Date().toLocaleTimeString()}] ${mensaje}`);
+        if (data) console.table ? console.table(data) : console.log(data);
+    }
+}
+
+// VALIDATE PPAP PART NUMBER
+export function validatePPAPPartNumber(value) {
+    if (!value || value.trim() === "") return false;
+    
+    const invalidStatuses = ["Pending", "In Process", "Approved", "Rejected", "Completed", "On Hold"];
+    if (invalidStatuses.includes(value)) {
+        return {
+            valid: false,
+            message: "PPAP Part Number cannot be a status value"
+        };
+    }
+    
+    // Validar que sea alfanumérico (puede contener números, letras, guiones)
+    const regex = /^[A-Za-z0-9\-_\.]+$/;
+    if (!regex.test(value)) {
+        return {
+            valid: false,
+            message: "PPAP Part Number can only contain letters, numbers, hyphens, dots and underscores"
+        };
+    }
+    
+    return { valid: true, message: "Valid part number" };
 }
