@@ -2,54 +2,82 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Consultas de Versiones - Master Track</title>
+    <title>Consultas Históricas - Master Track</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        body {
-            font-size: 12px;
+        * {
+            box-sizing: border-box;
         }
+        
+        body {
+            font-size: 11px;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .bg-blue {
+            background: #0080ff;
+            min-height: 100vh;
+            padding: 5px;
+        }
+        
+        header h1 {
+            text-align: center;
+            color: white;
+            padding: 12px;
+            margin: 0;
+            font-size: 14px;
+        }
+        
         .search-box { 
             background: white; 
-            padding: 10px; 
-            border-radius: 5px; 
+            padding: 8px; 
+            border-radius: 4px; 
             display: flex; 
-            gap: 8px; 
-            margin-bottom: 10px; 
+            gap: 5px; 
+            margin-bottom: 8px; 
         }
+        
         .main-grid { 
             display: grid; 
-            grid-template-columns: 1fr 250px; 
-            gap: 10px; 
+            grid-template-columns: 1fr 220px; 
+            gap: 8px; 
         }
+        
         .card { 
             background: white; 
-            padding: 10px; 
-            border-radius: 5px; 
+            padding: 8px; 
+            border-radius: 4px; 
+            height: 500px;
+            display: flex;
+            flex-direction: column;
         }
         
         /* TABLA MUY COMPACTA */
         .table-container {
-            max-height: 500px;
+            flex: 1;
             overflow-y: auto;
             overflow-x: auto;
             border: 1px solid #ddd;
-            border-radius: 4px;
+            border-radius: 3px;
+            margin-top: 5px;
         }
         
         .history-table { 
             width: 100%; 
             border-collapse: collapse; 
-            font-size: 9px; 
+            font-size: 8px !important; 
             table-layout: fixed;
+            min-width: 280px;
         }
         
         /* ENCABEZADOS MUY DELGADOS */
         .history-table th { 
             background: #2c3e50; 
             color: white; 
-            text-align: left; 
-            padding: 4px 3px !important; 
-            font-size: 8px;
+            text-align: center; 
+            padding: 3px 2px !important; 
+            font-size: 7px;
             font-weight: bold;
             white-space: nowrap;
             overflow: hidden;
@@ -57,73 +85,74 @@
             position: sticky;
             top: 0;
             z-index: 10;
+            border-right: 1px solid #3a506b;
+        }
+        
+        .history-table th:last-child {
+            border-right: none;
         }
         
         /* CELDAS MUY DELGADAS */
         .history-table td { 
-            padding: 3px 2px !important; 
+            padding: 2px 1px !important; 
             border-bottom: 1px solid #eee; 
+            border-right: 1px solid #eee;
             vertical-align: middle;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            line-height: 1.2;
+            line-height: 1.1;
+            text-align: center;
+            height: 20px;
+        }
+        
+        .history-table td:last-child {
+            border-right: none;
         }
         
         /* ANCHOS MUY ESTRECHOS */
         .history-table th:nth-child(1), 
         .history-table td:nth-child(1) { 
-            width: 85px !important; 
-            min-width: 85px;
-            max-width: 85px;
+            width: 70px !important; 
         } /* Fecha/Hora */
         
         .history-table th:nth-child(2), 
         .history-table td:nth-child(2) { 
-            width: 45px !important; 
-            min-width: 45px;
-            max-width: 45px;
+            width: 35px !important; 
         } /* Usuario */
         
         .history-table th:nth-child(3), 
         .history-table td:nth-child(3) { 
-            width: 55px !important; 
-            min-width: 55px;
-            max-width: 55px;
+            width: 45px !important; 
         } /* Acción */
         
         .history-table th:nth-child(4), 
         .history-table td:nth-child(4) { 
-            width: 40px !important; 
-            min-width: 40px;
-            max-width: 40px;
+            width: 30px !important; 
         } /* Item # */
         
         .history-table th:nth-child(5), 
         .history-table td:nth-child(5) { 
-            width: 65px !important; 
-            min-width: 65px;
-            max-width: 65px;
+            width: 55px !important; 
         } /* Estado PPAP */
         
         .history-table th:nth-child(6), 
         .history-table td:nth-child(6) { 
-            width: 35px !important; 
-            min-width: 35px;
-            max-width: 35px;
+            width: 30px !important; 
         } /* Imagen */
         
-        /* Total: 85+45+55+40+65+35 = 325px (MUY COMPACTO) */
+        /* Total: 70+35+45+30+55+30 = 265px (MUY COMPACTO) */
         
         .image-viewer { 
-            text-align: center; 
             background: #f9f9f9; 
             border: 1px solid #3498db; 
-            border-radius: 5px; 
-            padding: 10px; 
+            border-radius: 4px; 
+            padding: 8px; 
             position: sticky; 
-            top: 10px; 
-            height: fit-content;
+            top: 8px; 
+            height: 500px;
+            display: flex;
+            flex-direction: column;
         }
         
         /* BOTÓN VIEW MUY PEQUEÑO */
@@ -131,31 +160,31 @@
             background: #3498db; 
             color: white; 
             border: none; 
-            padding: 2px 4px !important; 
-            border-radius: 2px; 
+            padding: 1px 3px !important; 
+            border-radius: 1px; 
             cursor: pointer; 
-            font-size: 8px !important; 
+            font-size: 7px !important; 
             font-weight: bold;
-            display: block;
-            width: 30px;
-            margin: 0 auto;
+            display: inline-block;
+            min-width: 25px;
             line-height: 1.2;
+            margin: 0 auto;
         }
         
         /* BADGES MUY PEQUEÑOS */
         .status-badge {
-            padding: 1px 3px !important;
-            border-radius: 2px;
-            font-size: 8px !important;
+            padding: 1px 2px !important;
+            border-radius: 1px;
+            font-size: 7px !important;
             font-weight: bold;
             color: white;
-            display: block;
+            display: inline-block;
             text-align: center;
-            text-transform: uppercase;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
             max-width: 100%;
+            min-width: 40px;
         }
         
         .status-approved { background: #27ae60; }
@@ -164,17 +193,18 @@
         .status-na { background: #95a5a6; }
         
         .action-badge {
-            padding: 1px 3px !important;
-            border-radius: 2px;
-            font-size: 8px !important;
+            padding: 1px 2px !important;
+            border-radius: 1px;
+            font-size: 7px !important;
             font-weight: bold;
             color: white;
-            display: block;
+            display: inline-block;
             text-align: center;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
             max-width: 100%;
+            min-width: 35px;
         }
         
         .action-update { background: #3498db; }
@@ -189,17 +219,15 @@
         
         .empty-state {
             text-align: center;
-            padding: 20px;
+            padding: 15px;
             color: #7f8c8d;
-            font-size: 10px;
+            font-size: 9px;
         }
         
         .item-highlight {
             font-weight: bold;
             color: #2c3e50;
-            display: block;
-            text-align: center;
-            font-size: 9px;
+            font-size: 8px;
         }
         
         /* MODAL PARA IMAGEN GRANDE */
@@ -214,22 +242,22 @@
             z-index: 10000;
             justify-content: center;
             align-items: center;
-            padding: 10px;
+            padding: 5px;
         }
         
         .modal-content {
             background: white;
-            border-radius: 5px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 90vh;
+            border-radius: 4px;
+            width: 95%;
+            max-width: 500px;
+            max-height: 95vh;
             overflow: hidden;
         }
         
         .modal-header {
             background: #2c3e50;
             color: white;
-            padding: 8px 10px;
+            padding: 6px 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -237,40 +265,40 @@
         
         .modal-header h3 {
             margin: 0;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: bold;
         }
         
         .modal-body {
-            padding: 10px;
+            padding: 8px;
             text-align: center;
-            max-height: 70vh;
+            max-height: 75vh;
             overflow-y: auto;
         }
         
         .modal-image {
             max-width: 100%;
-            max-height: 60vh;
-            border-radius: 3px;
+            max-height: 65vh;
+            border-radius: 2px;
         }
         
         .modal-footer {
-            padding: 8px;
+            padding: 6px;
             background: #f8f9fa;
             text-align: center;
             display: flex;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
         }
         
         .btn-modal {
-            padding: 6px 12px;
+            padding: 5px 10px;
             border: none;
-            border-radius: 3px;
+            border-radius: 2px;
             cursor: pointer;
             font-weight: bold;
-            font-size: 11px;
-            min-width: 100px;
+            font-size: 10px;
+            min-width: 90px;
         }
         
         .btn-close {
@@ -287,10 +315,10 @@
             background: none;
             border: none;
             color: white;
-            font-size: 16px;
+            font-size: 14px;
             cursor: pointer;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -298,16 +326,15 @@
         }
         
         #image-filename-modal {
-            font-size: 10px;
-            margin-top: 8px;
+            font-size: 9px;
+            margin-top: 6px;
             color: #666;
             word-break: break-all;
         }
         
         /* VISTA PREVIA */
         .image-preview-container {
-            width: 100%; 
-            height: 120px; 
+            flex: 1;
             border: 1px solid #ddd; 
             display: flex; 
             align-items: center; 
@@ -315,7 +342,8 @@
             margin: 5px 0; 
             background: #f5f5f5; 
             overflow: hidden; 
-            border-radius: 3px;
+            border-radius: 2px;
+            min-height: 120px;
         }
         
         .image-preview {
@@ -325,59 +353,69 @@
         }
         
         .compact-label {
-            font-size: 9px;
+            font-size: 8px;
             color: #666;
             margin: 0;
+            line-height: 1.2;
         }
         
         .compact-value {
-            font-size: 9px;
+            font-size: 8px;
             color: #333;
             font-weight: bold;
         }
         
         #image-info {
-            font-size: 9px; 
+            font-size: 8px; 
             color: #666; 
-            margin-top: 5px; 
+            margin-top: 4px; 
             text-align: left; 
-            padding: 5px; 
+            padding: 4px; 
             background: #f0f0f0; 
-            border-radius: 3px;
+            border-radius: 2px;
         }
         
         .record-count {
-            font-size: 9px;
+            font-size: 8px;
             background: #3498db;
             color: white;
-            padding: 2px 6px;
-            border-radius: 10px;
+            padding: 1px 5px;
+            border-radius: 8px;
         }
         
         h3 {
-            font-size: 11px;
-            margin: 0 0 8px 0;
+            font-size: 10px;
+            margin: 0 0 6px 0;
             color: #2c3e50;
-        }
-        
-        header h1 {
-            font-size: 14px;
-            padding: 12px;
         }
         
         /* SCROLLBAR MUY DELGADA */
         .table-container::-webkit-scrollbar {
-            width: 4px;
-            height: 4px;
+            width: 3px;
+            height: 3px;
         }
         
         .table-container::-webkit-scrollbar-thumb {
             background: #3498db;
-            border-radius: 2px;
+            border-radius: 1.5px;
         }
         
         .table-container::-webkit-scrollbar-track {
             background: #f1f1f1;
+        }
+        
+        /* INPUTS PEQUEÑOS */
+        input, button {
+            font-size: 10px !important;
+        }
+        
+        #inputSearch {
+            padding: 5px;
+        }
+        
+        #btnConsultar, button[onclick*="index.html"] {
+            padding: 5px 8px;
+            white-space: nowrap;
         }
         
         /* RESPONSIVE */
@@ -386,25 +424,39 @@
                 grid-template-columns: 1fr;
             }
             
+            .card, .image-viewer {
+                height: 400px;
+            }
+            
             .image-viewer {
                 position: static;
             }
+        }
+        
+        /* FORZAR COMPACIDAD */
+        .history-table * {
+            max-height: 20px !important;
+        }
+        
+        .history-table td > * {
+            margin: 0 !important;
+            padding: 0 !important;
         }
     </style>
 </head>
 <body class="bg-blue">
     <header><h1>Consultas Históricas</h1></header>
 
-    <div style="padding: 10px; max-width: 900px; margin: auto;">
+    <div style="padding: 8px; max-width: 800px; margin: auto;">
         <div class="search-box">
-            <input type="text" id="inputSearch" placeholder="Item #..." style="flex:1; padding:6px; border:1px solid #ccc; border-radius:3px; font-size:11px;">
-            <button id="btnConsultar" style="padding:6px 12px; background:#2c3e50; color:white; border:none; border-radius:3px; cursor:pointer; font-weight:bold; font-size:11px;">BUSCAR</button>
-            <button onclick="location.href='index.html'" style="padding:6px; background:#95a5a6; color:white; border:none; border-radius:3px; cursor:pointer; font-size:11px;">VOLVER</button>
+            <input type="text" id="inputSearch" placeholder="Item #..." style="flex:1; padding:5px; border:1px solid #ccc; border-radius:2px;">
+            <button id="btnConsultar" style="padding:5px 8px; background:#2c3e50; color:white; border:none; border-radius:2px; cursor:pointer; font-weight:bold;">BUSCAR</button>
+            <button onclick="location.href='index.html'" style="padding:5px; background:#95a5a6; color:white; border:none; border-radius:2px; cursor:pointer;">VOLVER</button>
         </div>
 
         <div id="content-view" class="main-grid" style="display:none;">
             <div class="card">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
                     <h3>📋 Historial</h3>
                     <span id="item-counter" class="record-count">0 registros</span>
                 </div>
@@ -416,14 +468,14 @@
                                 <th>Usuario</th>
                                 <th>Acción</th>
                                 <th>Item #</th>
-                                <th>Estado PPAP</th>
-                                <th>Imagen</th>
+                                <th>Estado</th>
+                                <th>IMG</th>
                             </tr>
                         </thead>
                         <tbody id="historial-body">
                             <tr>
                                 <td colspan="6" class="empty-state">
-                                    <p>Ingrese un Item # y haga clic en BUSCAR</p>
+                                    <p>Ingrese Item # y haga clic en BUSCAR</p>
                                 </td>
                             </tr>
                         </tbody>
@@ -440,7 +492,7 @@
                     <p class="compact-label"><strong>Archivo:</strong> <span id="image-filename" class="compact-value">N/A</span></p>
                     <p class="compact-label"><strong>Fecha:</strong> <span id="image-date" class="compact-value">N/A</span></p>
                 </div>
-                <p class="compact-label" style="margin-top: 5px; text-align: center;">Haga clic en VIEW para ver imagen completa</p>
+                <p class="compact-label" style="margin-top: 4px; text-align: center;">Click VIEW para imagen completa</p>
             </div>
         </div>
     </div>
@@ -481,7 +533,7 @@
             }
 
             const tbody = document.getElementById('historial-body');
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:15px; font-size:10px;"><div style="display:inline-block; padding:8px; background:#f8f9fa; border-radius:4px;">🔍 Buscando...</div></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:10px; font-size:9px;"><div style="display:inline-block; padding:6px; background:#f8f9fa; border-radius:3px;">🔍 Buscando...</div></td></tr>';
             
             document.getElementById('content-view').style.display = 'grid';
 
@@ -547,7 +599,7 @@
 
                 // Mostrar resultados
                 tbody.innerHTML = '';
-                const maxRecords = Math.min(movimientosFiltrados.length, 100);
+                const maxRecords = Math.min(movimientosFiltrados.length, 150);
                 
                 for(let i = 0; i < maxRecords; i++) {
                     const m = movimientosFiltrados[i];
@@ -566,16 +618,16 @@
                     
                     // Determinar estado PPAP
                     const statusPPAP = m.statusMomento || m.accion || 'N/A';
-                    const statusDisplay = statusPPAP.length > 10 ? statusPPAP.substring(0, 8) + '...' : statusPPAP;
+                    const statusDisplay = statusPPAP.length > 8 ? statusPPAP.substring(0, 7) + '..' : statusPPAP;
                     
                     // Determinar clase de estado
                     let statusClass = 'status-na';
                     const statusLower = statusPPAP.toLowerCase();
-                    if (statusLower.includes('aprobado') || statusLower.includes('approved') || statusLower.includes('complete')) {
+                    if (statusLower.includes('aprob') || statusLower.includes('complete')) {
                         statusClass = 'status-approved';
-                    } else if (statusLower.includes('pendiente') || statusLower.includes('pending') || statusLower.includes('process')) {
+                    } else if (statusLower.includes('pend') || statusLower.includes('process')) {
                         statusClass = 'status-pending';
-                    } else if (statusLower.includes('rechazado') || statusLower.includes('rejected') || statusLower.includes('fail')) {
+                    } else if (statusLower.includes('rech') || statusLower.includes('fail')) {
                         statusClass = 'status-rejected';
                     }
                     
@@ -583,7 +635,7 @@
                     let actionClass = 'action-update';
                     const accion = m.accion || '';
                     const accionLower = accion.toLowerCase();
-                    const accionDisplay = accion.length > 8 ? accion.substring(0, 7) + '...' : accion;
+                    const accionDisplay = accion.length > 6 ? accion.substring(0, 5) + '..' : accion;
                     
                     if (accionLower.includes('imagen') || accionLower.includes('foto')) {
                         actionClass = 'action-image';
@@ -596,7 +648,7 @@
                     }
                     
                     const usuario = m.usuario || 'Desconocido';
-                    const usuarioDisplay = usuario.length > 6 ? usuario.substring(0, 5) + '...' : usuario;
+                    const usuarioDisplay = usuario.length > 5 ? usuario.substring(0, 4) + '..' : usuario;
                     
                     tbody.innerHTML += `
                         <tr>
@@ -614,11 +666,11 @@
                     `;
                 }
                 
-                if(movimientosFiltrados.length > 100) {
+                if(movimientosFiltrados.length > 150) {
                     tbody.innerHTML += `
                         <tr>
-                            <td colspan="6" style="text-align:center; padding:4px; font-size:8px; color:#7f8c8d;">
-                                Mostrando 100 de ${movimientosFiltrados.length} registros
+                            <td colspan="6" style="text-align:center; padding:3px; font-size:7px; color:#7f8c8d;">
+                                Mostrando 150 de ${movimientosFiltrados.length} registros
                             </td>
                         </tr>
                     `;
@@ -628,8 +680,8 @@
                 console.error("Error en consulta:", error);
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="6" style="text-align:center; color:#e74c3c; padding:12px; font-size:10px;">
-                            Error al consultar. Verifica conexión.
+                        <td colspan="6" style="text-align:center; color:#e74c3c; padding:10px; font-size:9px;">
+                            Error al consultar.
                         </td>
                     </tr>
                 `;
@@ -662,14 +714,14 @@
                                            <strong>Fecha:</strong> ${fecha}`;
                 } else {
                     modalImage.src = "imagenes/sin_foto.jpg";
-                    filenameEl.innerHTML = "No hay imagen para esta versión";
+                    filenameEl.innerHTML = "Sin imagen";
                     currentImageUrl = '';
                     currentImageFilename = '';
                 }
             } catch(e) {
                 console.error("Error Drive:", e);
                 modalImage.src = "imagenes/sin_foto.jpg";
-                filenameEl.innerHTML = "Error al cargar la imagen";
+                filenameEl.innerHTML = "Error al cargar";
                 currentImageUrl = '';
                 currentImageFilename = '';
             }
