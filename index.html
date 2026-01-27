@@ -7,38 +7,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
     <style>
         .table-wrapper { max-height: 600px; overflow-y: auto; border: 1px solid #ddd; background: white; border-radius: 8px; }
-        /* Todos los botones ocultos por defecto */
-        #btnUsuarios, #btnHistorial, #btnRegistrar, #btnActualizar, #btnEliminar, #btnConsultas, #btnComentarios { 
-            display: none; 
-        }
-        
-        /* Estilos para indicar permisos */
-        .permission-badge {
-            font-size: 9px;
-            background: #27ae60;
-            color: white;
-            padding: 2px 6px;
-            border-radius: 10px;
-            margin-left: 5px;
-        }
-        
-        .permission-denied {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-        
-        .permission-denied:hover {
-            transform: none !important;
-            background: white !important;
-        }
+        #btnUsuarios, #btnHistorial, #btnRegistrar, #btnActualizar, #btnEliminar, #btnConsultas, #btnComentarios { display: none; }
+        .permission-badge { font-size: 9px; background: #27ae60; color: white; padding: 2px 6px; border-radius: 10px; margin-left: 5px; }
+        .permission-denied { opacity: 0.6; cursor: not-allowed; }
+        .permission-denied:hover { transform: none !important; background: white !important; }
     </style>
 </head>
 <body class="bg-blue">
-    <!-- HEADER CORPORATIVO -->
     <div class="corporate-header">
         <div class="company-logo" onclick="location.href='index.html'" style="cursor:pointer;">
             <div class="logo-container">
-                <!-- Cambia la ruta según donde tengas tu logo -->
                 <img src="logos/logo_smp.png" alt="SMP Engine Management Logo">
             </div>
             <div>
@@ -46,65 +24,29 @@
                 <div class="subtitle">SMP Engine Management, S. de R.L. de C.V</div>
             </div>
         </div>
-        
         <div class="user-header-info">
             <div id="current-user-display" class="user-name">👤 Cargando...</div>
             <div id="current-date" class="current-date"></div>
         </div>
     </div>
-
     <header><h1>Sistema de Gestión PPAP</h1></header>
-    
     <div class="main-container">
         <nav class="side-menu">
-            <!-- Botón de Usuarios (solo admin) -->
-            <button id="btnUsuarios" onclick="location.href='usuarios.html'" style="background: #f1c40f; color: #333;">
-                ⚙️ GESTIÓN USUARIOS <span class="permission-badge">ADMIN</span>
-            </button>
-            
-            <!-- Botón de Historial (solo admin) -->
-            <button id="btnHistorial" onclick="location.href='historial.html'" style="background: #8e44ad; color: white;">
-                📋 HISTORIAL COMPLETO <span class="permission-badge">ADMIN</span>
-            </button>
-            
-            <!-- Botón de Consultas (permiso especial) -->
-            <button id="btnConsultas" onclick="location.href='consultas.html'">
-                🔍 CONSULTAS HISTÓRICAS
-            </button>
-            
-            <!-- Botón de Comentarios (permiso especial) -->
-            <button id="btnComentarios" onclick="location.href='comentarios.html'">
-                ✏️ EDITAR COMENTARIOS
-            </button>
-            
-            <!-- Botones de operaciones básicas -->
-            <button id="btnRegistrar" onclick="location.href='registro.html'">
-                📝 REGISTRAR NUEVO
-            </button>
-            
-            <button id="btnActualizar" onclick="location.href='actualizar.html'">
-                🔄 ACTUALIZAR
-            </button>
-            
-            <button id="btnEliminar" onclick="location.href='eliminar.html'">
-                🗑️ ELIMINAR
-            </button>
-            
-            <!-- Información del usuario actual -->
+            <button id="btnUsuarios" onclick="location.href='usuarios.html'" style="background: #f1c40f; color: #333;">⚙️ GESTIÓN USUARIOS <span class="permission-badge">ADMIN</span></button>
+            <button id="btnHistorial" onclick="location.href='historial.html'" style="background: #8e44ad; color: white;">📋 HISTORIAL COMPLETO <span class="permission-badge">ADMIN</span></button>
+            <button id="btnConsultas" onclick="location.href='consultas.html'">🔍 CONSULTAS HISTÓRICAS</button>
+            <button id="btnComentarios" onclick="location.href='comentarios.html'">✏️ EDITAR COMENTARIOS</button>
+            <button id="btnRegistrar" onclick="location.href='registro.html'">📝 REGISTRAR NUEVO</button>
+            <button id="btnActualizar" onclick="location.href='actualizar.html'">🔄 ACTUALIZAR</button>
+            <button id="btnEliminar" onclick="location.href='eliminar.html'">🗑️ ELIMINAR</button>
             <div style="margin-top: 20px; padding: 10px; background: #f8f9fa; border-radius: 5px; font-size: 11px; color: #666;">
                 <div style="font-weight: bold; margin-bottom: 5px;">👤 Usuario: <span id="current-user"></span></div>
                 <div id="user-permissions" style="font-size: 10px;"></div>
             </div>
-            
-            <!-- Botón de salir -->
-            <button id="btnSalir" style="background: #c0392b; color: white; margin-top: 20px; border:none; cursor:pointer; padding:14px; border-radius:8px;">
-                CERRAR SESIÓN
-            </button>
+            <button id="btnSalir" style="background: #c0392b; color: white; margin-top: 20px; border:none; cursor:pointer; padding:14px; border-radius:8px;">CERRAR SESIÓN</button>
         </nav>
-        
         <section class="content" style="flex:1; display: flex; flex-direction: column;">
             <input type="text" id="mainSearch" placeholder="Buscar por Item # o No. Parte..." style="width:100%; padding:12px; margin-bottom:15px; border-radius:5px; border:none;">
-            
             <div class="table-wrapper">
                 <table id="tabla-prod">
                     <thead><tr id="table-head"></tr></thead>
@@ -113,7 +55,6 @@
             </div>
         </section>
     </div>
-
     <div id="modalReporte" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; overflow-y:auto;">
         <div style="background:white; width:95%; max-width:850px; margin:20px auto; padding:10px; border-radius:8px;">
             <div id="reporte-print-area" style="padding:30px; color:black; font-family: Arial, sans-serif;">
@@ -134,29 +75,21 @@
             </div>
         </div>
     </div>
-
-    <!-- FOOTER CORPORATIVO -->
     <div class="corporate-footer">
         <strong>SMP Engine Management, S. de R.L. de C.V</strong> | Sistema PPAP Master Track v2.0<br>
         <span style="font-size: 11px;">© 2024 - Todos los derechos reservados</span>
     </div>
-
     <script type="module">
         import { db, checkAuth } from './config.js';
         import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
+        import { FIELD_MAPPING, DB_FIELDS, getVisualName } from './fieldMapping.js';
         const user = checkAuth();
-        
-        // Mostrar información del usuario en header
         if(user) {
             document.getElementById('current-user-display').textContent = `👤 ${user.usuario}`;
             document.getElementById('current-user').textContent = user.usuario;
-            
-            // Mostrar permisos del usuario
             const permissionsDiv = document.getElementById('user-permissions');
-            if(user.usuario === 'admin') {
-                permissionsDiv.innerHTML = '🔓 Permisos: <strong>TODOS</strong>';
-            } else if(user.permisos) {
+            if(user.usuario === 'admin') { permissionsDiv.innerHTML = '🔓 Permisos: <strong>TODOS</strong>'; }
+            else if(user.permisos) {
                 const permisos = [];
                 if(user.permisos.registrar) permisos.push('Registrar');
                 if(user.permisos.actualizar) permisos.push('Actualizar');
@@ -164,97 +97,55 @@
                 if(user.permisos.subirDrive) permisos.push('Subir Imágenes');
                 if(user.permisos.consultar) permisos.push('Consultas');
                 if(user.permisos.editarComentarios) permisos.push('Editar Comentarios');
-                
                 permissionsDiv.innerHTML = '🔐 Permisos: <strong>' + (permisos.length > 0 ? permisos.join(', ') : 'Básicos') + '</strong>';
             }
         }
-        
-        // Mostrar fecha actual
-        const now = new Date();
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const now = new Date(); const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('current-date').textContent = now.toLocaleDateString('es-MX', options);
-        
-        // CONFIGURAR BOTONES SEGÚN PERMISOS
         if(user) {
             if(user.usuario === 'admin') {
-                // Admin tiene todos los permisos
                 document.querySelectorAll('#btnUsuarios, #btnHistorial, #btnRegistrar, #btnActualizar, #btnEliminar, #btnConsultas, #btnComentarios').forEach(b => b.style.display = 'block');
             } else {
-                // Mostrar botones según permisos del usuario
                 if(user.permisos) {
                     if(user.permisos.registrar) document.getElementById('btnRegistrar').style.display = 'block';
                     if(user.permisos.actualizar) document.getElementById('btnActualizar').style.display = 'block';
                     if(user.permisos.eliminar) document.getElementById('btnEliminar').style.display = 'block';
                     if(user.permisos.consultar) document.getElementById('btnConsultas').style.display = 'block';
                     if(user.permisos.editarComentarios) document.getElementById('btnComentarios').style.display = 'block';
-                    
-                    // Los botones de admin siempre ocultos para usuarios normales
                     document.getElementById('btnUsuarios').style.display = 'none';
                     document.getElementById('btnHistorial').style.display = 'none';
                 }
             }
         }
-
-        const campos = ["Item #","Estatus","Programador","PPAP Part Number","Component Description","Razon de Cambio","PRP5/area","Lider de Calidad"," OE/AFTERMARKET ","Se entrego documentacion","Muestras Recibidas","Ubicacion Fisica ","Fecha de Programacion","Proceso","Update","Comments","Responsable","Instrucciones Especiales","PPAP Type OE / SM AFTER Market","PV Result","1-Design records","2-ECN document","3-Customer eng approval","4-Design FMEA","5-Process Flow Diagram","6-PFMEA","7-Control Plan","8-MSA Studies","9-Dimensional results","10-Material, performance test result","11-Initial Process Studies","12-Qualify Lab Documentation","13-Appereance Approval Report","14-Sample product","15-Checking Aids","16-Record de compliance","17-Bulk material checklist","18-PSW(Full or Interim)","Supplier PPAP package status","Validation run readiness","Samples on hand","Dimension status","FFF review status","AAR review status","PPAP overall status"];
-        
         const head = document.getElementById('table-head');
-        campos.forEach(c => head.innerHTML += `<th>${c.toUpperCase()}</th>`);
+        DB_FIELDS.forEach(dbField => { const visualName = getVisualName(dbField); head.innerHTML += `<th>${visualName.toUpperCase()}</th>`; });
         head.innerHTML += `<th>ACCIONES</th>`;
-
         let productosLocal = [];
-        onSnapshot(collection(db, "productos"), (snap) => {
-            productosLocal = [];
-            snap.forEach(doc => productosLocal.push(doc.data()));
-            renderTable(productosLocal);
-        });
-
+        onSnapshot(collection(db, "productos"), (snap) => { productosLocal = []; snap.forEach(doc => productosLocal.push(doc.data())); renderTable(productosLocal); });
         function renderTable(lista) {
-            const tbody = document.getElementById('inventory-body');
-            tbody.innerHTML = '';
+            const tbody = document.getElementById('inventory-body'); tbody.innerHTML = '';
             lista.forEach(p => {
                 const tr = document.createElement('tr');
-                campos.forEach(c => tr.innerHTML += `<td>${p[c]||'-'}</td>`);
-                const tdBtn = document.createElement('td');
-                const btn = document.createElement('button');
-                btn.innerText = "REPORTE"; 
-                btn.onclick = () => abrirReporte(p);
-                btn.className = "btn-report-row";
-                tdBtn.appendChild(btn); 
-                tr.appendChild(tdBtn); 
-                tbody.appendChild(tr);
+                DB_FIELDS.forEach(dbField => { tr.innerHTML += `<td>${p[dbField]||'-'}</td>`; });
+                const tdBtn = document.createElement('td'); const btn = document.createElement('button');
+                btn.innerText = "REPORTE"; btn.onclick = () => abrirReporte(p); btn.className = "btn-report-row";
+                tdBtn.appendChild(btn); tr.appendChild(tdBtn); tbody.appendChild(tr);
             });
         }
-
         window.abrirReporte = function(p) {
             document.getElementById('rep-fecha').innerText = "FECHA: " + new Date().toLocaleDateString();
-            const rMain = document.getElementById('rep-data-main');
-            const rPpap = document.getElementById('rep-data-ppap');
+            const rMain = document.getElementById('rep-data-main'); const rPpap = document.getElementById('rep-data-ppap');
             rMain.innerHTML = ''; rPpap.innerHTML = '';
-
-            campos.forEach((key, index) => {
-                const html = `<div style="border-bottom:1px solid #eee; padding:2px 0;">
-                    <b style="font-size:9px; color:#666; display:block;">${key}</b>
-                    <span style="font-size:12px;">${p[key] || '-'}</span>
-                </div>`;
+            DB_FIELDS.forEach((dbField, index) => {
+                const visualName = getVisualName(dbField);
+                const html = `<div style="border-bottom:1px solid #eee; padding:2px 0;"><b style="font-size:9px; color:#666; display:block;">${visualName}</b><span style="font-size:12px;">${p[dbField] || '-'}</span></div>`;
                 if(index < 15) rMain.innerHTML += html; else rPpap.innerHTML += html;
             });
             document.getElementById('modalReporte').style.display = 'block';
         };
-
-        document.getElementById('btnDescargarPDF').onclick = () => {
-            const element = document.getElementById('reporte-print-area');
-            html2pdf().set({ margin: 10, filename: 'PPAP.pdf', jsPDF: { format: 'letter' } }).from(element).save();
-        };
-
-        document.getElementById('mainSearch').oninput = (e) => {
-            const t = e.target.value.toLowerCase();
-            renderTable(productosLocal.filter(p => (p["Item #"]||'').toString().toLowerCase().includes(t) || (p["PPAP Part Number"]||'').toLowerCase().includes(t)));
-        };
-
-        document.getElementById('btnSalir').onclick = () => { 
-            sessionStorage.clear(); 
-            window.location.href = "login.html"; 
-        };
+        document.getElementById('btnDescargarPDF').onclick = () => { const element = document.getElementById('reporte-print-area'); html2pdf().set({ margin: 10, filename: 'PPAP.pdf', jsPDF: { format: 'letter' } }).from(element).save(); };
+        document.getElementById('mainSearch').oninput = (e) => { const t = e.target.value.toLowerCase(); renderTable(productosLocal.filter(p => (p["Item #"]||'').toString().toLowerCase().includes(t) || (p["PPAP Part Number"]||'').toLowerCase().includes(t))); };
+        document.getElementById('btnSalir').onclick = () => { sessionStorage.clear(); window.location.href = "login.html"; };
     </script>
 </body>
 </html>

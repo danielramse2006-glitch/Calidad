@@ -5,7 +5,6 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-blue">
-    <!-- HEADER CORPORATIVO -->
     <div class="corporate-header">
         <div class="company-logo" onclick="location.href='index.html'" style="cursor:pointer;">
             <div class="logo-container">
@@ -16,15 +15,12 @@
                 <div class="subtitle">SMP Engine Management, S. de R.L. de C.V</div>
             </div>
         </div>
-        
         <div class="user-header-info">
             <div id="current-user-display" class="user-name">👤 Cargando...</div>
             <div id="current-date" class="current-date"></div>
         </div>
     </div>
-
     <header><h1>Eliminar Registro PPAP</h1></header>
-    
     <div style="padding:20px; max-width:600px; margin:auto; background:white; color:black; border-radius:10px; margin-top:20px;">
         <h2 style="color:#c0392b;">Eliminar Registro PPAP</h2>
         <p>Ingresa el <b>Item #</b> del registro que deseas borrar permanentemente.</p>
@@ -38,32 +34,21 @@
         </div>
         <button onclick="location.href='index.html'" style="width:100%; margin-top:20px; padding:10px; background:#bdc3c7; border:none; border-radius:5px; cursor:pointer;">VOLVER AL INICIO</button>
     </div>
-
-    <!-- FOOTER CORPORATIVO -->
     <div class="corporate-footer">
         <strong>SMP Engine Management, S. de R.L. de C.V</strong> | Sistema PPAP Master Track v2.0<br>
         <span style="font-size: 11px;">© 2024 - Todos los derechos reservados</span>
     </div>
-
     <script type="module">
         import { db, checkAuth, redirectIfNoPermission } from './config.js';
         import { collection, query, where, getDocs, doc, deleteDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getVisualName } from './fieldMapping.js';
         
-        // Mostrar fecha actual
         const now = new Date();
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('current-date').textContent = now.toLocaleDateString('es-MX', options);
-        
-        // Mostrar usuario actual
         const user = checkAuth();
-        if(user) {
-            document.getElementById('current-user-display').textContent = `👤 ${user.usuario}`;
-        }
-
-        // Verificar permiso de eliminar
-        if (!redirectIfNoPermission('eliminar')) {
-            // Ya redirige automáticamente
-        }
+        if(user) { document.getElementById('current-user-display').textContent = `👤 ${user.usuario}`; }
+        if (!redirectIfNoPermission('eliminar')) { }
         
         let docIdToDelete = null;
         let itemNumToDelete = null;
@@ -78,7 +63,7 @@
                 const docFound = snap.docs[0];
                 docIdToDelete = docFound.id;
                 const data = docFound.data();
-                document.getElementById('infoDelete').innerHTML = `<p style="color:#c0392b; font-weight:bold;">¿ELIMINAR?</p><hr><b>Item #:</b> ${data["Item #"]}<br><b>Parte:</b> ${data["PPAP Part Number"]}`;
+                document.getElementById('infoDelete').innerHTML = `<p style="color:#c0392b; font-weight:bold;">¿ELIMINAR?</p><hr><b>${getVisualName("Item #")}:</b> ${data["Item #"]}<br><b>${getVisualName("PPAP Part Number")}:</b> ${data["PPAP Part Number"]}`;
                 document.getElementById('confirm-box').style.display = 'block';
             } catch (error) { alert("Error al buscar."); }
         };
@@ -87,7 +72,6 @@
             if(confirm("¡Esta acción es irreversible!")) {
                 try {
                     await deleteDoc(doc(db, "productos", docIdToDelete));
-                    // LOG DE ELIMINACIÓN
                     await addDoc(collection(db, "movimientos"), {
                         usuario: user.usuario,
                         accion: "Eliminación",
