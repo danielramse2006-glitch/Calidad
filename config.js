@@ -1,5 +1,4 @@
-[file name]: config.js
-[file content begin]
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -20,6 +19,7 @@ export const db = getFirestore(app);
 export function checkAuth() {
     const sesion = sessionStorage.getItem("currentUser");
     if (!sesion) { 
+        // Si no hay sesión, redirigir al login y detener todo
         window.location.href = "login.html"; 
         return null; 
     }
@@ -51,4 +51,3 @@ export function redirectIfNoPermission(action) {
     }
     return true;
 }
-[file content end]
