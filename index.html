@@ -1,3 +1,5 @@
+[file name]: index.html
+[file content begin]
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -7,20 +9,81 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
     <style>
         .table-wrapper { max-height: 600px; overflow-y: auto; border: 1px solid #ddd; background: white; border-radius: 8px; }
-        #btnUsuarios, #btnHistorial, #btnRegistrar, #btnActualizar, #btnEliminar { display: none; }
+        /* Todos los botones ocultos por defecto */
+        #btnUsuarios, #btnHistorial, #btnRegistrar, #btnActualizar, #btnEliminar, #btnConsultas, #btnComentarios { 
+            display: none; 
+        }
+        
+        /* Estilos para indicar permisos */
+        .permission-badge {
+            font-size: 9px;
+            background: #27ae60;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 5px;
+        }
+        
+        .permission-denied {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .permission-denied:hover {
+            transform: none !important;
+            background: white !important;
+        }
     </style>
 </head>
 <body class="bg-blue">
     <header><h1>PPAP Master Track System</h1></header>
     <div class="main-container">
         <nav class="side-menu">
-            <button id="btnUsuarios" onclick="location.href='usuarios.html'" style="background: #f1c40f; color: #333;">⚙️ GESTIÓN USUARIOS</button>
-            <button id="btnHistorial" onclick="location.href='historial.html'" style="background: #8e44ad; color: white;">📋 HISTORIAL</button>
-            <button id="btnRegistrar" onclick="location.href='registro.html'">Registrar</button>
-            <button id="btnActualizar" onclick="location.href='actualizar.html'">Actualizar</button>
-            <button id="btnEliminar" onclick="location.href='eliminar.html'">Eliminar</button>
-            <button id="btnSalir" style="background: #c0392b; color: white; margin-top: 20px; border:none; cursor:pointer; padding:14px; border-radius:8px;">CERRAR SESIÓN</button>
+            <!-- Botón de Usuarios (solo admin) -->
+            <button id="btnUsuarios" onclick="location.href='usuarios.html'" style="background: #f1c40f; color: #333;">
+                ⚙️ GESTIÓN USUARIOS <span class="permission-badge">ADMIN</span>
+            </button>
+            
+            <!-- Botón de Historial (solo admin) -->
+            <button id="btnHistorial" onclick="location.href='historial.html'" style="background: #8e44ad; color: white;">
+                📋 HISTORIAL COMPLETO <span class="permission-badge">ADMIN</span>
+            </button>
+            
+            <!-- Botón de Consultas (permiso especial) -->
+            <button id="btnConsultas" onclick="location.href='consultas.html'">
+                🔍 CONSULTAS HISTÓRICAS
+            </button>
+            
+            <!-- Botón de Comentarios (permiso especial) -->
+            <button id="btnComentarios" onclick="location.href='comentarios.html'">
+                ✏️ EDITAR COMENTARIOS
+            </button>
+            
+            <!-- Botones de operaciones básicas -->
+            <button id="btnRegistrar" onclick="location.href='registro.html'">
+                📝 REGISTRAR NUEVO
+            </button>
+            
+            <button id="btnActualizar" onclick="location.href='actualizar.html'">
+                🔄 ACTUALIZAR
+            </button>
+            
+            <button id="btnEliminar" onclick="location.href='eliminar.html'">
+                🗑️ ELIMINAR
+            </button>
+            
+            <!-- Información del usuario actual -->
+            <div style="margin-top: 20px; padding: 10px; background: #f8f9fa; border-radius: 5px; font-size: 11px; color: #666;">
+                <div style="font-weight: bold; margin-bottom: 5px;">👤 Usuario: <span id="current-user"></span></div>
+                <div id="user-permissions" style="font-size: 10px;"></div>
+            </div>
+            
+            <!-- Botón de salir -->
+            <button id="btnSalir" style="background: #c0392b; color: white; margin-top: 20px; border:none; cursor:pointer; padding:14px; border-radius:8px;">
+                CERRAR SESIÓN
+            </button>
         </nav>
+        
         <section class="content" style="flex:1; display: flex; flex-direction: column;">
             <input type="text" id="mainSearch" placeholder="Buscar por Item # o No. Parte..." style="width:100%; padding:12px; margin-bottom:15px; border-radius:5px; border:none;">
             
@@ -59,13 +122,46 @@
         import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const user = checkAuth();
+        
+        // Mostrar información del usuario
+        if(user) {
+            document.getElementById('current-user').textContent = user.usuario;
+            
+            // Mostrar permisos del usuario
+            const permissionsDiv = document.getElementById('user-permissions');
+            if(user.usuario === 'admin') {
+                permissionsDiv.innerHTML = '🔓 Permisos: <strong>TODOS</strong>';
+            } else if(user.permisos) {
+                const permisos = [];
+                if(user.permisos.registrar) permisos.push('Registrar');
+                if(user.permisos.actualizar) permisos.push('Actualizar');
+                if(user.permisos.eliminar) permisos.push('Eliminar');
+                if(user.permisos.subirDrive) permisos.push('Subir Imágenes');
+                if(user.permisos.consultar) permisos.push('Consultas');
+                if(user.permisos.editarComentarios) permisos.push('Editar Comentarios');
+                
+                permissionsDiv.innerHTML = '🔐 Permisos: <strong>' + (permisos.length > 0 ? permisos.join(', ') : 'Básicos') + '</strong>';
+            }
+        }
+        
+        // CONFIGURAR BOTONES SEGÚN PERMISOS
         if(user) {
             if(user.usuario === 'admin') {
-                document.querySelectorAll('#btnUsuarios, #btnHistorial, #btnRegistrar, #btnActualizar, #btnEliminar').forEach(b => b.style.display = 'block');
-            } else if(user.permisos) {
-                if(user.permisos.registrar) document.getElementById('btnRegistrar').style.display = 'block';
-                if(user.permisos.actualizar) document.getElementById('btnActualizar').style.display = 'block';
-                if(user.permisos.eliminar) document.getElementById('btnEliminar').style.display = 'block';
+                // Admin tiene todos los permisos
+                document.querySelectorAll('#btnUsuarios, #btnHistorial, #btnRegistrar, #btnActualizar, #btnEliminar, #btnConsultas, #btnComentarios').forEach(b => b.style.display = 'block');
+            } else {
+                // Mostrar botones según permisos del usuario
+                if(user.permisos) {
+                    if(user.permisos.registrar) document.getElementById('btnRegistrar').style.display = 'block';
+                    if(user.permisos.actualizar) document.getElementById('btnActualizar').style.display = 'block';
+                    if(user.permisos.eliminar) document.getElementById('btnEliminar').style.display = 'block';
+                    if(user.permisos.consultar) document.getElementById('btnConsultas').style.display = 'block';
+                    if(user.permisos.editarComentarios) document.getElementById('btnComentarios').style.display = 'block';
+                    
+                    // Los botones de admin siempre ocultos para usuarios normales
+                    document.getElementById('btnUsuarios').style.display = 'none';
+                    document.getElementById('btnHistorial').style.display = 'none';
+                }
             }
         }
 
@@ -90,8 +186,12 @@
                 campos.forEach(c => tr.innerHTML += `<td>${p[c]||'-'}</td>`);
                 const tdBtn = document.createElement('td');
                 const btn = document.createElement('button');
-                btn.innerText = "REPORTE"; btn.onclick = () => abrirReporte(p);
-                tdBtn.appendChild(btn); tr.appendChild(tdBtn); tbody.appendChild(tr);
+                btn.innerText = "REPORTE"; 
+                btn.onclick = () => abrirReporte(p);
+                btn.className = "btn-report-row";
+                tdBtn.appendChild(btn); 
+                tr.appendChild(tdBtn); 
+                tbody.appendChild(tr);
             });
         }
 
@@ -121,7 +221,11 @@
             renderTable(productosLocal.filter(p => (p["Item #"]||'').toString().toLowerCase().includes(t) || (p["PPAP Part Number"]||'').toLowerCase().includes(t)));
         };
 
-        document.getElementById('btnSalir').onclick = () => { sessionStorage.clear(); window.location.href = "login.html"; };
+        document.getElementById('btnSalir').onclick = () => { 
+            sessionStorage.clear(); 
+            window.location.href = "login.html"; 
+        };
     </script>
 </body>
 </html>
+[file content end]
