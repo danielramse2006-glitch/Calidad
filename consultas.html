@@ -5,156 +5,204 @@
     <title>Consultas de Versiones - Master Track</title>
     <link rel="stylesheet" href="style.css">
     <style>
+        body {
+            font-size: 12px;
+        }
         .search-box { 
             background: white; 
-            padding: 12px; 
-            border-radius: 6px; 
+            padding: 10px; 
+            border-radius: 5px; 
             display: flex; 
             gap: 8px; 
-            margin-bottom: 12px; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+            margin-bottom: 10px; 
         }
         .main-grid { 
             display: grid; 
-            grid-template-columns: 1fr 300px; 
-            gap: 12px; 
+            grid-template-columns: 1fr 250px; 
+            gap: 10px; 
         }
         .card { 
             background: white; 
-            padding: 12px; 
-            border-radius: 6px; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05); 
+            padding: 10px; 
+            border-radius: 5px; 
         }
+        
+        /* TABLA MUY COMPACTA */
+        .table-container {
+            max-height: 500px;
+            overflow-y: auto;
+            overflow-x: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
         .history-table { 
             width: 100%; 
             border-collapse: collapse; 
-            margin-top: 3px; 
-            font-size: 10px; 
+            font-size: 9px; 
             table-layout: fixed;
         }
+        
+        /* ENCABEZADOS MUY DELGADOS */
         .history-table th { 
             background: #2c3e50; 
             color: white; 
             text-align: left; 
-            padding: 5px 4px; 
-            font-size: 9px;
+            padding: 4px 3px !important; 
+            font-size: 8px;
+            font-weight: bold;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
+        
+        /* CELDAS MUY DELGADAS */
         .history-table td { 
-            padding: 4px 3px; 
+            padding: 3px 2px !important; 
             border-bottom: 1px solid #eee; 
             vertical-align: middle;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            line-height: 1.2;
         }
         
-        /* Anchos específicos para columnas */
-        .history-table th:nth-child(1) { width: 100px; } /* Fecha/Hora */
-        .history-table th:nth-child(2) { width: 70px; }  /* Usuario */
-        .history-table th:nth-child(3) { width: 70px; }  /* Acción */
-        .history-table th:nth-child(4) { width: 50px; }  /* Item # */
-        .history-table th:nth-child(5) { width: 80px; }  /* Estado PPAP */
-        .history-table th:nth-child(6) { width: 50px; }  /* Imagen */
+        /* ANCHOS MUY ESTRECHOS */
+        .history-table th:nth-child(1), 
+        .history-table td:nth-child(1) { 
+            width: 85px !important; 
+            min-width: 85px;
+            max-width: 85px;
+        } /* Fecha/Hora */
         
-        .history-table td:nth-child(1) { width: 100px; font-size: 9px; }
-        .history-table td:nth-child(2) { width: 70px; }
-        .history-table td:nth-child(3) { width: 70px; }
-        .history-table td:nth-child(4) { width: 50px; }
-        .history-table td:nth-child(5) { width: 80px; }
-        .history-table td:nth-child(6) { width: 50px; }
+        .history-table th:nth-child(2), 
+        .history-table td:nth-child(2) { 
+            width: 45px !important; 
+            min-width: 45px;
+            max-width: 45px;
+        } /* Usuario */
+        
+        .history-table th:nth-child(3), 
+        .history-table td:nth-child(3) { 
+            width: 55px !important; 
+            min-width: 55px;
+            max-width: 55px;
+        } /* Acción */
+        
+        .history-table th:nth-child(4), 
+        .history-table td:nth-child(4) { 
+            width: 40px !important; 
+            min-width: 40px;
+            max-width: 40px;
+        } /* Item # */
+        
+        .history-table th:nth-child(5), 
+        .history-table td:nth-child(5) { 
+            width: 65px !important; 
+            min-width: 65px;
+            max-width: 65px;
+        } /* Estado PPAP */
+        
+        .history-table th:nth-child(6), 
+        .history-table td:nth-child(6) { 
+            width: 35px !important; 
+            min-width: 35px;
+            max-width: 35px;
+        } /* Imagen */
+        
+        /* Total: 85+45+55+40+65+35 = 325px (MUY COMPACTO) */
         
         .image-viewer { 
             text-align: center; 
             background: #f9f9f9; 
             border: 1px solid #3498db; 
-            border-radius: 6px; 
-            padding: 12px; 
+            border-radius: 5px; 
+            padding: 10px; 
             position: sticky; 
-            top: 12px; 
+            top: 10px; 
             height: fit-content;
         }
+        
+        /* BOTÓN VIEW MUY PEQUEÑO */
         .btn-view { 
             background: #3498db; 
             color: white; 
             border: none; 
-            padding: 3px 6px; 
+            padding: 2px 4px !important; 
             border-radius: 2px; 
             cursor: pointer; 
-            font-size: 9px; 
+            font-size: 8px !important; 
             font-weight: bold;
-            transition: all 0.3s;
-            display: inline-block;
-            min-width: 40px;
+            display: block;
+            width: 30px;
+            margin: 0 auto;
+            line-height: 1.2;
         }
-        .btn-view:hover { 
-            background: #2980b9; 
-        }
+        
+        /* BADGES MUY PEQUEÑOS */
         .status-badge {
-            padding: 2px 4px;
+            padding: 1px 3px !important;
             border-radius: 2px;
-            font-size: 9px;
+            font-size: 8px !important;
             font-weight: bold;
             color: white;
-            display: inline-block;
+            display: block;
             text-align: center;
             text-transform: uppercase;
-            min-width: 60px;
-            max-width: 80px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            max-width: 100%;
         }
-        .status-approved {
-            background: #27ae60;
-        }
-        .status-pending {
-            background: #f39c12;
-        }
-        .status-rejected {
-            background: #e74c3c;
-        }
-        .status-na {
-            background: #95a5a6;
-        }
+        
+        .status-approved { background: #27ae60; }
+        .status-pending { background: #f39c12; }
+        .status-rejected { background: #e74c3c; }
+        .status-na { background: #95a5a6; }
+        
         .action-badge {
-            padding: 2px 4px;
+            padding: 1px 3px !important;
             border-radius: 2px;
-            font-size: 8px;
+            font-size: 8px !important;
             font-weight: bold;
             color: white;
-            display: inline-block;
+            display: block;
             text-align: center;
-            max-width: 70px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            max-width: 100%;
         }
+        
         .action-update { background: #3498db; }
         .action-image { background: #9b59b6; }
         .action-delete { background: #e74c3c; }
         .action-login { background: #2ecc71; }
         .action-create { background: #1abc9c; }
+        
         #historial-body tr:hover {
-            background-color: #f8f9fa;
+            background-color: #f5f5f5;
         }
+        
         .empty-state {
             text-align: center;
             padding: 20px;
             color: #7f8c8d;
             font-size: 10px;
         }
+        
         .item-highlight {
             font-weight: bold;
             color: #2c3e50;
-            padding: 1px 2px;
-            border-radius: 1px;
-            font-size: 10px;
+            display: block;
+            text-align: center;
+            font-size: 9px;
         }
         
-        /* Modal para imagen grande */
+        /* MODAL PARA IMAGEN GRANDE */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -166,43 +214,48 @@
             z-index: 10000;
             justify-content: center;
             align-items: center;
+            padding: 10px;
         }
         
         .modal-content {
             background: white;
-            border-radius: 8px;
-            width: 85%;
-            max-width: 700px;
-            max-height: 85vh;
+            border-radius: 5px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
             overflow: hidden;
-            position: relative;
         }
         
         .modal-header {
             background: #2c3e50;
             color: white;
-            padding: 10px 12px;
+            padding: 8px 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         
+        .modal-header h3 {
+            margin: 0;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
         .modal-body {
-            padding: 15px;
+            padding: 10px;
             text-align: center;
-            max-height: 65vh;
+            max-height: 70vh;
             overflow-y: auto;
         }
         
         .modal-image {
             max-width: 100%;
-            max-height: 55vh;
-            border-radius: 4px;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+            max-height: 60vh;
+            border-radius: 3px;
         }
         
         .modal-footer {
-            padding: 12px;
+            padding: 8px;
             background: #f8f9fa;
             text-align: center;
             display: flex;
@@ -211,12 +264,13 @@
         }
         
         .btn-modal {
-            padding: 6px 15px;
+            padding: 6px 12px;
             border: none;
-            border-radius: 4px;
+            border-radius: 3px;
             cursor: pointer;
             font-weight: bold;
             font-size: 11px;
+            min-width: 100px;
         }
         
         .btn-close {
@@ -229,31 +283,18 @@
             color: white;
         }
         
-        .btn-close:hover {
-            background: #7f8c8d;
-        }
-        
-        .btn-download:hover {
-            background: #219653;
-        }
-        
         .close-btn {
             background: none;
             border: none;
             color: white;
-            font-size: 18px;
+            font-size: 16px;
             cursor: pointer;
-            padding: 0;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
+            width: 20px;
+            height: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-        
-        .close-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
+            padding: 0;
         }
         
         #image-filename-modal {
@@ -261,65 +302,50 @@
             margin-top: 8px;
             color: #666;
             word-break: break-all;
-            padding: 0 5px;
         }
         
-        /* Scrollbar delgada para la tabla */
-        .table-container {
-            max-height: 450px;
-            overflow-y: auto;
-            overflow-x: auto;
-        }
-        .table-container::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        .table-container::-webkit-scrollbar-thumb {
-            background: #3498db;
-            border-radius: 3px;
-        }
-        .table-container::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 3px;
-        }
-        
-        /* Vista previa de imagen más pequeña */
+        /* VISTA PREVIA */
         .image-preview-container {
-            width:100%; 
-            height:150px; 
-            border:1px solid #ddd; 
-            display:flex; 
-            align-items:center; 
-            justify-content:center; 
-            margin:5px 0; 
-            background:#f5f5f5; 
-            overflow:hidden; 
-            border-radius:4px;
+            width: 100%; 
+            height: 120px; 
+            border: 1px solid #ddd; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            margin: 5px 0; 
+            background: #f5f5f5; 
+            overflow: hidden; 
+            border-radius: 3px;
         }
+        
         .image-preview {
-            max-width:100%; 
-            max-height:100%; 
+            max-width: 100%; 
+            max-height: 100%; 
             object-fit: contain;
         }
+        
         .compact-label {
-            font-size: 10px;
+            font-size: 9px;
             color: #666;
             margin: 0;
         }
+        
         .compact-value {
             font-size: 9px;
             color: #333;
             font-weight: bold;
         }
+        
         #image-info {
-            font-size:9px; 
-            color:#666; 
-            margin-top:6px; 
-            text-align:left; 
-            padding:6px; 
-            background:#f0f0f0; 
-            border-radius:3px;
+            font-size: 9px; 
+            color: #666; 
+            margin-top: 5px; 
+            text-align: left; 
+            padding: 5px; 
+            background: #f0f0f0; 
+            border-radius: 3px;
         }
+        
         .record-count {
             font-size: 9px;
             background: #3498db;
@@ -327,26 +353,59 @@
             padding: 2px 6px;
             border-radius: 10px;
         }
+        
         h3 {
-            font-size: 12px;
+            font-size: 11px;
             margin: 0 0 8px 0;
+            color: #2c3e50;
+        }
+        
+        header h1 {
+            font-size: 14px;
+            padding: 12px;
+        }
+        
+        /* SCROLLBAR MUY DELGADA */
+        .table-container::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        
+        .table-container::-webkit-scrollbar-thumb {
+            background: #3498db;
+            border-radius: 2px;
+        }
+        
+        .table-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .image-viewer {
+                position: static;
+            }
         }
     </style>
 </head>
 <body class="bg-blue">
-    <header><h1 style="padding: 15px; font-size: 16px;">Consultas Históricas</h1></header>
+    <header><h1>Consultas Históricas</h1></header>
 
-    <div style="padding: 12px; max-width: 1100px; margin: auto;">
+    <div style="padding: 10px; max-width: 900px; margin: auto;">
         <div class="search-box">
-            <input type="text" id="inputSearch" placeholder="Item #..." style="flex:1; padding:8px; border:1px solid #ccc; border-radius:3px; font-size:11px;">
-            <button id="btnConsultar" style="padding:8px 15px; background:#2c3e50; color:white; border:none; border-radius:3px; cursor:pointer; font-weight:bold; font-size:11px;">BUSCAR</button>
-            <button onclick="location.href='index.html'" style="padding:8px; background:#95a5a6; color:white; border:none; border-radius:3px; cursor:pointer; font-size:11px;">VOLVER</button>
+            <input type="text" id="inputSearch" placeholder="Item #..." style="flex:1; padding:6px; border:1px solid #ccc; border-radius:3px; font-size:11px;">
+            <button id="btnConsultar" style="padding:6px 12px; background:#2c3e50; color:white; border:none; border-radius:3px; cursor:pointer; font-weight:bold; font-size:11px;">BUSCAR</button>
+            <button onclick="location.href='index.html'" style="padding:6px; background:#95a5a6; color:white; border:none; border-radius:3px; cursor:pointer; font-size:11px;">VOLVER</button>
         </div>
 
         <div id="content-view" class="main-grid" style="display:none;">
             <div class="card">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                    <h3 style="color: #2c3e50;">📋 Historial</h3>
+                    <h3>📋 Historial</h3>
                     <span id="item-counter" class="record-count">0 registros</span>
                 </div>
                 <div class="table-container">
@@ -373,7 +432,7 @@
             </div>
 
             <div class="image-viewer">
-                <h3 id="img-caption" style="margin-bottom: 8px;">Vista Previa</h3>
+                <h3 id="img-caption">Vista Previa</h3>
                 <div class="image-preview-container">
                     <img id="drive-preview" src="imagenes/sin_foto.jpg" class="image-preview">
                 </div>
@@ -381,7 +440,7 @@
                     <p class="compact-label"><strong>Archivo:</strong> <span id="image-filename" class="compact-value">N/A</span></p>
                     <p class="compact-label"><strong>Fecha:</strong> <span id="image-date" class="compact-value">N/A</span></p>
                 </div>
-                <p class="compact-label" style="margin-top: 8px; text-align: center;">Haga clic en VIEW para ver imagen completa</p>
+                <p class="compact-label" style="margin-top: 5px; text-align: center;">Haga clic en VIEW para ver imagen completa</p>
             </div>
         </div>
     </div>
@@ -390,7 +449,7 @@
     <div id="imageModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 style="margin: 0; font-size: 13px;">Imagen Completa</h3>
+                <h3>Imagen Completa</h3>
                 <button class="close-btn" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body">
@@ -486,7 +545,7 @@
                     return fechaB - fechaA;
                 });
 
-                // Mostrar resultados (máximo 100 registros)
+                // Mostrar resultados
                 tbody.innerHTML = '';
                 const maxRecords = Math.min(movimientosFiltrados.length, 100);
                 
@@ -507,7 +566,7 @@
                     
                     // Determinar estado PPAP
                     const statusPPAP = m.statusMomento || m.accion || 'N/A';
-                    const statusDisplay = statusPPAP.length > 15 ? statusPPAP.substring(0, 12) + '...' : statusPPAP;
+                    const statusDisplay = statusPPAP.length > 10 ? statusPPAP.substring(0, 8) + '...' : statusPPAP;
                     
                     // Determinar clase de estado
                     let statusClass = 'status-na';
@@ -524,7 +583,7 @@
                     let actionClass = 'action-update';
                     const accion = m.accion || '';
                     const accionLower = accion.toLowerCase();
-                    const accionDisplay = accion.length > 15 ? accion.substring(0, 12) + '...' : accion;
+                    const accionDisplay = accion.length > 8 ? accion.substring(0, 7) + '...' : accion;
                     
                     if (accionLower.includes('imagen') || accionLower.includes('foto')) {
                         actionClass = 'action-image';
@@ -537,12 +596,12 @@
                     }
                     
                     const usuario = m.usuario || 'Desconocido';
-                    const usuarioDisplay = usuario.length > 10 ? usuario.substring(0, 8) + '...' : usuario;
+                    const usuarioDisplay = usuario.length > 6 ? usuario.substring(0, 5) + '...' : usuario;
                     
                     tbody.innerHTML += `
                         <tr>
                             <td title="${fechaFull.toLocaleString()}">${fechaStr}</td>
-                            <td><b title="${usuario}">${usuarioDisplay}</b></td>
+                            <td title="${usuario}"><b>${usuarioDisplay}</b></td>
                             <td><span class="action-badge ${actionClass}" title="${accion}">${accionDisplay}</span></td>
                             <td><span class="item-highlight">${itemBusqueda}</span></td>
                             <td><span class="status-badge ${statusClass}" title="${statusPPAP}">${statusDisplay}</span></td>
@@ -558,7 +617,7 @@
                 if(movimientosFiltrados.length > 100) {
                     tbody.innerHTML += `
                         <tr>
-                            <td colspan="6" style="text-align:center; padding:6px; font-size:9px; color:#7f8c8d;">
+                            <td colspan="6" style="text-align:center; padding:4px; font-size:8px; color:#7f8c8d;">
                                 Mostrando 100 de ${movimientosFiltrados.length} registros
                             </td>
                         </tr>
@@ -569,7 +628,7 @@
                 console.error("Error en consulta:", error);
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="6" style="text-align:center; color:#e74c3c; padding:15px; font-size:10px;">
+                        <td colspan="6" style="text-align:center; color:#e74c3c; padding:12px; font-size:10px;">
                             Error al consultar. Verifica conexión.
                         </td>
                     </tr>
@@ -613,36 +672,6 @@
                 filenameEl.innerHTML = "Error al cargar la imagen";
                 currentImageUrl = '';
                 currentImageFilename = '';
-            }
-        };
-
-        // Función para ver imagen en panel lateral
-        window.verImagenHistorica = async (nombreImg, fecha, estado) => {
-            const imgPreview = document.getElementById('drive-preview');
-            const caption = document.getElementById('img-caption');
-            const filenameEl = document.getElementById('image-filename');
-            const dateEl = document.getElementById('image-date');
-            
-            caption.innerHTML = `Cargando...`;
-            imgPreview.src = "imagenes/sin_foto.jpg";
-            filenameEl.textContent = nombreImg + '.jpg';
-            dateEl.textContent = fecha;
-            
-            try {
-                const res = await fetch(`${scriptURL}?itemName=${encodeURIComponent(nombreImg)}`);
-                const data = await res.json();
-                
-                if(data.result === "success" && data.id) {
-                    imgPreview.src = `https://lh3.googleusercontent.com/d/${data.id}`;
-                    caption.innerHTML = `Vista Previa`;
-                } else {
-                    imgPreview.src = "imagenes/sin_foto.jpg";
-                    caption.innerHTML = `Sin imagen`;
-                }
-            } catch(e) {
-                console.error("Error Drive:", e);
-                imgPreview.src = "imagenes/sin_foto.jpg";
-                caption.innerHTML = `Error`;
             }
         };
 
