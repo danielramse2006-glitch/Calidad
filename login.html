@@ -1,3 +1,5 @@
+[file name]: login.html
+[file content begin]
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -37,7 +39,17 @@
             };
 
             if (u === "admin" && p === "#Reyn0sa#") {
-                sessionStorage.setItem("currentUser", JSON.stringify({ usuario: 'admin' }));
+                sessionStorage.setItem("currentUser", JSON.stringify({ 
+                    usuario: 'admin',
+                    permisos: {
+                        registrar: true,
+                        actualizar: true,
+                        eliminar: true,
+                        subirDrive: true,
+                        consultar: true,
+                        editarComentarios: true
+                    }
+                }));
                 await logLogin('admin');
                 window.location.href = "index.html";
                 return;
@@ -62,3 +74,4 @@
     </script>
 </body>
 </html>
+[file content end]
