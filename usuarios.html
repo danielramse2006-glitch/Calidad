@@ -1,3 +1,5 @@
+[file name]: usuarios.html
+[file content begin]
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -10,6 +12,33 @@
         .user-info p { margin: 0; font-size: 11px; color: #7f8c8d; }
         .btn-delete { background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
         .btn-delete:hover { background: #c0392b; }
+        
+        .permissions-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .permission-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+        
+        .permission-badge {
+            font-size: 9px;
+            background: #27ae60;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 5px;
+        }
     </style>
 </head>
 <body style="background:#f4f7f6;">
@@ -20,52 +49,121 @@
             <div style="display:flex; flex-direction:column; gap:15px; margin-top:20px;">
                 <input type="text" id="u" placeholder="Usuario" style="width:100%; padding:10px;">
                 <input type="password" id="p" placeholder="Contraseña" style="width:100%; padding:10px;">
-                <div style="background:#f9f9f9; padding:15px; border-radius:5px; border:1px solid #ddd;">
-                    <label style="font-weight:bold; display:block; margin-bottom:10px;">Permisos:</label>
-                    <label><input type="checkbox" id="pr"> Registrar</label><br>
-                    <label><input type="checkbox" id="pa"> Actualizar</label><br>
-                    <label><input type="checkbox" id="pd"> Eliminar</label><br>
-                    <label><input type="checkbox" id="pi"> Subir Imágenes</label>
+                
+                <div class="permissions-grid">
+                    <h4 style="grid-column: span 3; margin: 0 0 10px 0; color: #2c3e50; font-size: 14px;">Permisos:</h4>
+                    
+                    <div class="permission-item">
+                        <input type="checkbox" id="pr">
+                        <label for="pr">Registrar</label>
+                        <span class="permission-badge">Básico</span>
+                    </div>
+                    
+                    <div class="permission-item">
+                        <input type="checkbox" id="pa">
+                        <label for="pa">Actualizar</label>
+                        <span class="permission-badge">Básico</span>
+                    </div>
+                    
+                    <div class="permission-item">
+                        <input type="checkbox" id="pd">
+                        <label for="pd">Eliminar</label>
+                        <span class="permission-badge">Avanzado</span>
+                    </div>
+                    
+                    <div class="permission-item">
+                        <input type="checkbox" id="pi">
+                        <label for="pi">Subir Imágenes</label>
+                        <span class="permission-badge">Drive</span>
+                    </div>
+                    
+                    <div class="permission-item">
+                        <input type="checkbox" id="pc">
+                        <label for="pc">Consultas Históricas</label>
+                        <span class="permission-badge">Consulta</span>
+                    </div>
+                    
+                    <div class="permission-item">
+                        <input type="checkbox" id="pcom">
+                        <label for="pcom">Editar Comentarios</label>
+                        <span class="permission-badge">Edición</span>
+                    </div>
                 </div>
+                
                 <button id="btnSave" class="btn-action" style="background:#27ae60; color:white; width:100%; padding:12px; border:none; border-radius:8px; cursor:pointer;">CREAR USUARIO</button>
-                <button onclick="location.href='index.html'" class="btn-action" style="width:100%; padding:10px; border:none; border-radius:8px; cursor:pointer;">VOLVER</button>
+                <button onclick="location.href='index.html'" class="btn-action" style="width:100%; padding:10px; border:none; border-radius:8px; cursor:pointer;">VOLVER AL INICIO</button>
             </div>
         </div>
+        
         <div style="background:white; padding:30px; border-radius:10px; width:100%; max-width:500px;">
             <h3>Usuarios Registrados</h3>
-            <div id="lista-usuarios-content" style="margin-top:20px; border: 1px solid #eee; border-radius: 8px;"></div>
+            <p style="font-size: 11px; color: #7f8c8d; margin-top: -10px; margin-bottom: 15px;">
+                * El usuario "admin" no se puede modificar/eliminar
+            </p>
+            <div id="lista-usuarios-content" style="margin-top:20px; border: 1px solid #eee; border-radius: 8px; max-height: 400px; overflow-y: auto;"></div>
         </div>
     </div>
+    
     <script type="module">
         import { db, checkAuth } from './config.js';
         import { collection, addDoc, query, where, getDocs, onSnapshot, doc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        
         const user = checkAuth();
-        if(!user || user.usuario !== 'admin') { alert("Acceso denegado."); window.location.href = "index.html"; }
+        if(!user || user.usuario !== 'admin') { 
+            alert("Acceso denegado. Solo el administrador puede gestionar usuarios."); 
+            window.location.href = "index.html"; 
+        }
 
         document.getElementById('btnSave').onclick = async () => {
             const u = document.getElementById('u').value.trim();
             const p = document.getElementById('p').value.trim();
             if(!u || !p) return alert("Datos incompletos.");
+            
+            // Validar que no sea "admin"
+            if(u.toLowerCase() === 'admin') {
+                alert("No se puede crear un usuario con el nombre 'admin'");
+                return;
+            }
+            
             const q = query(collection(db, "usuarios"), where("usuario", "==", u));
             const snap = await getDocs(q);
             if(!snap.empty) return alert("Usuario ya existe.");
+            
             try {
                 await addDoc(collection(db, "usuarios"), {
-                    usuario: u, password: p,
+                    usuario: u, 
+                    password: p,
                     permisos: {
                         registrar: document.getElementById('pr').checked,
                         actualizar: document.getElementById('pa').checked,
                         eliminar: document.getElementById('pd').checked,
-                        subirDrive: document.getElementById('pi').checked
-                    }
+                        subirDrive: document.getElementById('pi').checked,
+                        consultar: document.getElementById('pc').checked,
+                        editarComentarios: document.getElementById('pcom').checked
+                    },
+                    fechaCreacion: serverTimestamp()
                 });
+                
                 // LOG CREACION USUARIO
                 await addDoc(collection(db, "movimientos"), {
-                    usuario: user.usuario, accion: "Usuario Creado", detalle: `User: ${u}`, fecha: serverTimestamp()
+                    usuario: user.usuario, 
+                    accion: "Usuario Creado", 
+                    detalle: `Usuario: ${u}`, 
+                    fecha: serverTimestamp()
                 });
-                alert("Usuario creado.");
-                document.getElementById('u').value = ''; document.getElementById('p').value = '';
-            } catch (e) { alert("Error."); }
+                
+                alert("✅ Usuario creado exitosamente.");
+                document.getElementById('u').value = ''; 
+                document.getElementById('p').value = '';
+                // Resetear checkboxes
+                ['pr', 'pa', 'pd', 'pi', 'pc', 'pcom'].forEach(id => {
+                    document.getElementById(id).checked = false;
+                });
+                
+            } catch (e) { 
+                console.error(e);
+                alert("❌ Error al crear usuario."); 
+            }
         };
 
         const lista = document.getElementById('lista-usuarios-content');
@@ -73,25 +171,55 @@
             lista.innerHTML = '';
             snap.forEach((docSnap) => {
                 const d = docSnap.data();
+                
+                // No mostrar admin en la lista (no se puede eliminar)
                 if (d.usuario === 'admin') return;
+                
                 const div = document.createElement('div');
                 div.className = 'user-item';
+                
+                // Listar permisos activos
+                const permisosActivos = [];
+                if (d.permisos) {
+                    if (d.permisos.registrar) permisosActivos.push('Registrar');
+                    if (d.permisos.actualizar) permisosActivos.push('Actualizar');
+                    if (d.permisos.eliminar) permisosActivos.push('Eliminar');
+                    if (d.permisos.subirDrive) permisosActivos.push('Imágenes');
+                    if (d.permisos.consultar) permisosActivos.push('Consultas');
+                    if (d.permisos.editarComentarios) permisosActivos.push('Comentarios');
+                }
+                
                 div.innerHTML = `
-                    <div class="user-info"><b>${d.usuario}</b><p>Permisos: ${d.permisos.subirDrive ? 'Img ' : ''}${d.permisos.registrar?'Reg ':''}</p></div>
-                    <button class="btn-delete">ELIMINAR</button>
+                    <div class="user-info">
+                        <b>${d.usuario}</b>
+                        <p>Permisos: ${permisosActivos.length > 0 ? permisosActivos.join(', ') : 'Ninguno'}</p>
+                    </div>
+                    <button class="btn-delete" title="Eliminar usuario">ELIMINAR</button>
                 `;
+                
                 div.querySelector('.btn-delete').onclick = async () => {
-                    if (confirm("¿Eliminar?")) {
+                    if (confirm(`¿Estás seguro de eliminar al usuario "${d.usuario}"?`)) {
                         await deleteDoc(doc(db, "usuarios", docSnap.id));
+                        
                         await addDoc(collection(db, "movimientos"), {
-                             usuario: user.usuario, accion: "Usuario Eliminado", detalle: `User: ${d.usuario}`, fecha: serverTimestamp()
+                            usuario: user.usuario, 
+                            accion: "Usuario Eliminado", 
+                            detalle: `Usuario: ${d.usuario}`, 
+                            fecha: serverTimestamp()
                         });
-                        alert("Eliminado.");
+                        
+                        alert("✅ Usuario eliminado.");
                     }
                 };
+                
                 lista.appendChild(div);
             });
+            
+            if (lista.children.length === 0) {
+                lista.innerHTML = '<div style="text-align:center; padding:20px; color:#7f8c8d; font-size:12px;">No hay usuarios registrados (excepto admin)</div>';
+            }
         });
     </script>
 </body>
 </html>
+[file content end]
