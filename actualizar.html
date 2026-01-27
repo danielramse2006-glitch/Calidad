@@ -201,76 +201,67 @@
         let currentId = null;
         let itemActual = null;
         
-        // DB FIELDS (for saving/updating)
+        // DB FIELDS (EXACTLY as specified)
         const camposDB = [
-            "Item #", "Estatus", "Programador", "PPAP Part Number", "Component Description",
-            "Razon de Cambio", "PRP5/area", "Lider de Calidad", " OE/AFTERMARKET ", 
-            "Se entrego documentacion", "Muestras Recibidas", "Ubicacion Fisica ",
-            "Fecha de Programacion", "Proceso", "Update", "Comments", "Responsable",
-            "Instrucciones Especiales", "PPAP Type OE / SM AFTER Market", "PV Result",
-            "1-Design records", "2-ECN document", "3-Customer eng approval", "4-Design FMEA",
-            "5-Process Flow Diagram", "6-PFMEA", "7-Control Plan", "8-MSA Studies",
-            "9-Dimensional results", "10-Material, performance test result",
-            "11-Initial Process Studies", "12-Qualify Lab Documentation",
-            "13-Appereance Approval Report", "14-Sample product", "15-Checking Aids",
-            "16-Record de compliance", "17-Bulk material checklist", "18-PSW(Full or Interim)",
-            "Supplier PPAP package status", "Validation run readiness", "Samples on hand",
-            "Dimension status", "FFF review status", "AAR review status", "PPAP overall status"
-        ];
-
-        // NEW NAMES FOR UI (labels)
-        const camposUI = [
-            "Item #", 
-            "Estatus", 
-            "Programmer", 
-            "PPAP Part Number", 
-            "Component description", 
-            "Reason for Change", 
-            "PRP5/Area", 
-            "Quality Lead", 
-            "OE/AFTERMARKET", 
-            "documentation", 
-            "Samples received", 
-            "Location", 
-            "Validation date", 
-            "Process", 
-            "Update", 
-            "Comments(detalle)", 
-            "Responsible", 
-            "Special instruccions", 
-            "PPAP type OE / SM After Market", 
-            "PV Result",
-            "1 Design records", 
-            "2 ECN document", 
-            "3 Customer eng approval", 
-            "4 Design FMEA",
-            "5 Process Flow Diagram", 
-            "6 PFMEA", 
-            "7 Control Plan", 
-            "8 MSA Studies",
-            "9 Dimensional results", 
-            "10 Material, performance test result",
-            "11 Initial Process Studies", 
-            "12 Qualify Lab Documentation",
-            "13 Appereance Approval Report", 
-            "14 Sample product", 
-            "15 Checking Aids",
-            "16 Record of compliance", 
-            "17 Bulk material checklist", 
-            "18 PSW (Full or Interim)",
-            "Supplier PPAP package status", 
-            "Validation run readiness", 
+            "Item #",
+            "PPAP Part Number",
+            "Component description",
+            "Reason for Change",
+            "Product type",
+            "PRP5/Area",
+            "OE/AFTERMARKET",
+            "documentation",
+            "Samples received",
+            "Location",
+            "Dimensional",
+            "Special instruccions",
+            "Validation date",
+            "Programmer",
+            "Quality Lead",
+            "Reason",
+            "Comments(detalle)",
+            "Responsible",
+            "Estatus",
+            "PPAP type OE / SM\nAfter Market",
+            "1 Design records",
+            "2\nECN document",
+            "3\nCustomer eng approval",
+            "4\nDesign FMEA",
+            "5\nProcess Flow Diagram",
+            "6\nPFMEA",
+            "7\nControl Plan",
+            "8\nMSA Studies",
+            "9\nDimensional results",
+            "10\nMaterial, performance test result",
+            "11\nInitial Process Studies",
+            "12\nQualify Lab Documentation",
+            "13\nAppereance Approval Report",
+            "14\nSample product",
+            "15\nChecking Aids",
+            "16\nRecord of compliance",
+            "17\nBulk material checklist",
+            "18\nPSW\n(Full or Interim)",
+            "Supplier PPAP package status",
+            "Validation run readiness",
             "Samples on hand",
-            "Dimension status", 
-            "FFF review status", 
-            "AAR review status", 
+            "Dimension status",
+            "FFF review status",
+            "AAR review status",
             "PPAP overall status"
         ];
+
+        // UI NAMES (replace line breaks with spaces for display)
+        const camposUI = camposDB.map(field => field.replace(/\n/g, " "));
 
         // Important fields (to highlight)
         const importantFields = ["Item #", "Estatus", "PPAP overall status", "PPAP Part Number"];
 
-        // Función para validar PPAP Part Number
+        // Function to create safe ID
+        function createSafeId(fieldName) {
+            return fieldName.replace(/\n/g, "_").replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_]/g, "");
+        }
+
+        // Function to validate PPAP Part Number
         window.validarPPAPPartNumber = function(input) {
             const valor = input.value.trim();
             const statusValues = ["Pending", "In Process", "Approved", "Rejected", "Completed", "On Hold"];
@@ -366,12 +357,13 @@
                 form.innerHTML = '';
                 
                 camposDB.forEach((campoDB, index) => {
-                    const campoUI = camposUI[index] || campoDB;
+                    const campoUI = camposUI[index];
                     const div = document.createElement('div');
                     div.className = importantFields.includes(campoDB) ? 'field-group' : '';
                     
                     // Determine if required field
                     const isRequired = importantFields.includes(campoDB);
+                    const safeId = createSafeId(campoDB);
                     
                     // For status fields, use select
                     if (campoDB === "PPAP overall status" || campoDB === "Estatus") {
@@ -382,7 +374,7 @@
                             <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 5px; color: #2c3e50;">
                                 ${campoUI}${isRequired ? '<span style="color:#e74c3c;"> *</span>' : ''}
                             </label>
-                            <select id="upd-${campoDB}" class="status-select" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px; font-size:13px;">
+                            <select id="upd_${safeId}" class="status-select" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px; font-size:13px;">
                                 <option value="">Select status...</option>
                                 ${options.map(opt => 
                                     `<option value="${opt}" ${currentValue === opt ? 'selected' : ''}>${opt}</option>`
@@ -390,13 +382,13 @@
                             </select>
                         `;
                     } else if (campoDB === "PPAP Part Number") {
-                        // PPAP Part Number DEBE SER INPUT DE TEXTO, NO SELECT
+                        // PPAP Part Number MUST BE TEXT INPUT, NOT SELECT
                         div.innerHTML = `
                             <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 5px; color: #2c3e50;">
                                 ${campoUI}${isRequired ? '<span style="color:#e74c3c;"> *</span>' : ''}
                             </label>
                             <input type="text" 
-                                   id="upd-${campoDB}" 
+                                   id="upd_${safeId}" 
                                    value="${data[campoDB] || ''}" 
                                    style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px; font-size:13px;"
                                    placeholder="Example: P-001, 12345-ABC, ABC-2024"
@@ -408,7 +400,7 @@
                                 ${campoUI}${isRequired ? '<span style="color:#e74c3c;"> *</span>' : ''}
                             </label>
                             <input type="text" 
-                                   id="upd-${campoDB}" 
+                                   id="upd_${safeId}" 
                                    value="${data[campoDB] || ''}" 
                                    style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px; font-size:13px;"
                                    ${campoDB === "Item #" ? 'readonly style="background:#f5f5f5;"' : ''}>
@@ -422,8 +414,8 @@
                 document.getElementById('action-buttons').style.display = 'block';
                 document.getElementById('btnSubirDrive').style.display = 'block';
 
-                // Validar PPAP Part Number inicialmente
-                const ppapInput = document.getElementById('upd-PPAP Part Number');
+                // Validate PPAP Part Number initially
+                const ppapInput = document.getElementById('upd_PPAP_Part_Number');
                 if (ppapInput) {
                     validarPPAPPartNumber(ppapInput);
                 }
@@ -563,8 +555,8 @@
                 return;
             }
 
-            // VALIDAR PPAP Part Number
-            const ppapPartNumberInput = document.getElementById('upd-PPAP Part Number');
+            // VALIDATE PPAP Part Number
+            const ppapPartNumberInput = document.getElementById('upd_PPAP_Part_Number');
             if (ppapPartNumberInput) {
                 const ppapValue = ppapPartNumberInput.value.trim();
                 const statusValues = ["Pending", "In Process", "Approved", "Rejected", "Completed", "On Hold"];
@@ -581,7 +573,8 @@
             const importantValues = {};
             let hasError = false;
             importantFields.forEach(field => {
-                const element = document.getElementById(`upd-${field}`);
+                const safeId = createSafeId(field);
+                const element = document.getElementById(`upd_${safeId}`);
                 if (element) {
                     const value = element.tagName === 'SELECT' ? element.value : element.value.trim();
                     importantValues[field] = value;
@@ -605,7 +598,8 @@
 
             const newData = {};
             camposDB.forEach(c => {
-                const element = document.getElementById(`upd-${c}`);
+                const safeId = createSafeId(c);
+                const element = document.getElementById(`upd_${safeId}`);
                 if (element) {
                     newData[c] = element.tagName === 'SELECT' ? element.value : element.value.trim();
                 }

@@ -29,6 +29,14 @@
             transform: none !important;
             background: white !important;
         }
+        
+        .compact-header {
+            font-size: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
+        }
     </style>
 </head>
 <body class="bg-blue">
@@ -192,74 +200,65 @@
             }
         }
 
-        // DB FIELDS (for compatibility)
+        // DB FIELDS (EXACTLY as specified)
         const camposDB = [
-            "Item #", "Estatus", "Programador", "PPAP Part Number", "Component Description",
-            "Razon de Cambio", "PRP5/area", "Lider de Calidad", " OE/AFTERMARKET ", 
-            "Se entrego documentacion", "Muestras Recibidas", "Ubicacion Fisica ",
-            "Fecha de Programacion", "Proceso", "Update", "Comments", "Responsable",
-            "Instrucciones Especiales", "PPAP Type OE / SM AFTER Market", "PV Result",
-            "1-Design records", "2-ECN document", "3-Customer eng approval", "4-Design FMEA",
-            "5-Process Flow Diagram", "6-PFMEA", "7-Control Plan", "8-MSA Studies",
-            "9-Dimensional results", "10-Material, performance test result",
-            "11-Initial Process Studies", "12-Qualify Lab Documentation",
-            "13-Appereance Approval Report", "14-Sample product", "15-Checking Aids",
-            "16-Record de compliance", "17-Bulk material checklist", "18-PSW(Full or Interim)",
-            "Supplier PPAP package status", "Validation run readiness", "Samples on hand",
-            "Dimension status", "FFF review status", "AAR review status", "PPAP overall status"
-        ];
-
-        // NEW NAMES FOR UI
-        const camposUI = [
-            "Item #", 
-            "Estatus", 
-            "Programmer", 
-            "PPAP Part Number", 
-            "Component description", 
-            "Reason for Change", 
-            "PRP5/Area", 
-            "Quality Lead", 
-            "OE/AFTERMARKET", 
-            "documentation", 
-            "Samples received", 
-            "Location", 
-            "Validation date", 
-            "Process", 
-            "Update", 
-            "Comments(detalle)", 
-            "Responsible", 
-            "Special instruccions", 
-            "PPAP type OE / SM After Market", 
-            "PV Result",
-            "1 Design records", 
-            "2 ECN document", 
-            "3 Customer eng approval", 
-            "4 Design FMEA",
-            "5 Process Flow Diagram", 
-            "6 PFMEA", 
-            "7 Control Plan", 
-            "8 MSA Studies",
-            "9 Dimensional results", 
-            "10 Material, performance test result",
-            "11 Initial Process Studies", 
-            "12 Qualify Lab Documentation",
-            "13 Appereance Approval Report", 
-            "14 Sample product", 
-            "15 Checking Aids",
-            "16 Record of compliance", 
-            "17 Bulk material checklist", 
-            "18 PSW (Full or Interim)",
-            "Supplier PPAP package status", 
-            "Validation run readiness", 
+            "Item #",
+            "PPAP Part Number",
+            "Component description",
+            "Reason for Change",
+            "Product type",
+            "PRP5/Area",
+            "OE/AFTERMARKET",
+            "documentation",
+            "Samples received",
+            "Location",
+            "Dimensional",
+            "Special instruccions",
+            "Validation date",
+            "Programmer",
+            "Quality Lead",
+            "Reason",
+            "Comments(detalle)",
+            "Responsible",
+            "Estatus",
+            "PPAP type OE / SM\nAfter Market",
+            "1 Design records",
+            "2\nECN document",
+            "3\nCustomer eng approval",
+            "4\nDesign FMEA",
+            "5\nProcess Flow Diagram",
+            "6\nPFMEA",
+            "7\nControl Plan",
+            "8\nMSA Studies",
+            "9\nDimensional results",
+            "10\nMaterial, performance test result",
+            "11\nInitial Process Studies",
+            "12\nQualify Lab Documentation",
+            "13\nAppereance Approval Report",
+            "14\nSample product",
+            "15\nChecking Aids",
+            "16\nRecord of compliance",
+            "17\nBulk material checklist",
+            "18\nPSW\n(Full or Interim)",
+            "Supplier PPAP package status",
+            "Validation run readiness",
             "Samples on hand",
-            "Dimension status", 
-            "FFF review status", 
-            "AAR review status", 
+            "Dimension status",
+            "FFF review status",
+            "AAR review status",
             "PPAP overall status"
         ];
 
+        // UI NAMES (replace line breaks with spaces for display)
+        const camposUI = camposDB.map(field => field.replace(/\n/g, " "));
+
         const head = document.getElementById('table-head');
-        camposUI.forEach(c => head.innerHTML += `<th>${c}</th>`);
+        camposUI.forEach(c => {
+            const th = document.createElement('th');
+            th.className = 'compact-header';
+            th.textContent = c;
+            head.appendChild(th);
+        });
         head.innerHTML += `<th>ACTIONS</th>`;
 
         let productosLocal = [];
@@ -275,9 +274,12 @@
             lista.forEach(p => {
                 const tr = document.createElement('tr');
                 
-                // Use camposDB to access data, but display in camposUI order
+                // Use camposDB to access data, display in camposUI order
                 camposDB.forEach(campoDB => {
-                    tr.innerHTML += `<td>${p[campoDB]||'-'}</td>`;
+                    const td = document.createElement('td');
+                    td.textContent = p[campoDB] || '-';
+                    td.style.fontSize = '11px';
+                    tr.appendChild(td);
                 });
                 
                 const tdBtn = document.createElement('td');
@@ -297,7 +299,7 @@
             const rPpap = document.getElementById('rep-data-ppap');
             rMain.innerHTML = ''; rPpap.innerHTML = '';
 
-            // Show in report with new names
+            // Show in report with UI names
             camposDB.forEach((key, index) => {
                 const nombreMostrar = camposUI[index] || key;
                 const html = `<div style="border-bottom:1px solid #eee; padding:2px 0;">
