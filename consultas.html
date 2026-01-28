@@ -45,7 +45,6 @@
             flex-direction: column;
         }
         
-        /* VERY COMPACT TABLE */
         .table-container {
             flex: 1;
             overflow-y: auto;
@@ -63,7 +62,6 @@
             min-width: 280px;
         }
         
-        /* VERY THIN HEADERS */
         .history-table th { 
             background: linear-gradient(to bottom, #003366, #004c8c) !important; 
             color: white; 
@@ -84,7 +82,6 @@
             border-right: none;
         }
         
-        /* VERY THIN CELLS */
         .history-table td { 
             padding: 2px 1px !important; 
             border-bottom: 1px solid #eee; 
@@ -102,36 +99,35 @@
             border-right: none;
         }
         
-        /* NARROWER WIDTHS FOR NEW COLUMNS */
         .history-table th:nth-child(1), 
         .history-table td:nth-child(1) { 
             width: 70px !important; 
-        } /* Date/Time */
+        }
         
         .history-table th:nth-child(2), 
         .history-table td:nth-child(2) { 
             width: 50px !important; 
-        } /* Part Number */
+        }
         
         .history-table th:nth-child(3), 
         .history-table td:nth-child(3) { 
             width: 45px !important; 
-        } /* Status */
+        }
         
         .history-table th:nth-child(4), 
         .history-table td:nth-child(4) { 
             width: 30px !important; 
-        } /* Revision */
+        }
         
         .history-table th:nth-child(5), 
         .history-table td:nth-child(5) { 
             width: 25px !important; 
-        } /* PSW */
+        }
         
         .history-table th:nth-child(6), 
         .history-table td:nth-child(6) { 
             width: 25px !important; 
-        } /* PV */
+        }
         
         .image-viewer { 
             background: #f9f9f9; 
@@ -145,7 +141,6 @@
             flex-direction: column;
         }
         
-        /* VERY SMALL VIEW BUTTONS */
         .btn-view { 
             background: #3498db; 
             color: white; 
@@ -162,14 +157,13 @@
         }
         
         .btn-psw {
-            background: #3498db !important; /* Blue for PSW */
+            background: #3498db !important;
         }
         
         .btn-pv {
-            background: #9b59b6 !important; /* Purple for PV */
+            background: #9b59b6 !important;
         }
         
-        /* VERY SMALL BADGES */
         .status-badge {
             padding: 1px 2px !important;
             border-radius: 1px;
@@ -207,7 +201,6 @@
             font-size: 8px;
         }
         
-        /* MODAL FOR FULL IMAGE */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -309,7 +302,6 @@
             word-break: break-all;
         }
         
-        /* PREVIEW */
         .image-preview-container {
             flex: 1;
             border: 1px solid #ddd; 
@@ -366,7 +358,6 @@
             color: #2c3e50;
         }
         
-        /* VERY THIN SCROLLBAR */
         .table-container::-webkit-scrollbar {
             width: 3px;
             height: 3px;
@@ -381,7 +372,6 @@
             background: #f1f1f1;
         }
         
-        /* SMALL INPUTS */
         input, button {
             font-size: 10px !important;
         }
@@ -395,7 +385,6 @@
             white-space: nowrap;
         }
         
-        /* RESPONSIVE */
         @media (max-width: 768px) {
             .main-grid {
                 grid-template-columns: 1fr;
@@ -410,7 +399,6 @@
             }
         }
         
-        /* FORCE COMPACTNESS */
         .history-table * {
             max-height: 20px !important;
         }
@@ -420,26 +408,23 @@
             padding: 0 !important;
         }
         
-        /* IMAGE LOADING STATES */
-        .image-loading {
-            opacity: 0.5;
-            filter: grayscale(50%);
+        /* LOADING STATES */
+        .loading-row {
+            background: #f9f9f9 !important;
         }
         
-        .image-found {
-            border: 2px solid #27ae60 !important;
+        .btn-loading {
+            opacity: 0.7;
+            cursor: wait !important;
         }
         
-        .image-not-found {
-            border: 2px solid #e74c3c !important;
-        }
-        
-        /* BADGE FOR IMAGE SOURCE */
+        /* BADGE FOR SOURCE */
         .source-badge {
             font-size: 6px !important;
             padding: 0px 2px !important;
             border-radius: 2px;
             margin-left: 2px;
+            vertical-align: super;
         }
         
         .source-github {
@@ -452,13 +437,12 @@
             color: white;
         }
         
-        /* HIGHLIGHT ROWS WITH IMAGES */
-        .row-with-image {
-            background-color: #f0fff4 !important;
-        }
-        
-        .row-with-image:hover {
-            background-color: #e0f7e9 !important;
+        /* FAST SEARCH INDICATOR */
+        .fast-search {
+            font-size: 9px;
+            color: #27ae60;
+            margin-left: 10px;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -481,7 +465,7 @@
         </div>
     </div>
 
-    <header><h1>Historical Queries</h1></header>
+    <header><h1>Historical Queries <span class="fast-search" id="search-status"></span></h1></header>
 
     <div style="padding: 8px; max-width: 800px; margin: auto;">
         <div class="search-box">
@@ -528,7 +512,6 @@
                     <p class="compact-label"><strong>File:</strong> <span id="image-filename" class="compact-value">N/A</span></p>
                     <p class="compact-label"><strong>Type:</strong> <span id="image-type" class="compact-value">N/A</span></p>
                     <p class="compact-label"><strong>Date:</strong> <span id="image-date" class="compact-value">N/A</span></p>
-                    <p class="compact-label"><strong>Source:</strong> <span id="image-source" class="compact-value">N/A</span></p>
                 </div>
                 <p class="compact-label" style="margin-top: 4px; text-align: center;">Click PSW or PV buttons for full image</p>
             </div>
@@ -583,78 +566,108 @@
 
         let currentImageUrl = '';
         let currentImageFilename = '';
-        let currentImageType = ''; // PSW or PV
-        let currentImageSource = ''; // GitHub or Drive
+        let currentImageType = '';
+        let imageCheckCache = new Map();
+        let searchInProgress = false;
 
-        // Cache para verificar si imágenes existen
-        const imageCache = new Map();
-
-        // Función para verificar si una imagen existe en GitHub
-        async function checkImageExistsGitHub(imageUrl) {
-            if (imageCache.has(imageUrl)) {
-                return imageCache.get(imageUrl);
+        // Función optimizada para verificar imágenes
+        async function checkImageFast(imageName, type) {
+            const cacheKey = `${imageName}_${type}`;
+            
+            // Verificar cache primero
+            if (imageCheckCache.has(cacheKey)) {
+                return imageCheckCache.get(cacheKey);
             }
             
-            try {
-                const response = await fetch(imageUrl, { method: 'HEAD' });
-                const exists = response.ok;
-                imageCache.set(imageUrl, exists);
-                return exists;
-            } catch (error) {
-                imageCache.set(imageUrl, false);
-                return false;
-            }
-        }
-
-        // Función para buscar imágenes en GitHub primero, luego Drive
-        async function findImageSource(imageName, imageType) {
+            // Intentar GitHub primero (más rápido)
             const githubUrl = `imagenes/${imageName}.jpg`;
-            const driveImageName = imageName;
             
-            // Primero intentar GitHub
-            const existsInGitHub = await checkImageExistsGitHub(githubUrl);
-            if (existsInGitHub) {
-                return {
-                    url: githubUrl,
-                    source: 'GitHub',
-                    type: imageType
-                };
+            // Usar fetch con timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 1000); // 1 segundo timeout
+            
+            try {
+                const response = await fetch(githubUrl, { 
+                    method: 'HEAD',
+                    signal: controller.signal,
+                    cache: 'no-cache'
+                });
+                clearTimeout(timeoutId);
+                
+                if (response.ok) {
+                    const result = {
+                        exists: true,
+                        source: 'GitHub',
+                        url: githubUrl,
+                        downloadUrl: githubUrl,
+                        type: type
+                    };
+                    imageCheckCache.set(cacheKey, result);
+                    return result;
+                }
+            } catch (error) {
+                // GitHub falló, continuar con Drive
             }
             
-            // Si no está en GitHub, intentar Drive
+            // Si no está en GitHub, intentar Drive (más lento)
             try {
-                const res = await fetch(`${scriptURL}?itemName=${encodeURIComponent(driveImageName)}`);
+                const res = await fetch(`${scriptURL}?itemName=${encodeURIComponent(imageName)}`);
                 const data = await res.json();
                 
                 if(data.result === "success" && data.id) {
-                    return {
+                    const result = {
+                        exists: true,
+                        source: 'Drive',
                         url: `https://lh3.googleusercontent.com/d/${data.id}`,
                         downloadUrl: `https://drive.google.com/uc?export=download&id=${data.id}`,
-                        source: 'Drive',
-                        type: imageType,
+                        type: type,
                         driveId: data.id
                     };
+                    imageCheckCache.set(cacheKey, result);
+                    return result;
                 }
             } catch (e) {
                 console.error(`Error checking Drive for ${imageName}:`, e);
             }
             
-            return null;
+            // No se encontró la imagen
+            const notFoundResult = {
+                exists: false,
+                source: null,
+                url: null,
+                type: type
+            };
+            imageCheckCache.set(cacheKey, notFoundResult);
+            return notFoundResult;
         }
 
         document.getElementById('btnConsultar').onclick = async () => {
+            if (searchInProgress) {
+                alert("Search already in progress. Please wait...");
+                return;
+            }
+            
             const itemBusqueda = document.getElementById('inputSearch').value.trim();
             if(!itemBusqueda) {
                 alert("Please enter an Item # or Part Number");
                 return;
             }
 
+            searchInProgress = true;
             const tbody = document.getElementById('historial-body');
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:10px; font-size:9px;"><div style="display:inline-block; padding:6px; background:#f8f9fa; border-radius:3px;">🔍 Searching...</div></td></tr>';
+            const btnConsultar = document.getElementById('btnConsultar');
+            const originalBtnText = btnConsultar.innerHTML;
             
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:10px; font-size:9px;"><div style="display:inline-block; padding:6px; background:#f8f9fa; border-radius:3px;">🔍 Loading history...</div></td></tr>';
             document.getElementById('content-view').style.display = 'grid';
+            document.getElementById('search-status').textContent = '⚡ Fast search...';
+            btnConsultar.innerHTML = "⏳ SEARCHING...";
+            btnConsultar.disabled = true;
 
             try {
+                // Clear cache for new search
+                imageCheckCache.clear();
+                
                 // Search in productos collection for matching item
                 const qProductos = query(collection(db, "productos"), where("Item #", "==", itemBusqueda));
                 const snapProductos = await getDocs(qProductos);
@@ -676,7 +689,7 @@
                 const revision = producto["Revision"] || "N/A";
                 const status = producto["PPAP overall status"] || "Unknown";
 
-                // Search movements for this item
+                // Search movements for this item - limit to 100 for speed
                 const qMovimientos = query(
                     collection(db, "movimientos"), 
                     orderBy("fecha", "desc")
@@ -690,7 +703,7 @@
                         const m = doc.data();
                         const detalle = m.detalle || '';
                         
-                        // Filter movements for this item
+                        // Fast filter - just check if item is mentioned
                         if (detalle.includes(itemBusqueda)) {
                             movimientosFiltrados.push({ 
                                 id: doc.id, 
@@ -716,54 +729,17 @@
                     });
                 }
 
-                // Buscar imágenes para cada fecha y ordenar por disponibilidad de imágenes
-                const movimientosConImagenes = [];
-                
-                for (const movimiento of movimientosFiltrados) {
-                    const fechaFull = movimiento.fecha ? new Date(movimiento.fecha.seconds * 1000) : new Date();
-                    const isoFecha = fechaFull.toISOString().split('T')[0];
-                    const nombreArchivoPSW = `${itemBusqueda}_${isoFecha}`;
-                    const nombreArchivoPV = `${itemBusqueda}-2-${isoFecha}`;
-                    
-                    // Verificar imágenes en paralelo
-                    const [pswImageInfo, pvImageInfo] = await Promise.all([
-                        findImageSource(nombreArchivoPSW, 'PSW'),
-                        findImageSource(nombreArchivoPV, 'PV')
-                    ]);
-                    
-                    movimientosConImagenes.push({
-                        ...movimiento,
-                        fechaFull,
-                        isoFecha,
-                        pswImageInfo,
-                        pvImageInfo,
-                        hasImage: !!(pswImageInfo || pvImageInfo)
-                    });
-                }
-
-                // Ordenar: primero los que tienen imágenes, luego por fecha (más reciente primero)
-                movimientosConImagenes.sort((a, b) => {
-                    // Primero por si tiene imágenes
-                    if (a.hasImage && !b.hasImage) return -1;
-                    if (!a.hasImage && b.hasImage) return 1;
-                    
-                    // Luego por fecha (más reciente primero)
-                    return b.fechaFull - a.fechaFull;
-                });
-
                 // Update counter
-                const totalRecords = movimientosConImagenes.length;
-                const recordsWithImages = movimientosConImagenes.filter(m => m.hasImage).length;
-                document.getElementById('item-counter').textContent = 
-                    `${totalRecords} records (${recordsWithImages} with images)`;
+                document.getElementById('item-counter').textContent = `${movimientosFiltrados.length} records`;
 
-                // Show results
+                // Show table IMMEDIATELY without image checking
                 tbody.innerHTML = '';
-                const maxRecords = Math.min(movimientosConImagenes.length, 150);
+                const maxRecords = Math.min(movimientosFiltrados.length, 100); // Limit to 100
                 
                 for(let i = 0; i < maxRecords; i++) {
-                    const m = movimientosConImagenes[i];
-                    const fechaStr = m.fechaFull.toLocaleDateString('en-US', {
+                    const m = movimientosFiltrados[i];
+                    const fechaFull = m.fecha ? new Date(m.fecha.seconds * 1000) : new Date();
+                    const fechaStr = fechaFull.toLocaleDateString('en-US', {
                         day: '2-digit',
                         month: '2-digit',
                         year: '2-digit',
@@ -786,56 +762,47 @@
                         statusClass = 'status-rejected';
                     }
                     
-                    // Determinar clase de fila
-                    const rowClass = m.hasImage ? 'row-with-image' : '';
+                    const isoFecha = fechaFull.toISOString().split('T')[0];
+                    const nombreArchivoPSW = `${itemBusqueda}_${isoFecha}`;
+                    const nombreArchivoPV = `${itemBusqueda}-2-${isoFecha}`;
                     
-                    // Crear botones PSW y PV con indicador de fuente
-                    const pswButton = m.pswImageInfo ? 
-                        `<button class="btn-view btn-psw" onclick="verImagen('${m.isoFecha}', 'PSW', '${m.pswImageInfo.source}')" title="View PSW image (${m.pswImageInfo.source})">
-                            PSW <span class="source-badge source-${m.pswImageInfo.source.toLowerCase()}">${m.pswImageInfo.source.charAt(0)}</span>
-                        </button>` :
-                        `<button class="btn-view btn-psw" style="opacity:0.5; cursor:not-allowed;" title="No PSW image" disabled>PSW</button>`;
-                    
-                    const pvButton = m.pvImageInfo ? 
-                        `<button class="btn-view btn-pv" onclick="verImagen('${m.isoFecha}', 'PV', '${m.pvImageInfo.source}')" title="View PV image (${m.pvImageInfo.source})">
-                            PV <span class="source-badge source-${m.pvImageInfo.source.toLowerCase()}">${m.pvImageInfo.source.charAt(0)}</span>
-                        </button>` :
-                        `<button class="btn-view btn-pv" style="opacity:0.5; cursor:not-allowed;" title="No PV image" disabled>PV</button>`;
-                    
+                    // Show buttons immediately (they will check images on click)
                     tbody.innerHTML += `
-                        <tr class="${rowClass}">
-                            <td title="${m.fechaFull.toLocaleString()}">${fechaStr}</td>
+                        <tr>
+                            <td title="${fechaFull.toLocaleString()}">${fechaStr}</td>
                             <td><span class="part-number-highlight" title="${m.partNumber || partNumber}">${m.partNumber || partNumber}</span></td>
                             <td><span class="status-badge ${statusClass}" title="${statusPPAP}">${statusDisplay}</span></td>
                             <td>${m.revision || revision}</td>
-                            <td>${pswButton}</td>
-                            <td>${pvButton}</td>
+                            <td>
+                                <button class="btn-view btn-psw" onclick="verImagenPSWFast('${nombreArchivoPSW}', '${isoFecha}', this)" title="Check PSW image">
+                                    PSW
+                                </button>
+                            </td>
+                            <td>
+                                <button class="btn-view btn-pv" onclick="verImagenPVFast('${nombreArchivoPV}', '${isoFecha}', this)" title="Check PV image">
+                                    PV
+                                </button>
+                            </td>
                         </tr>
                     `;
                 }
                 
-                if(movimientosConImagenes.length > 150) {
+                if(movimientosFiltrados.length > 100) {
                     tbody.innerHTML += `
                         <tr>
                             <td colspan="6" style="text-align:center; padding:3px; font-size:7px; color:#7f8c8d;">
-                                Showing 150 of ${movimientosConImagenes.length} records
+                                Showing 100 of ${movimientosFiltrados.length} records
                             </td>
                         </tr>
                     `;
                 }
 
-                // Mostrar la primera imagen disponible en el preview
-                const firstImageRecord = movimientosConImagenes.find(m => m.hasImage);
-                if (firstImageRecord) {
-                    const imageInfo = firstImageRecord.pswImageInfo || firstImageRecord.pvImageInfo;
-                    if (imageInfo) {
-                        document.getElementById('drive-preview').src = imageInfo.url;
-                        document.getElementById('image-filename').textContent = `${imageInfo.type === 'PSW' ? itemBusqueda + '_' + firstImageRecord.isoFecha : itemBusqueda + '-2-' + firstImageRecord.isoFecha}.jpg`;
-                        document.getElementById('image-type').textContent = imageInfo.type;
-                        document.getElementById('image-date').textContent = firstImageRecord.isoFecha;
-                        document.getElementById('image-source').textContent = imageInfo.source;
-                        document.getElementById('image-source').className = `compact-value source-${imageInfo.source.toLowerCase()}`;
-                    }
+                document.getElementById('search-status').textContent = '✅ Ready';
+
+                // Check images for the FIRST 5 records only (for preview)
+                if (movimientosFiltrados.length > 0) {
+                    const firstFive = movimientosFiltrados.slice(0, 5);
+                    checkFirstImagesForPreview(firstFive, itemBusqueda);
                 }
 
             } catch(error) {
@@ -847,59 +814,128 @@
                         </td>
                     </tr>
                 `;
+                document.getElementById('search-status').textContent = '❌ Error';
+            } finally {
+                searchInProgress = false;
+                btnConsultar.innerHTML = originalBtnText;
+                btnConsultar.disabled = false;
             }
         };
 
-        // Función unificada para ver imágenes
-        window.verImagen = async (fecha, tipo, source) => {
-            const itemBusqueda = document.getElementById('inputSearch').value.trim();
-            if (!itemBusqueda) return;
+        // Función para verificar imágenes de los primeros registros (para preview)
+        async function checkFirstImagesForPreview(movimientos, itemBusqueda) {
+            if (movimientos.length === 0) return;
             
+            const previewPromises = [];
+            
+            for (let i = 0; i < Math.min(movimientos.length, 5); i++) {
+                const m = movimientos[i];
+                const fechaFull = m.fecha ? new Date(m.fecha.seconds * 1000) : new Date();
+                const isoFecha = fechaFull.toISOString().split('T')[0];
+                const nombreArchivoPSW = `${itemBusqueda}_${isoFecha}`;
+                
+                previewPromises.push(checkImageFast(nombreArchivoPSW, 'PSW'));
+            }
+            
+            try {
+                const results = await Promise.all(previewPromises);
+                const firstImage = results.find(r => r.exists);
+                
+                if (firstImage) {
+                    document.getElementById('drive-preview').src = firstImage.url;
+                    document.getElementById('image-filename').textContent = firstImage.type === 'PSW' ? 
+                        `${itemBusqueda}_${movimientos[0].fecha ? new Date(movimientos[0].fecha.seconds * 1000).toISOString().split('T')[0] : ''}.jpg` : 
+                        `${itemBusqueda}-2-${movimientos[0].fecha ? new Date(movimientos[0].fecha.seconds * 1000).toISOString().split('T')[0] : ''}.jpg`;
+                    document.getElementById('image-type').textContent = firstImage.type;
+                    document.getElementById('image-date').textContent = movimientos[0].fecha ? 
+                        new Date(movimientos[0].fecha.seconds * 1000).toISOString().split('T')[0] : '';
+                }
+            } catch (error) {
+                console.log("Preview image check failed:", error);
+            }
+        }
+
+        // Función rápida para ver PSW (check on click)
+        window.verImagenPSWFast = async (nombreImg, fecha, button) => {
             const modal = document.getElementById('imageModal');
             const modalImage = document.getElementById('modal-image');
             const modalTitle = document.getElementById('modal-title');
             const filenameEl = document.getElementById('image-filename-modal');
             
-            // Determinar nombre de archivo
-            const nombreArchivo = tipo === 'PSW' ? 
-                `${itemBusqueda}_${fecha}` : 
-                `${itemBusqueda}-2-${fecha}`;
+            // Show loading
+            button.classList.add('btn-loading');
+            button.disabled = true;
+            button.innerHTML = '⏳';
             
-            // Show loading in modal
-            modalImage.src = "";
-            modalImage.className = "modal-image image-loading";
-            modalTitle.textContent = `${tipo} Image`;
-            filenameEl.innerHTML = `Loading from ${source}...`;
-            modal.style.display = 'flex';
+            const result = await checkImageFast(nombreImg, 'PSW');
             
-            // Buscar la imagen
-            const imageInfo = await findImageSource(nombreArchivo, tipo);
+            button.classList.remove('btn-loading');
+            button.disabled = false;
             
-            if (imageInfo) {
-                // Actualizar variables globales
-                currentImageUrl = imageInfo.downloadUrl || imageInfo.url;
-                currentImageFilename = `${nombreArchivo}.jpg`;
-                currentImageType = tipo;
-                currentImageSource = imageInfo.source;
+            if (result.exists) {
+                // Update button with source badge
+                button.innerHTML = `PSW <span class="source-badge source-${result.source.toLowerCase()}">${result.source.charAt(0)}</span>`;
                 
-                // Mostrar imagen en modal
-                modalImage.src = imageInfo.url;
-                modalImage.className = "modal-image image-found";
+                // Show in modal
+                modalTitle.textContent = "PSW Image";
+                modalImage.src = result.url;
+                currentImageUrl = result.downloadUrl;
+                currentImageFilename = `${nombreImg}.jpg`;
+                currentImageType = 'PSW';
+                
                 filenameEl.innerHTML = `
-                    <strong>Type:</strong> ${tipo} (${tipo === 'PSW' ? 'Part Submission Warrant' : 'Process Validation'})<br>
-                    <strong>File:</strong> ${nombreArchivo}.jpg<br>
+                    <strong>Type:</strong> PSW (Part Submission Warrant)<br>
+                    <strong>File:</strong> ${nombreImg}.jpg<br>
                     <strong>Date:</strong> ${fecha}<br>
-                    <strong>Source:</strong> ${imageInfo.source}<br>
-                    <strong>Format:</strong> ${tipo === 'PSW' ? 'Item_Date' : 'Item-2-Date'}
+                    <strong>Source:</strong> ${result.source}<br>
+                    <strong>Format:</strong> Item_Date
                 `;
+                modal.style.display = 'flex';
             } else {
-                modalImage.src = "imagenes/sin_foto.jpg";
-                modalImage.className = "modal-image image-not-found";
-                filenameEl.innerHTML = `No ${tipo} image found for ${fecha}`;
-                currentImageUrl = '';
-                currentImageFilename = '';
-                currentImageType = '';
-                currentImageSource = '';
+                button.innerHTML = 'PSW';
+                alert(`No PSW image found for ${fecha}`);
+            }
+        };
+
+        // Función rápida para ver PV (check on click)
+        window.verImagenPVFast = async (nombreImg, fecha, button) => {
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modal-image');
+            const modalTitle = document.getElementById('modal-title');
+            const filenameEl = document.getElementById('image-filename-modal');
+            
+            // Show loading
+            button.classList.add('btn-loading');
+            button.disabled = true;
+            button.innerHTML = '⏳';
+            
+            const result = await checkImageFast(nombreImg, 'PV');
+            
+            button.classList.remove('btn-loading');
+            button.disabled = false;
+            
+            if (result.exists) {
+                // Update button with source badge
+                button.innerHTML = `PV <span class="source-badge source-${result.source.toLowerCase()}">${result.source.charAt(0)}</span>`;
+                
+                // Show in modal
+                modalTitle.textContent = "PV Image";
+                modalImage.src = result.url;
+                currentImageUrl = result.downloadUrl;
+                currentImageFilename = `${nombreImg}.jpg`;
+                currentImageType = 'PV';
+                
+                filenameEl.innerHTML = `
+                    <strong>Type:</strong> PV (Process Validation)<br>
+                    <strong>File:</strong> ${nombreImg}.jpg<br>
+                    <strong>Date:</strong> ${fecha}<br>
+                    <strong>Source:</strong> ${result.source}<br>
+                    <strong>Format:</strong> Item-2-Date
+                `;
+                modal.style.display = 'flex';
+            } else {
+                button.innerHTML = 'PV';
+                alert(`No PV image found for ${fecha}`);
             }
         };
 
@@ -909,39 +945,17 @@
             currentImageUrl = '';
             currentImageFilename = '';
             currentImageType = '';
-            currentImageSource = '';
         };
 
         // Function to download image
         window.downloadImage = function() {
             if(currentImageUrl && currentImageFilename) {
-                // Crear temporary link para descarga
                 const link = document.createElement('a');
                 link.href = currentImageUrl;
                 link.download = currentImageFilename;
-                
-                // Para GitHub, necesitamos hacer una petición para descargar
-                if (currentImageSource === 'GitHub') {
-                    fetch(currentImageUrl)
-                        .then(response => response.blob())
-                        .then(blob => {
-                            const url = window.URL.createObjectURL(blob);
-                            link.href = url;
-                            document.body.appendChild(link);
-                            link.click();
-                            window.URL.revokeObjectURL(url);
-                            document.body.removeChild(link);
-                        })
-                        .catch(error => {
-                            console.error('Error downloading from GitHub:', error);
-                            alert('Error downloading image');
-                        });
-                } else {
-                    // Para Drive, usar el enlace directo
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                }
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
             } else {
                 alert("No image to download");
             }
