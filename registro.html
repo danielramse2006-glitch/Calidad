@@ -14,10 +14,6 @@
             color: #7f8c8d;
             margin-top: 2px;
         }
-        .item-exists {
-            border-color: #e74c3c !important;
-            background-color: #ffe6e6 !important;
-        }
         .status-message {
             font-size: 11px;
             padding: 4px 8px;
@@ -154,10 +150,9 @@
         // Variable para almacenar el estado de verificación del Item #
         let itemExists = false;
         
-        // Crear los campos del formulario
         camposDB.forEach((c, index) => {
             const div = document.createElement('div');
-            // Create safe ID for HTML - CORREGIDO
+            // Create safe ID for HTML
             const safeId = c.replace(/\n/g, "_").replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_]/g, "");
             const campoLabel = camposUI[index];
             const isRequired = c === "Item #" || c === "PPAP Part Number";
@@ -176,8 +171,7 @@
             container.appendChild(div);
         });
 
-        // Obtener referencia al campo Item # - CORREGIDO
-        // El ID generado para "Item #" es "ins_Item__" (dos underscores al final)
+        // Obtener referencia al campo Item #
         const itemField = document.getElementById('ins_Item__');
         const itemStatusDiv = document.getElementById('item-status');
         const saveButton = document.getElementById('btnGuardar');
@@ -185,9 +179,6 @@
         // Función para verificar si el Item # ya existe
         async function checkItemExists(itemNumber) {
             if (!itemNumber || itemNumber.trim() === '') {
-                itemExists = false;
-                itemField.classList.remove('item-exists');
-                itemStatusDiv.style.display = 'none';
                 return false;
             }
 
@@ -195,40 +186,11 @@
                 const q = query(collection(db, "productos"), where("Item #", "==", itemNumber));
                 const snap = await getDocs(q);
                 
-                if (!snap.empty) {
-                    // Item ya existe
-                    itemExists = true;
-                    itemField.classList.add('item-exists');
-                    itemStatusDiv.innerHTML = `❌ Item # <strong>${itemNumber}</strong> already exists in the database.`;
-                    itemStatusDiv.className = 'status-message status-error';
-                    itemStatusDiv.style.display = 'block';
-                    return true;
-                } else {
-                    // Item disponible
-                    itemExists = false;
-                    itemField.classList.remove('item-exists');
-                    itemStatusDiv.innerHTML = `✅ Item # <strong>${itemNumber}</strong> is available.`;
-                    itemStatusDiv.className = 'status-message status-success';
-                    itemStatusDiv.style.display = 'block';
-                    return false;
-                }
+                return !snap.empty;
             } catch (error) {
                 console.error("Error checking item:", error);
                 return false;
             }
-        }
-
-        // Event listener para verificar cuando el usuario sale del campo Item #
-        // Solo agregar el listener si el elemento existe
-        if (itemField) {
-            itemField.addEventListener('blur', async () => {
-                const itemValue = itemField.value.trim();
-                if (itemValue) {
-                    await checkItemExists(itemValue);
-                }
-            });
-        } else {
-            console.error("Error: No se pudo encontrar el campo Item #");
         }
 
         // Función para validar campos requeridos
@@ -237,31 +199,31 @@
             let isValid = true;
             
             // Validar Item #
-            const itemValue = itemField ? itemField.value.trim() : '';
+            const itemValue = itemField.value.trim();
             if (!itemValue) {
                 errors.push("Item # is required");
-                if (itemField) itemField.style.borderColor = "#e74c3c";
+                itemField.style.borderColor = "#e74c3c";
                 isValid = false;
             } else {
-                if (itemField) itemField.style.borderColor = "#ddd";
+                itemField.style.borderColor = "#ddd";
             }
             
-            // Validar PPAP Part Number - CORREGIDO el ID
+            // Validar PPAP Part Number
             const ppapField = document.getElementById('ins_PPAP_Part_Number');
-            const ppapValue = ppapField ? ppapField.value.trim() : '';
+            const ppapValue = ppapField.value.trim();
             if (!ppapValue) {
                 errors.push("PPAP Part Number is required");
-                if (ppapField) ppapField.style.borderColor = "#e74c3c";
+                ppapField.style.borderColor = "#e74c3c";
                 isValid = false;
             } else {
                 // Validate it's not a status
                 const statusValues = ["Pending", "In Process", "Approved", "Rejected", "Completed", "On Hold"];
                 if (statusValues.includes(ppapValue)) {
                     errors.push("PPAP Part Number must be a part number (like P-001), not a status");
-                    if (ppapField) ppapField.style.borderColor = "#e74c3c";
+                    ppapField.style.borderColor = "#e74c3c";
                     isValid = false;
                 } else {
-                    if (ppapField) ppapField.style.borderColor = "#ddd";
+                    ppapField.style.borderColor = "#ddd";
                 }
             }
             
@@ -280,15 +242,13 @@
             }
             
             // Verificar si el Item # ya existe
-            const itemValue = itemField ? itemField.value.trim() : '';
+            const itemValue = itemField.value.trim();
             const existe = await checkItemExists(itemValue);
             
             if (existe) {
                 alert("❌ Cannot save: Item # already exists in the database. Please use a different Item #.");
-                if (itemField) {
-                    itemField.focus();
-                    itemField.select();
-                }
+                itemField.focus();
+                itemField.select();
                 return;
             }
             
@@ -307,8 +267,7 @@
                 const data = {};
                 camposDB.forEach(c => { 
                     const safeId = c.replace(/\n/g, "_").replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_]/g, "");
-                    const element = document.getElementById(`ins_${safeId}`);
-                    const valor = element ? element.value.trim() : '';
+                    const valor = document.getElementById(`ins_${safeId}`).value.trim();
                     data[c] = valor;
                 });
                 
