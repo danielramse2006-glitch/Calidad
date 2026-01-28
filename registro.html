@@ -34,6 +34,10 @@
             color: #27ae60;
             border: 1px solid #27ae60;
         }
+        .btn-disabled {
+            opacity: 0.6;
+            cursor: not-allowed !important;
+        }
     </style>
 </head>
 <body class="bg-blue">
@@ -174,6 +178,7 @@
         // Obtener referencia al campo Item #
         const itemField = document.getElementById('ins_Item__');
         const itemStatusDiv = document.getElementById('item-status');
+        const saveButton = document.getElementById('btnGuardar');
 
         // Función para verificar si el Item # ya existe
         async function checkItemExists(itemNumber) {
@@ -244,48 +249,57 @@
             }
         });
 
-        document.getElementById('btnGuardar').onclick = async () => {
-            const data = {};
-            let errores = [];
+        // Función para validar campos requeridos
+        function validateRequiredFields() {
+            let errors = [];
+            let isValid = true;
             
-            // Collect and validate data
-            camposDB.forEach(c => { 
-                const safeId = c.replace(/\n/g, "_").replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_]/g, "");
-                const valor = document.getElementById(`ins_${safeId}`).value.trim();
-                data[c] = valor;
-                
-                // SPECIFIC VALIDATIONS
-                if (c === "Item #" && !valor) {
-                    errores.push("Item # is required");
-                    document.getElementById(`ins_${safeId}`).style.borderColor = "#e74c3c";
-                } else if (c === "Item #") {
-                    document.getElementById(`ins_${safeId}`).style.borderColor = "#ddd";
-                }
-                
-                if (c === "PPAP Part Number") {
-                    if (!valor) {
-                        errores.push("PPAP Part Number is required");
-                        document.getElementById(`ins_${safeId}`).style.borderColor = "#e74c3c";
-                    } else {
-                        // Validate it's not a status
-                        const statusValues = ["Pending", "In Process", "Approved", "Rejected", "Completed", "On Hold"];
-                        if (statusValues.includes(valor)) {
-                            errores.push("PPAP Part Number must be a part number (like P-001), not a status");
-                            document.getElementById(`ins_${safeId}`).style.borderColor = "#e74c3c";
-                        } else {
-                            document.getElementById(`ins_${safeId}`).style.borderColor = "#ddd";
-                        }
-                    }
-                }
-            });
+            // Validar Item #
+            const itemValue = itemField.value.trim();
+            if (!itemValue) {
+                errors.push("Item # is required");
+                itemField.style.borderColor = "#e74c3c";
+                isValid = false;
+            } else {
+                itemField.style.borderColor = "#ddd";
+            }
             
-            if (errores.length > 0) {
-                alert("Errors:\n" + errores.join("\n"));
+            // Validar PPAP Part Number
+            const ppapField = document.getElementById('ins_PPAP_Part_Number');
+            const ppapValue = ppapField.value.trim();
+            if (!ppapValue) {
+                errors.push("PPAP Part Number is required");
+                ppapField.style.borderColor = "#e74c3c";
+                isValid = false;
+            } else {
+                // Validate it's not a status
+                const statusValues = ["Pending", "In Process", "Approved", "Rejected", "Completed", "On Hold"];
+                if (statusValues.includes(ppapValue)) {
+                    errors.push("PPAP Part Number must be a part number (like P-001), not a status");
+                    ppapField.style.borderColor = "#e74c3c";
+                    isValid = false;
+                } else {
+                    ppapField.style.borderColor = "#ddd";
+                }
+            }
+            
+            return { isValid, errors };
+        }
+
+        // Event listener para el botón de guardar
+        saveButton.addEventListener('click', async function() {
+            console.log("Save button clicked");
+            
+            // Validar campos requeridos
+            const validation = validateRequiredFields();
+            if (!validation.isValid) {
+                alert("Please fix the following errors:\n\n" + validation.errors.join("\n"));
                 return;
             }
             
-            // Verificar una última vez antes de guardar si el Item # existe
-            await checkItemExists(data["Item #"]);
+            // Verificar si el Item # ya existe
+            const itemValue = itemField.value.trim();
+            await checkItemExists(itemValue);
             
             if (itemExists) {
                 alert("Cannot save: Item # already exists in the database. Please use a different Item #.");
@@ -294,11 +308,30 @@
                 return;
             }
             
+            // Mostrar confirmación
+            if (!confirm("Are you sure you want to save this new PPAP registration?")) {
+                return;
+            }
+            
+            // Deshabilitar botón mientras se guarda
+            saveButton.disabled = true;
+            saveButton.classList.add('btn-disabled');
+            saveButton.innerHTML = "⏳ Saving...";
+            
             try {
-                // Save product
+                // Recopilar todos los datos del formulario
+                const data = {};
+                camposDB.forEach(c => { 
+                    const safeId = c.replace(/\n/g, "_").replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_]/g, "");
+                    const valor = document.getElementById(`ins_${safeId}`).value.trim();
+                    data[c] = valor;
+                });
+                
+                // Guardar producto en Firestore
+                console.log("Saving data to Firestore:", data);
                 await addDoc(collection(db, "productos"), data);
                 
-                // LOG REGISTRATION - Improved format for searching
+                // Registrar en el historial
                 await addDoc(collection(db, "movimientos"), {
                     usuario: user.usuario,
                     accion: "New Registration",
@@ -309,13 +342,33 @@
                     ppapNumber: data["PPAP Part Number"]
                 });
                 
-                alert("✅ Saved successfully.");
+                console.log("Registration saved successfully");
+                alert("✅ PPAP registration saved successfully!");
                 location.href = 'index.html';
-            } catch(e) { 
-                console.error("Save error:", e);
-                alert("❌ Error saving: " + e.message); 
+                
+            } catch(error) { 
+                console.error("Save error:", error);
+                alert("❌ Error saving registration: " + error.message);
+                
+                // Rehabilitar botón en caso de error
+                saveButton.disabled = false;
+                saveButton.classList.remove('btn-disabled');
+                saveButton.innerHTML = "SAVE REGISTRATION";
             }
-        };
+        });
+
+        // Enfocar el campo Item # al cargar la página
+        window.addEventListener('load', () => {
+            itemField.focus();
+            console.log("Registration page loaded");
+        });
+
+        // También permitir guardar con Enter en cualquier campo
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                saveButton.click();
+            }
+        });
     </script>
 </body>
 </html>
