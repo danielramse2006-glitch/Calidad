@@ -154,9 +154,10 @@
         // Variable para almacenar el estado de verificación del Item #
         let itemExists = false;
         
+        // Crear los campos del formulario
         camposDB.forEach((c, index) => {
             const div = document.createElement('div');
-            // Create safe ID for HTML
+            // Create safe ID for HTML - CORREGIDO
             const safeId = c.replace(/\n/g, "_").replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_]/g, "");
             const campoLabel = camposUI[index];
             const isRequired = c === "Item #" || c === "PPAP Part Number";
@@ -175,7 +176,8 @@
             container.appendChild(div);
         });
 
-        // Obtener referencia al campo Item #
+        // Obtener referencia al campo Item # - CORREGIDO
+        // El ID generado para "Item #" es "ins_Item__" (dos underscores al final)
         const itemField = document.getElementById('ins_Item__');
         const itemStatusDiv = document.getElementById('item-status');
         const saveButton = document.getElementById('btnGuardar');
@@ -217,12 +219,17 @@
         }
 
         // Event listener para verificar cuando el usuario sale del campo Item #
-        itemField.addEventListener('blur', async () => {
-            const itemValue = itemField.value.trim();
-            if (itemValue) {
-                await checkItemExists(itemValue);
-            }
-        });
+        // Solo agregar el listener si el elemento existe
+        if (itemField) {
+            itemField.addEventListener('blur', async () => {
+                const itemValue = itemField.value.trim();
+                if (itemValue) {
+                    await checkItemExists(itemValue);
+                }
+            });
+        } else {
+            console.error("Error: No se pudo encontrar el campo Item #");
+        }
 
         // Función para validar campos requeridos
         function validateRequiredFields() {
@@ -230,31 +237,31 @@
             let isValid = true;
             
             // Validar Item #
-            const itemValue = itemField.value.trim();
+            const itemValue = itemField ? itemField.value.trim() : '';
             if (!itemValue) {
                 errors.push("Item # is required");
-                itemField.style.borderColor = "#e74c3c";
+                if (itemField) itemField.style.borderColor = "#e74c3c";
                 isValid = false;
             } else {
-                itemField.style.borderColor = "#ddd";
+                if (itemField) itemField.style.borderColor = "#ddd";
             }
             
-            // Validar PPAP Part Number
+            // Validar PPAP Part Number - CORREGIDO el ID
             const ppapField = document.getElementById('ins_PPAP_Part_Number');
-            const ppapValue = ppapField.value.trim();
+            const ppapValue = ppapField ? ppapField.value.trim() : '';
             if (!ppapValue) {
                 errors.push("PPAP Part Number is required");
-                ppapField.style.borderColor = "#e74c3c";
+                if (ppapField) ppapField.style.borderColor = "#e74c3c";
                 isValid = false;
             } else {
                 // Validate it's not a status
                 const statusValues = ["Pending", "In Process", "Approved", "Rejected", "Completed", "On Hold"];
                 if (statusValues.includes(ppapValue)) {
                     errors.push("PPAP Part Number must be a part number (like P-001), not a status");
-                    ppapField.style.borderColor = "#e74c3c";
+                    if (ppapField) ppapField.style.borderColor = "#e74c3c";
                     isValid = false;
                 } else {
-                    ppapField.style.borderColor = "#ddd";
+                    if (ppapField) ppapField.style.borderColor = "#ddd";
                 }
             }
             
@@ -273,13 +280,15 @@
             }
             
             // Verificar si el Item # ya existe
-            const itemValue = itemField.value.trim();
+            const itemValue = itemField ? itemField.value.trim() : '';
             const existe = await checkItemExists(itemValue);
             
             if (existe) {
                 alert("❌ Cannot save: Item # already exists in the database. Please use a different Item #.");
-                itemField.focus();
-                itemField.select();
+                if (itemField) {
+                    itemField.focus();
+                    itemField.select();
+                }
                 return;
             }
             
@@ -298,7 +307,8 @@
                 const data = {};
                 camposDB.forEach(c => { 
                     const safeId = c.replace(/\n/g, "_").replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_]/g, "");
-                    const valor = document.getElementById(`ins_${safeId}`).value.trim();
+                    const element = document.getElementById(`ins_${safeId}`);
+                    const valor = element ? element.value.trim() : '';
                     data[c] = valor;
                 });
                 
@@ -337,7 +347,9 @@
 
         // Enfocar el campo Item # al cargar la página
         window.addEventListener('load', () => {
-            itemField.focus();
+            if (itemField) {
+                itemField.focus();
+            }
             console.log("Registration page loaded");
         });
 
