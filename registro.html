@@ -76,22 +76,6 @@
         import { db, checkAuth, redirectIfNoPermission } from './config.js';
         import { collection, addDoc, serverTimestamp, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         
-        // Show current date
-        const now = new Date();
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
-        
-        // Show current user
-        const user = checkAuth();
-        if(user) {
-            document.getElementById('current-user-display').textContent = `👤 ${user.usuario}`;
-        }
-
-        // Verify register permission
-        if (!redirectIfNoPermission('registrar')) {
-            // Already redirects automatically
-        }
-
         // DB FIELDS (EXACTLY as specified)
         const camposDB = [
             "Item #",
@@ -172,9 +156,12 @@
         });
 
         // Obtener referencia al campo Item #
-        const itemField = document.getElementById('ins_Item__');
+        const itemField = document.getElementById('ins_Item_'); // CAMBIADO: ins_Item_ (un guión)
         const itemStatusDiv = document.getElementById('item-status');
         const saveButton = document.getElementById('btnGuardar');
+        
+        // Variable para evitar múltiples guardados
+        let isSaving = false;
 
         // Función para verificar si el Item # ya existe
         async function checkItemExists(itemNumber) {
@@ -232,6 +219,8 @@
 
         // Declarar la función guardarRegistro como una función normal
         async function guardarRegistro() {
+            if (isSaving) return; // Prevenir múltiples clics
+            
             console.log("Save button clicked");
             
             // Validar campos requeridos
@@ -258,6 +247,7 @@
             }
             
             // Deshabilitar botón mientras se guarda
+            isSaving = true;
             saveButton.disabled = true;
             saveButton.classList.add('btn-disabled');
             saveButton.innerHTML = "⏳ Saving...";
@@ -268,7 +258,7 @@
                 camposDB.forEach(c => { 
                     const safeId = c.replace(/\n/g, "_").replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_]/g, "");
                     const valor = document.getElementById(`ins_${safeId}`).value.trim();
-                    data[c] = valor;
+                    data[c] = valor; // Aquí usamos el nombre original de la base de datos
                 });
                 
                 // Guardar producto en Firestore
@@ -295,6 +285,7 @@
                 alert("❌ Error saving registration: " + error.message);
                 
                 // Rehabilitar botón en caso de error
+                isSaving = false;
                 saveButton.disabled = false;
                 saveButton.classList.remove('btn-disabled');
                 saveButton.innerHTML = "SAVE REGISTRATION";
@@ -304,11 +295,36 @@
         // Asignar la función al botón
         saveButton.onclick = guardarRegistro;
 
-        // Enfocar el campo Item # al cargar la página
+        // Mostrar fecha y usuario después de que el DOM esté cargado
         window.addEventListener('load', () => {
+            // Show current date
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
+            
+            // Show current user
+            const user = checkAuth();
+            if(user) {
+                document.getElementById('current-user-display').textContent = `👤 ${user.usuario}`;
+            }
+
+            // Verify register permission
+            if (!redirectIfNoPermission('registrar')) {
+                // Already redirects automatically
+            }
+            
+            // Debug: Verificar que el campo Item existe
+            console.log("Item field found:", itemField);
+            
             if (itemField) {
                 itemField.focus();
+            } else {
+                console.error("Item field not found! Check the ID generation.");
+                // Listar todos los inputs para debug
+                const allInputs = document.querySelectorAll('input[id^="ins_"]');
+                console.log("All input IDs:", Array.from(allInputs).map(inp => inp.id));
             }
+            
             console.log("Registration page loaded");
         });
 
