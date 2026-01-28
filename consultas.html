@@ -444,6 +444,30 @@
             margin-left: 10px;
             font-weight: bold;
         }
+        
+        /* IMAGE STATUS INDICATOR */
+        .image-status {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-left: 2px;
+            vertical-align: middle;
+        }
+        
+        .image-found {
+            background-color: #27ae60;
+        }
+        
+        .image-not-found {
+            background-color: #e74c3c;
+        }
+        
+        /* DISABLED BUTTON */
+        .btn-disabled {
+            opacity: 0.5;
+            cursor: not-allowed !important;
+        }
     </style>
 </head>
 <body class="bg-blue">
@@ -512,6 +536,7 @@
                     <p class="compact-label"><strong>File:</strong> <span id="image-filename" class="compact-value">N/A</span></p>
                     <p class="compact-label"><strong>Type:</strong> <span id="image-type" class="compact-value">N/A</span></p>
                     <p class="compact-label"><strong>Date:</strong> <span id="image-date" class="compact-value">N/A</span></p>
+                    <p class="compact-label"><strong>Source:</strong> <span id="image-source" class="compact-value">N/A</span></p>
                 </div>
                 <p class="compact-label" style="margin-top: 4px; text-align: center;">Click PSW or PV buttons for full image</p>
             </div>
@@ -567,8 +592,10 @@
         let currentImageUrl = '';
         let currentImageFilename = '';
         let currentImageType = '';
+        let currentImageSource = '';
         let imageCheckCache = new Map();
         let searchInProgress = false;
+        let currentItemSearch = '';
 
         // Función optimizada para verificar imágenes
         async function checkImageFast(imageName, type) {
@@ -584,7 +611,7 @@
             
             // Usar fetch con timeout
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 1000); // 1 segundo timeout
+            const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 segundo timeout
             
             try {
                 const response = await fetch(githubUrl, { 
@@ -641,6 +668,28 @@
             return notFoundResult;
         }
 
+        // Función para agrupar movimientos por fecha
+        function groupMovementsByDate(movimientos) {
+            const grouped = {};
+            
+            movimientos.forEach(movimiento => {
+                if (!movimiento.fecha) return;
+                
+                const fechaFull = new Date(movimiento.fecha.seconds * 1000);
+                const fechaKey = fechaFull.toISOString().split('T')[0]; // YYYY-MM-DD
+                
+                // Si ya existe un movimiento para esta fecha, mantener solo uno (el más reciente)
+                if (!grouped[fechaKey] || grouped[fechaKey].fecha.seconds < movimiento.fecha.seconds) {
+                    grouped[fechaKey] = movimiento;
+                }
+            });
+            
+            // Convertir a array y ordenar por fecha (más reciente primero)
+            return Object.values(grouped).sort((a, b) => {
+                return b.fecha.seconds - a.fecha.seconds;
+            });
+        }
+
         document.getElementById('btnConsultar').onclick = async () => {
             if (searchInProgress) {
                 alert("Search already in progress. Please wait...");
@@ -654,6 +703,7 @@
             }
 
             searchInProgress = true;
+            currentItemSearch = itemBusqueda;
             const tbody = document.getElementById('historial-body');
             const btnConsultar = document.getElementById('btnConsultar');
             const originalBtnText = btnConsultar.innerHTML;
@@ -689,7 +739,7 @@
                 const revision = producto["Revision"] || "N/A";
                 const status = producto["PPAP overall status"] || "Unknown";
 
-                // Search movements for this item - limit to 100 for speed
+                // Search ALL movements and filter by item
                 const qMovimientos = query(
                     collection(db, "movimientos"), 
                     orderBy("fecha", "desc")
@@ -703,8 +753,8 @@
                         const m = doc.data();
                         const detalle = m.detalle || '';
                         
-                        // Fast filter - just check if item is mentioned
-                        if (detalle.includes(itemBusqueda)) {
+                        // Filtrar movimientos que contengan el item
+                        if (detalle.includes(`Item: ${itemBusqueda}`) || detalle.includes(itemBusqueda)) {
                             movimientosFiltrados.push({ 
                                 id: doc.id, 
                                 ...m,
@@ -715,9 +765,12 @@
                     });
                 }
 
-                // If no movements found, show current product as one record
-                if (movimientosFiltrados.length === 0) {
-                    movimientosFiltrados.push({
+                // Agrupar por fecha para evitar duplicados
+                const movimientosAgrupados = groupMovementsByDate(movimientosFiltrados);
+
+                // Si no hay movimientos, mostrar solo el producto actual
+                if (movimientosAgrupados.length === 0) {
+                    movimientosAgrupados.push({
                         id: 'current',
                         usuario: 'System',
                         accion: 'Current Status',
@@ -730,14 +783,14 @@
                 }
 
                 // Update counter
-                document.getElementById('item-counter').textContent = `${movimientosFiltrados.length} records`;
+                document.getElementById('item-counter').textContent = `${movimientosAgrupados.length} records`;
 
                 // Show table IMMEDIATELY without image checking
                 tbody.innerHTML = '';
-                const maxRecords = Math.min(movimientosFiltrados.length, 100); // Limit to 100
+                const maxRecords = Math.min(movimientosAgrupados.length, 100);
                 
                 for(let i = 0; i < maxRecords; i++) {
-                    const m = movimientosFiltrados[i];
+                    const m = movimientosAgrupados[i];
                     const fechaFull = m.fecha ? new Date(m.fecha.seconds * 1000) : new Date();
                     const fechaStr = fechaFull.toLocaleDateString('en-US', {
                         day: '2-digit',
@@ -774,12 +827,12 @@
                             <td><span class="status-badge ${statusClass}" title="${statusPPAP}">${statusDisplay}</span></td>
                             <td>${m.revision || revision}</td>
                             <td>
-                                <button class="btn-view btn-psw" onclick="verImagenPSWFast('${nombreArchivoPSW}', '${isoFecha}', this)" title="Check PSW image">
+                                <button class="btn-view btn-psw" onclick="verImagen('${nombreArchivoPSW}', '${isoFecha}', 'PSW', this)" title="Check PSW image">
                                     PSW
                                 </button>
                             </td>
                             <td>
-                                <button class="btn-view btn-pv" onclick="verImagenPVFast('${nombreArchivoPV}', '${isoFecha}', this)" title="Check PV image">
+                                <button class="btn-view btn-pv" onclick="verImagen('${nombreArchivoPV}', '${isoFecha}', 'PV', this)" title="Check PV image">
                                     PV
                                 </button>
                             </td>
@@ -787,11 +840,11 @@
                     `;
                 }
                 
-                if(movimientosFiltrados.length > 100) {
+                if(movimientosAgrupados.length > 100) {
                     tbody.innerHTML += `
                         <tr>
                             <td colspan="6" style="text-align:center; padding:3px; font-size:7px; color:#7f8c8d;">
-                                Showing 100 of ${movimientosFiltrados.length} records
+                                Showing 100 of ${movimientosAgrupados.length} records
                             </td>
                         </tr>
                     `;
@@ -799,10 +852,27 @@
 
                 document.getElementById('search-status').textContent = '✅ Ready';
 
-                // Check images for the FIRST 5 records only (for preview)
-                if (movimientosFiltrados.length > 0) {
-                    const firstFive = movimientosFiltrados.slice(0, 5);
-                    checkFirstImagesForPreview(firstFive, itemBusqueda);
+                // Check images for the FIRST record only (for preview) - sin bloquear la interfaz
+                if (movimientosAgrupados.length > 0) {
+                    setTimeout(async () => {
+                        const firstRecord = movimientosAgrupados[0];
+                        const fechaFull = firstRecord.fecha ? new Date(firstRecord.fecha.seconds * 1000) : new Date();
+                        const isoFecha = fechaFull.toISOString().split('T')[0];
+                        const nombreArchivoPSW = `${itemBusqueda}_${isoFecha}`;
+                        
+                        try {
+                            const result = await checkImageFast(nombreArchivoPSW, 'PSW');
+                            if (result.exists) {
+                                document.getElementById('drive-preview').src = result.url;
+                                document.getElementById('image-filename').textContent = `${nombreArchivoPSW}.jpg`;
+                                document.getElementById('image-type').textContent = 'PSW';
+                                document.getElementById('image-date').textContent = isoFecha;
+                                document.getElementById('image-source').textContent = result.source;
+                            }
+                        } catch (error) {
+                            console.log("Preview image check failed:", error);
+                        }
+                    }, 100);
                 }
 
             } catch(error) {
@@ -822,129 +892,60 @@
             }
         };
 
-        // Función para verificar imágenes de los primeros registros (para preview)
-        async function checkFirstImagesForPreview(movimientos, itemBusqueda) {
-            if (movimientos.length === 0) return;
-            
-            const previewPromises = [];
-            
-            for (let i = 0; i < Math.min(movimientos.length, 5); i++) {
-                const m = movimientos[i];
-                const fechaFull = m.fecha ? new Date(m.fecha.seconds * 1000) : new Date();
-                const isoFecha = fechaFull.toISOString().split('T')[0];
-                const nombreArchivoPSW = `${itemBusqueda}_${isoFecha}`;
-                
-                previewPromises.push(checkImageFast(nombreArchivoPSW, 'PSW'));
-            }
-            
-            try {
-                const results = await Promise.all(previewPromises);
-                const firstImage = results.find(r => r.exists);
-                
-                if (firstImage) {
-                    document.getElementById('drive-preview').src = firstImage.url;
-                    document.getElementById('image-filename').textContent = firstImage.type === 'PSW' ? 
-                        `${itemBusqueda}_${movimientos[0].fecha ? new Date(movimientos[0].fecha.seconds * 1000).toISOString().split('T')[0] : ''}.jpg` : 
-                        `${itemBusqueda}-2-${movimientos[0].fecha ? new Date(movimientos[0].fecha.seconds * 1000).toISOString().split('T')[0] : ''}.jpg`;
-                    document.getElementById('image-type').textContent = firstImage.type;
-                    document.getElementById('image-date').textContent = movimientos[0].fecha ? 
-                        new Date(movimientos[0].fecha.seconds * 1000).toISOString().split('T')[0] : '';
-                }
-            } catch (error) {
-                console.log("Preview image check failed:", error);
-            }
-        }
-
-        // Función rápida para ver PSW (check on click)
-        window.verImagenPSWFast = async (nombreImg, fecha, button) => {
+        // Función unificada para ver imágenes
+        window.verImagen = async (nombreImg, fecha, tipo, button) => {
             const modal = document.getElementById('imageModal');
             const modalImage = document.getElementById('modal-image');
             const modalTitle = document.getElementById('modal-title');
             const filenameEl = document.getElementById('image-filename-modal');
             
             // Show loading
+            const originalText = button.innerHTML;
             button.classList.add('btn-loading');
             button.disabled = true;
             button.innerHTML = '⏳';
             
-            const result = await checkImageFast(nombreImg, 'PSW');
+            const result = await checkImageFast(nombreImg, tipo);
             
             button.classList.remove('btn-loading');
             button.disabled = false;
             
             if (result.exists) {
                 // Update button with source badge
-                button.innerHTML = `PSW <span class="source-badge source-${result.source.toLowerCase()}">${result.source.charAt(0)}</span>`;
+                button.innerHTML = `${tipo} <span class="source-badge source-${result.source.toLowerCase()}">${result.source.charAt(0)}</span>`;
                 
                 // Show in modal
-                modalTitle.textContent = "PSW Image";
+                modalTitle.textContent = `${tipo} Image`;
                 modalImage.src = result.url;
                 currentImageUrl = result.downloadUrl;
                 currentImageFilename = `${nombreImg}.jpg`;
-                currentImageType = 'PSW';
+                currentImageType = tipo;
+                currentImageSource = result.source;
                 
                 filenameEl.innerHTML = `
-                    <strong>Type:</strong> PSW (Part Submission Warrant)<br>
+                    <strong>Type:</strong> ${tipo} (${tipo === 'PSW' ? 'Part Submission Warrant' : 'Process Validation'})<br>
                     <strong>File:</strong> ${nombreImg}.jpg<br>
                     <strong>Date:</strong> ${fecha}<br>
                     <strong>Source:</strong> ${result.source}<br>
-                    <strong>Format:</strong> Item_Date
+                    <strong>Format:</strong> ${tipo === 'PSW' ? 'Item_Date' : 'Item-2-Date'}
                 `;
                 modal.style.display = 'flex';
-            } else {
-                button.innerHTML = 'PSW';
-                alert(`No PSW image found for ${fecha}`);
-            }
-        };
-
-        // Función rápida para ver PV (check on click)
-        window.verImagenPVFast = async (nombreImg, fecha, button) => {
-            const modal = document.getElementById('imageModal');
-            const modalImage = document.getElementById('modal-image');
-            const modalTitle = document.getElementById('modal-title');
-            const filenameEl = document.getElementById('image-filename-modal');
-            
-            // Show loading
-            button.classList.add('btn-loading');
-            button.disabled = true;
-            button.innerHTML = '⏳';
-            
-            const result = await checkImageFast(nombreImg, 'PV');
-            
-            button.classList.remove('btn-loading');
-            button.disabled = false;
-            
-            if (result.exists) {
-                // Update button with source badge
-                button.innerHTML = `PV <span class="source-badge source-${result.source.toLowerCase()}">${result.source.charAt(0)}</span>`;
                 
-                // Show in modal
-                modalTitle.textContent = "PV Image";
-                modalImage.src = result.url;
-                currentImageUrl = result.downloadUrl;
-                currentImageFilename = `${nombreImg}.jpg`;
-                currentImageType = 'PV';
-                
-                filenameEl.innerHTML = `
-                    <strong>Type:</strong> PV (Process Validation)<br>
-                    <strong>File:</strong> ${nombreImg}.jpg<br>
-                    <strong>Date:</strong> ${fecha}<br>
-                    <strong>Source:</strong> ${result.source}<br>
-                    <strong>Format:</strong> Item-2-Date
-                `;
-                modal.style.display = 'flex';
+                // Update preview in sidebar
+                document.getElementById('drive-preview').src = result.url;
+                document.getElementById('image-filename').textContent = `${nombreImg}.jpg`;
+                document.getElementById('image-type').textContent = tipo;
+                document.getElementById('image-date').textContent = fecha;
+                document.getElementById('image-source').textContent = result.source;
             } else {
-                button.innerHTML = 'PV';
-                alert(`No PV image found for ${fecha}`);
+                button.innerHTML = originalText;
+                alert(`No ${tipo} image found for ${fecha}`);
             }
         };
 
         // Function to close modal
         window.closeModal = function() {
             document.getElementById('imageModal').style.display = 'none';
-            currentImageUrl = '';
-            currentImageFilename = '';
-            currentImageType = '';
         };
 
         // Function to download image
