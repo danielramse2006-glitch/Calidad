@@ -419,6 +419,47 @@
             margin: 0 !important;
             padding: 0 !important;
         }
+        
+        /* IMAGE LOADING STATES */
+        .image-loading {
+            opacity: 0.5;
+            filter: grayscale(50%);
+        }
+        
+        .image-found {
+            border: 2px solid #27ae60 !important;
+        }
+        
+        .image-not-found {
+            border: 2px solid #e74c3c !important;
+        }
+        
+        /* BADGE FOR IMAGE SOURCE */
+        .source-badge {
+            font-size: 6px !important;
+            padding: 0px 2px !important;
+            border-radius: 2px;
+            margin-left: 2px;
+        }
+        
+        .source-github {
+            background: #6e5494;
+            color: white;
+        }
+        
+        .source-drive {
+            background: #34a853;
+            color: white;
+        }
+        
+        /* HIGHLIGHT ROWS WITH IMAGES */
+        .row-with-image {
+            background-color: #f0fff4 !important;
+        }
+        
+        .row-with-image:hover {
+            background-color: #e0f7e9 !important;
+        }
     </style>
 </head>
 <body class="bg-blue">
@@ -440,19 +481,19 @@
         </div>
     </div>
 
-    <header><h1>Historical Queries - Image Uploads</h1></header>
+    <header><h1>Historical Queries</h1></header>
 
     <div style="padding: 8px; max-width: 800px; margin: auto;">
         <div class="search-box">
             <input type="text" id="inputSearch" placeholder="Item # or Part Number..." style="flex:1; padding:5px; border:1px solid #ccc; border-radius:2px;">
-            <button id="btnConsultar" style="padding:5px 8px; background:#2c3e50; color:white; border:none; border-radius:2px; cursor:pointer; font-weight:bold;">SEARCH IMAGES</button>
+            <button id="btnConsultar" style="padding:5px 8px; background:#2c3e50; color:white; border:none; border-radius:2px; cursor:pointer; font-weight:bold;">SEARCH</button>
             <button onclick="location.href='index.html'" style="padding:5px; background:#95a5a6; color:white; border:none; border-radius:2px; cursor:pointer;">BACK</button>
         </div>
 
         <div id="content-view" class="main-grid" style="display:none;">
             <div class="card">
                 <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <h3>📋 Image Upload History</h3>
+                    <h3>📋 History</h3>
                     <span id="item-counter" class="record-count">0 records</span>
                 </div>
                 <div class="table-container">
@@ -470,7 +511,7 @@
                         <tbody id="historial-body">
                             <tr>
                                 <td colspan="6" class="empty-state">
-                                    <p>Enter Item # and click SEARCH IMAGES</p>
+                                    <p>Enter Item # and click SEARCH</p>
                                 </td>
                             </tr>
                         </tbody>
@@ -487,6 +528,7 @@
                     <p class="compact-label"><strong>File:</strong> <span id="image-filename" class="compact-value">N/A</span></p>
                     <p class="compact-label"><strong>Type:</strong> <span id="image-type" class="compact-value">N/A</span></p>
                     <p class="compact-label"><strong>Date:</strong> <span id="image-date" class="compact-value">N/A</span></p>
+                    <p class="compact-label"><strong>Source:</strong> <span id="image-source" class="compact-value">N/A</span></p>
                 </div>
                 <p class="compact-label" style="margin-top: 4px; text-align: center;">Click PSW or PV buttons for full image</p>
             </div>
@@ -542,155 +584,186 @@
         let currentImageUrl = '';
         let currentImageFilename = '';
         let currentImageType = ''; // PSW or PV
+        let currentImageSource = ''; // GitHub or Drive
 
-        // Function to check if an image exists in Drive
-        async function checkImageExists(filename) {
+        // Cache para verificar si imágenes existen
+        const imageCache = new Map();
+
+        // Función para verificar si una imagen existe en GitHub
+        async function checkImageExistsGitHub(imageUrl) {
+            if (imageCache.has(imageUrl)) {
+                return imageCache.get(imageUrl);
+            }
+            
             try {
-                const res = await fetch(`${scriptURL}?itemName=${encodeURIComponent(filename)}`);
-                const data = await res.json();
-                return data.result === "success" && data.id;
-            } catch(e) {
+                const response = await fetch(imageUrl, { method: 'HEAD' });
+                const exists = response.ok;
+                imageCache.set(imageUrl, exists);
+                return exists;
+            } catch (error) {
+                imageCache.set(imageUrl, false);
                 return false;
             }
         }
 
-        // Function to get all dates with images for an item
-        async function getAllImageDates(itemBusqueda) {
-            const imageDates = new Set();
+        // Función para buscar imágenes en GitHub primero, luego Drive
+        async function findImageSource(imageName, imageType) {
+            const githubUrl = `imagenes/${imageName}.jpg`;
+            const driveImageName = imageName;
             
-            // Get current product info
-            const qProductos = query(collection(db, "productos"), where("Item #", "==", itemBusqueda));
-            const snapProductos = await getDocs(qProductos);
+            // Primero intentar GitHub
+            const existsInGitHub = await checkImageExistsGitHub(githubUrl);
+            if (existsInGitHub) {
+                return {
+                    url: githubUrl,
+                    source: 'GitHub',
+                    type: imageType
+                };
+            }
             
-            if(snapProductos.empty) {
-                return { imageDates: [], partNumber: itemBusqueda, revision: "N/A", status: "Unknown" };
-            }
-
-            const producto = snapProductos.docs[0].data();
-            const partNumber = producto["PPAP Part Number"] || itemBusqueda;
-            const revision = producto["Revision"] || "N/A";
-            const status = producto["PPAP overall status"] || "Unknown";
-
-            // Get all movements for this item to find possible dates
-            const qMovimientos = query(
-                collection(db, "movimientos"), 
-                orderBy("fecha", "asc") // Orden ascendente para buscar desde más viejo
-            );
-
-            const snapMovimientos = await getDocs(qMovimientos);
-            const fechaPromises = [];
-
-            if(!snapMovimientos.empty) {
-                snapMovimientos.forEach(doc => {
-                    const m = doc.data();
-                    const detalle = m.detalle || '';
-                    
-                    // Filter movements for this item
-                    if (detalle.includes(itemBusqueda)) {
-                        const fechaFull = m.fecha ? new Date(m.fecha.seconds * 1000) : new Date();
-                        const isoFecha = fechaFull.toISOString().split('T')[0];
-                        
-                        // Check both PSW and PV images for this date
-                        fechaPromises.push({
-                            date: isoFecha,
-                            pswPromise: checkImageExists(`${itemBusqueda}_${isoFecha}`),
-                            pvPromise: checkImageExists(`${itemBusqueda}-2-${isoFecha}`),
-                            fechaFull: fechaFull,
-                            movimiento: m
-                        });
-                    }
-                });
-            }
-
-            // Process all promises
-            const results = await Promise.all(
-                fechaPromises.map(async (item) => {
-                    const [pswExists, pvExists] = await Promise.all([item.pswPromise, item.pvPromise]);
+            // Si no está en GitHub, intentar Drive
+            try {
+                const res = await fetch(`${scriptURL}?itemName=${encodeURIComponent(driveImageName)}`);
+                const data = await res.json();
+                
+                if(data.result === "success" && data.id) {
                     return {
-                        date: item.date,
-                        fechaFull: item.fechaFull,
-                        movimiento: item.movimiento,
-                        pswExists,
-                        pvExists
+                        url: `https://lh3.googleusercontent.com/d/${data.id}`,
+                        downloadUrl: `https://drive.google.com/uc?export=download&id=${data.id}`,
+                        source: 'Drive',
+                        type: imageType,
+                        driveId: data.id
                     };
-                })
-            );
-
-            // Filter dates where at least one image exists
-            const validDates = results.filter(result => result.pswExists || result.pvExists);
-            
-            // Also check recent dates (last 30 days) even if no movements
-            const today = new Date();
-            for(let i = 0; i < 30; i++) {
-                const checkDate = new Date();
-                checkDate.setDate(today.getDate() - i);
-                const isoFecha = checkDate.toISOString().split('T')[0];
-                
-                const [pswExists, pvExists] = await Promise.all([
-                    checkImageExists(`${itemBusqueda}_${isoFecha}`),
-                    checkImageExists(`${itemBusqueda}-2-${isoFecha}`)
-                ]);
-                
-                if (pswExists || pvExists) {
-                    // Check if date already exists
-                    const exists = validDates.some(d => d.date === isoFecha);
-                    if (!exists) {
-                        validDates.push({
-                            date: isoFecha,
-                            fechaFull: checkDate,
-                            movimiento: null,
-                            pswExists,
-                            pvExists
-                        });
-                    }
                 }
+            } catch (e) {
+                console.error(`Error checking Drive for ${imageName}:`, e);
             }
-
-            return {
-                imageDates: validDates.sort((a, b) => a.fechaFull - b.fechaFull), // Ordenar de más viejo a más nuevo
-                partNumber,
-                revision,
-                status
-            };
+            
+            return null;
         }
 
         document.getElementById('btnConsultar').onclick = async () => {
             const itemBusqueda = document.getElementById('inputSearch').value.trim();
             if(!itemBusqueda) {
-                alert("Please enter an Item #");
+                alert("Please enter an Item # or Part Number");
                 return;
             }
 
             const tbody = document.getElementById('historial-body');
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:10px; font-size:9px;"><div style="display:inline-block; padding:6px; background:#f8f9fa; border-radius:3px;">🔍 Searching for images...</div></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:10px; font-size:9px;"><div style="display:inline-block; padding:6px; background:#f8f9fa; border-radius:3px;">🔍 Searching...</div></td></tr>';
             
             document.getElementById('content-view').style.display = 'grid';
 
             try {
-                // Get all dates with images
-                const { imageDates, partNumber, revision, status } = await getAllImageDates(itemBusqueda);
+                // Search in productos collection for matching item
+                const qProductos = query(collection(db, "productos"), where("Item #", "==", itemBusqueda));
+                const snapProductos = await getDocs(qProductos);
                 
-                // Update counter
-                document.getElementById('item-counter').textContent = `${imageDates.length} image dates`;
-
-                if(imageDates.length === 0) {
+                if(snapProductos.empty) {
                     tbody.innerHTML = `
                         <tr>
                             <td colspan="6" class="empty-state">
-                                <p>No images found for Item: <strong>${itemBusqueda}</strong></p>
-                                <p style="font-size:8px; margin-top:5px;">Check if images have been uploaded for this item.</p>
+                                <p>Item <strong>${itemBusqueda}</strong> not found</p>
                             </td>
                         </tr>
                     `;
+                    document.getElementById('item-counter').textContent = "0 records";
                     return;
                 }
 
+                const producto = snapProductos.docs[0].data();
+                const partNumber = producto["PPAP Part Number"] || itemBusqueda;
+                const revision = producto["Revision"] || "N/A";
+                const status = producto["PPAP overall status"] || "Unknown";
+
+                // Search movements for this item
+                const qMovimientos = query(
+                    collection(db, "movimientos"), 
+                    orderBy("fecha", "desc")
+                );
+
+                const snapMovimientos = await getDocs(qMovimientos);
+                
+                let movimientosFiltrados = [];
+                if(!snapMovimientos.empty) {
+                    snapMovimientos.forEach(doc => {
+                        const m = doc.data();
+                        const detalle = m.detalle || '';
+                        
+                        // Filter movements for this item
+                        if (detalle.includes(itemBusqueda)) {
+                            movimientosFiltrados.push({ 
+                                id: doc.id, 
+                                ...m,
+                                partNumber: partNumber,
+                                revision: revision
+                            });
+                        }
+                    });
+                }
+
+                // If no movements found, show current product as one record
+                if (movimientosFiltrados.length === 0) {
+                    movimientosFiltrados.push({
+                        id: 'current',
+                        usuario: 'System',
+                        accion: 'Current Status',
+                        detalle: `Item: ${itemBusqueda} - Current status`,
+                        fecha: { seconds: Math.floor(Date.now() / 1000) },
+                        statusMomento: status,
+                        partNumber: partNumber,
+                        revision: revision
+                    });
+                }
+
+                // Buscar imágenes para cada fecha y ordenar por disponibilidad de imágenes
+                const movimientosConImagenes = [];
+                
+                for (const movimiento of movimientosFiltrados) {
+                    const fechaFull = movimiento.fecha ? new Date(movimiento.fecha.seconds * 1000) : new Date();
+                    const isoFecha = fechaFull.toISOString().split('T')[0];
+                    const nombreArchivoPSW = `${itemBusqueda}_${isoFecha}`;
+                    const nombreArchivoPV = `${itemBusqueda}-2-${isoFecha}`;
+                    
+                    // Verificar imágenes en paralelo
+                    const [pswImageInfo, pvImageInfo] = await Promise.all([
+                        findImageSource(nombreArchivoPSW, 'PSW'),
+                        findImageSource(nombreArchivoPV, 'PV')
+                    ]);
+                    
+                    movimientosConImagenes.push({
+                        ...movimiento,
+                        fechaFull,
+                        isoFecha,
+                        pswImageInfo,
+                        pvImageInfo,
+                        hasImage: !!(pswImageInfo || pvImageInfo)
+                    });
+                }
+
+                // Ordenar: primero los que tienen imágenes, luego por fecha (más reciente primero)
+                movimientosConImagenes.sort((a, b) => {
+                    // Primero por si tiene imágenes
+                    if (a.hasImage && !b.hasImage) return -1;
+                    if (!a.hasImage && b.hasImage) return 1;
+                    
+                    // Luego por fecha (más reciente primero)
+                    return b.fechaFull - a.fechaFull;
+                });
+
+                // Update counter
+                const totalRecords = movimientosConImagenes.length;
+                const recordsWithImages = movimientosConImagenes.filter(m => m.hasImage).length;
+                document.getElementById('item-counter').textContent = 
+                    `${totalRecords} records (${recordsWithImages} with images)`;
+
                 // Show results
                 tbody.innerHTML = '';
+                const maxRecords = Math.min(movimientosConImagenes.length, 150);
                 
-                for(let i = 0; i < imageDates.length; i++) {
-                    const item = imageDates[i];
-                    const fechaStr = item.fechaFull.toLocaleDateString('en-US', {
+                for(let i = 0; i < maxRecords; i++) {
+                    const m = movimientosConImagenes[i];
+                    const fechaStr = m.fechaFull.toLocaleDateString('en-US', {
                         day: '2-digit',
                         month: '2-digit',
                         year: '2-digit',
@@ -698,12 +771,8 @@
                         minute: '2-digit'
                     });
                     
-                    // Determine PPAP status for this date
-                    let statusPPAP = status;
-                    if (item.movimiento && item.movimiento.statusMomento) {
-                        statusPPAP = item.movimiento.statusMomento;
-                    }
-                    
+                    // Determine PPAP status
+                    const statusPPAP = m.statusMomento || status;
                     const statusDisplay = statusPPAP.length > 6 ? statusPPAP.substring(0, 5) + '..' : statusPPAP;
                     
                     // Determine status class
@@ -717,43 +786,56 @@
                         statusClass = 'status-rejected';
                     }
                     
-                    const nombreArchivoPSW = `${itemBusqueda}_${item.date}`;
-                    const nombreArchivoPV = `${itemBusqueda}-2-${item.date}`;
+                    // Determinar clase de fila
+                    const rowClass = m.hasImage ? 'row-with-image' : '';
                     
-                    // Determine which buttons to show
-                    let pswButton = '';
-                    let pvButton = '';
+                    // Crear botones PSW y PV con indicador de fuente
+                    const pswButton = m.pswImageInfo ? 
+                        `<button class="btn-view btn-psw" onclick="verImagen('${m.isoFecha}', 'PSW', '${m.pswImageInfo.source}')" title="View PSW image (${m.pswImageInfo.source})">
+                            PSW <span class="source-badge source-${m.pswImageInfo.source.toLowerCase()}">${m.pswImageInfo.source.charAt(0)}</span>
+                        </button>` :
+                        `<button class="btn-view btn-psw" style="opacity:0.5; cursor:not-allowed;" title="No PSW image" disabled>PSW</button>`;
                     
-                    if (item.pswExists) {
-                        pswButton = `
-                            <button class="btn-view btn-psw" onclick="verImagenPSW('${nombreArchivoPSW}', '${item.date}')" title="View PSW image">
-                                PSW
-                            </button>
-                        `;
-                    } else {
-                        pswButton = '<span style="color:#ccc; font-size:6px;">-</span>';
-                    }
-                    
-                    if (item.pvExists) {
-                        pvButton = `
-                            <button class="btn-view btn-pv" onclick="verImagenPV('${nombreArchivoPV}', '${item.date}')" title="View PV image">
-                                PV
-                            </button>
-                        `;
-                    } else {
-                        pvButton = '<span style="color:#ccc; font-size:6px;">-</span>';
-                    }
+                    const pvButton = m.pvImageInfo ? 
+                        `<button class="btn-view btn-pv" onclick="verImagen('${m.isoFecha}', 'PV', '${m.pvImageInfo.source}')" title="View PV image (${m.pvImageInfo.source})">
+                            PV <span class="source-badge source-${m.pvImageInfo.source.toLowerCase()}">${m.pvImageInfo.source.charAt(0)}</span>
+                        </button>` :
+                        `<button class="btn-view btn-pv" style="opacity:0.5; cursor:not-allowed;" title="No PV image" disabled>PV</button>`;
                     
                     tbody.innerHTML += `
-                        <tr>
-                            <td title="${item.fechaFull.toLocaleString()}">${fechaStr}</td>
-                            <td><span class="part-number-highlight" title="${partNumber}">${partNumber}</span></td>
+                        <tr class="${rowClass}">
+                            <td title="${m.fechaFull.toLocaleString()}">${fechaStr}</td>
+                            <td><span class="part-number-highlight" title="${m.partNumber || partNumber}">${m.partNumber || partNumber}</span></td>
                             <td><span class="status-badge ${statusClass}" title="${statusPPAP}">${statusDisplay}</span></td>
-                            <td>${revision}</td>
+                            <td>${m.revision || revision}</td>
                             <td>${pswButton}</td>
                             <td>${pvButton}</td>
                         </tr>
                     `;
+                }
+                
+                if(movimientosConImagenes.length > 150) {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td colspan="6" style="text-align:center; padding:3px; font-size:7px; color:#7f8c8d;">
+                                Showing 150 of ${movimientosConImagenes.length} records
+                            </td>
+                        </tr>
+                    `;
+                }
+
+                // Mostrar la primera imagen disponible en el preview
+                const firstImageRecord = movimientosConImagenes.find(m => m.hasImage);
+                if (firstImageRecord) {
+                    const imageInfo = firstImageRecord.pswImageInfo || firstImageRecord.pvImageInfo;
+                    if (imageInfo) {
+                        document.getElementById('drive-preview').src = imageInfo.url;
+                        document.getElementById('image-filename').textContent = `${imageInfo.type === 'PSW' ? itemBusqueda + '_' + firstImageRecord.isoFecha : itemBusqueda + '-2-' + firstImageRecord.isoFecha}.jpg`;
+                        document.getElementById('image-type').textContent = imageInfo.type;
+                        document.getElementById('image-date').textContent = firstImageRecord.isoFecha;
+                        document.getElementById('image-source').textContent = imageInfo.source;
+                        document.getElementById('image-source').className = `compact-value source-${imageInfo.source.toLowerCase()}`;
+                    }
                 }
 
             } catch(error) {
@@ -761,106 +843,63 @@
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="6" style="text-align:center; color:#e74c3c; padding:10px; font-size:9px;">
-                            Error searching for images.
+                            Error querying database.
                         </td>
                     </tr>
                 `;
             }
         };
 
-        // Function to view PSW image
-        window.verImagenPSW = async (nombreImg, fecha) => {
+        // Función unificada para ver imágenes
+        window.verImagen = async (fecha, tipo, source) => {
+            const itemBusqueda = document.getElementById('inputSearch').value.trim();
+            if (!itemBusqueda) return;
+            
             const modal = document.getElementById('imageModal');
             const modalImage = document.getElementById('modal-image');
             const modalTitle = document.getElementById('modal-title');
             const filenameEl = document.getElementById('image-filename-modal');
             
-            // Show loading in modal
-            modalImage.src = "";
-            modalTitle.textContent = "PSW Image";
-            filenameEl.innerHTML = `Loading: ${nombreImg}.jpg...`;
-            modal.style.display = 'flex';
-            
-            try {
-                const res = await fetch(`${scriptURL}?itemName=${encodeURIComponent(nombreImg)}`);
-                const data = await res.json();
-                
-                if(data.result === "success" && data.id) {
-                    // Save URL for download
-                    currentImageUrl = `https://drive.google.com/uc?export=download&id=${data.id}`;
-                    currentImageFilename = `${nombreImg}.jpg`;
-                    currentImageType = 'PSW';
-                    
-                    // Show image in modal
-                    modalImage.src = `https://lh3.googleusercontent.com/d/${data.id}`;
-                    filenameEl.innerHTML = `
-                        <strong>Type:</strong> PSW (Part Submission Warrant)<br>
-                        <strong>File:</strong> ${nombreImg}.jpg<br>
-                        <strong>Date:</strong> ${fecha}<br>
-                        <strong>Format:</strong> Item_Date
-                    `;
-                } else {
-                    modalImage.src = "imagenes/sin_foto.jpg";
-                    filenameEl.innerHTML = "No PSW image found for this date";
-                    currentImageUrl = '';
-                    currentImageFilename = '';
-                    currentImageType = '';
-                }
-            } catch(e) {
-                console.error("Error loading PSW image:", e);
-                modalImage.src = "imagenes/sin_foto.jpg";
-                filenameEl.innerHTML = "Error loading PSW image";
-                currentImageUrl = '';
-                currentImageFilename = '';
-                currentImageType = '';
-            }
-        };
-
-        // Function to view PV image
-        window.verImagenPV = async (nombreImg, fecha) => {
-            const modal = document.getElementById('imageModal');
-            const modalImage = document.getElementById('modal-image');
-            const modalTitle = document.getElementById('modal-title');
-            const filenameEl = document.getElementById('image-filename-modal');
+            // Determinar nombre de archivo
+            const nombreArchivo = tipo === 'PSW' ? 
+                `${itemBusqueda}_${fecha}` : 
+                `${itemBusqueda}-2-${fecha}`;
             
             // Show loading in modal
             modalImage.src = "";
-            modalTitle.textContent = "PV Image";
-            filenameEl.innerHTML = `Loading: ${nombreImg}.jpg...`;
+            modalImage.className = "modal-image image-loading";
+            modalTitle.textContent = `${tipo} Image`;
+            filenameEl.innerHTML = `Loading from ${source}...`;
             modal.style.display = 'flex';
             
-            try {
-                const res = await fetch(`${scriptURL}?itemName=${encodeURIComponent(nombreImg)}`);
-                const data = await res.json();
+            // Buscar la imagen
+            const imageInfo = await findImageSource(nombreArchivo, tipo);
+            
+            if (imageInfo) {
+                // Actualizar variables globales
+                currentImageUrl = imageInfo.downloadUrl || imageInfo.url;
+                currentImageFilename = `${nombreArchivo}.jpg`;
+                currentImageType = tipo;
+                currentImageSource = imageInfo.source;
                 
-                if(data.result === "success" && data.id) {
-                    // Save URL for download
-                    currentImageUrl = `https://drive.google.com/uc?export=download&id=${data.id}`;
-                    currentImageFilename = `${nombreImg}.jpg`;
-                    currentImageType = 'PV';
-                    
-                    // Show image in modal
-                    modalImage.src = `https://lh3.googleusercontent.com/d/${data.id}`;
-                    filenameEl.innerHTML = `
-                        <strong>Type:</strong> PV (Process Validation)<br>
-                        <strong>File:</strong> ${nombreImg}.jpg<br>
-                        <strong>Date:</strong> ${fecha}<br>
-                        <strong>Format:</strong> Item-2-Date
-                    `;
-                } else {
-                    modalImage.src = "imagenes/sin_foto.jpg";
-                    filenameEl.innerHTML = "No PV image found for this date";
-                    currentImageUrl = '';
-                    currentImageFilename = '';
-                    currentImageType = '';
-                }
-            } catch(e) {
-                console.error("Error loading PV image:", e);
+                // Mostrar imagen en modal
+                modalImage.src = imageInfo.url;
+                modalImage.className = "modal-image image-found";
+                filenameEl.innerHTML = `
+                    <strong>Type:</strong> ${tipo} (${tipo === 'PSW' ? 'Part Submission Warrant' : 'Process Validation'})<br>
+                    <strong>File:</strong> ${nombreArchivo}.jpg<br>
+                    <strong>Date:</strong> ${fecha}<br>
+                    <strong>Source:</strong> ${imageInfo.source}<br>
+                    <strong>Format:</strong> ${tipo === 'PSW' ? 'Item_Date' : 'Item-2-Date'}
+                `;
+            } else {
                 modalImage.src = "imagenes/sin_foto.jpg";
-                filenameEl.innerHTML = "Error loading PV image";
+                modalImage.className = "modal-image image-not-found";
+                filenameEl.innerHTML = `No ${tipo} image found for ${fecha}`;
                 currentImageUrl = '';
                 currentImageFilename = '';
                 currentImageType = '';
+                currentImageSource = '';
             }
         };
 
@@ -870,18 +909,39 @@
             currentImageUrl = '';
             currentImageFilename = '';
             currentImageType = '';
+            currentImageSource = '';
         };
 
         // Function to download image
         window.downloadImage = function() {
             if(currentImageUrl && currentImageFilename) {
-                // Create temporary link for download
+                // Crear temporary link para descarga
                 const link = document.createElement('a');
                 link.href = currentImageUrl;
                 link.download = currentImageFilename;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                
+                // Para GitHub, necesitamos hacer una petición para descargar
+                if (currentImageSource === 'GitHub') {
+                    fetch(currentImageUrl)
+                        .then(response => response.blob())
+                        .then(blob => {
+                            const url = window.URL.createObjectURL(blob);
+                            link.href = url;
+                            document.body.appendChild(link);
+                            link.click();
+                            window.URL.revokeObjectURL(url);
+                            document.body.removeChild(link);
+                        })
+                        .catch(error => {
+                            console.error('Error downloading from GitHub:', error);
+                            alert('Error downloading image');
+                        });
+                } else {
+                    // Para Drive, usar el enlace directo
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
             } else {
                 alert("No image to download");
             }
