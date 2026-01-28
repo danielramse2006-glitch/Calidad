@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Filters & Statistics - PPAP</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 4px solid #3498db;
+        }
+        
+        .stat-card.total {
+            border-left-color: #2ecc71;
+        }
+        
+        .stat-card.pending {
+            border-left-color: #f39c12;
+        }
+        
+        .stat-card.completed {
+            border-left-color: #2ecc71;
+        }
+        
+        .stat-card.raw {
+            border-left-color: #9b59b6;
+        }
+        
+        .stat-card.finished {
+            border-left-color: #1abc9c;
+        }
+        
+        .stat-card.subcomponent {
+            border-left-color: #e74c3c;
+        }
+        
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        
+        .filter-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-group label {
+            font-size: 12px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .filter-group select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            font-size: 14px;
+        }
+        
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .btn-filter {
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .btn-filter:hover {
+            background: #2980b9;
+        }
+        
+        .btn-reset {
+            padding: 10px 20px;
+            background: #95a5a6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .btn-reset:hover {
+            background: #7f8c8d;
+        }
+        
+        .results-container {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .results-table th {
+            background: #34495e;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-size: 12px;
+        }
+        
+        .results-table td {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 12px;
+        }
+        
+        .results-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .status-pending {
+            background: #fef9e7;
+            color: #f39c12;
+        }
+        
+        .status-in-process {
+            background: #e8f4fc;
+            color: #3498db;
+        }
+        
+        .status-approved {
+            background: #eafaf1;
+            color: #27ae60;
+        }
+        
+        .status-rejected {
+            background: #fdedec;
+            color: #e74c3c;
+        }
+        
+        .status-completed {
+            background: #eafaf1;
+            color: #27ae60;
+        }
+        
+        .product-type-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            background: #f2f2f2;
+            color: #2c3e50;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body class="bg-blue">
+    <!-- CORPORATE HEADER -->
+    <div class="corporate-header">
+        <div class="company-logo" onclick="location.href='index.html'" style="cursor:pointer;">
+            <div class="logo-container">
+                <img src="logos/logo_smp.png" alt="SMP Engine Management Logo">
+            </div>
+            <div>
+                <h1>PPAP Master Track System</h1>
+                <div class="subtitle">SMP Engine Management, S. de R.L. de C.V</div>
+            </div>
+        </div>
+        
+        <div class="user-header-info">
+            <div id="current-user-display" class="user-name">👤 Loading...</div>
+            <div id="current-date" class="current-date"></div>
+        </div>
+    </div>
+
+    <header><h1>Filters & Statistics Dashboard</h1></header>
+    
+    <div class="main-container" style="flex-direction: column; padding: 20px; max-width: 1200px; margin: 0 auto;">
+        <!-- Statistics Cards -->
+        <div class="stats-container">
+            <div class="stat-card total">
+                <div class="stat-label">TOTAL PPAPS</div>
+                <div class="stat-number" id="total-ppaps">0</div>
+                <div style="font-size: 12px; color: #7f8c8d;">All registered items</div>
+            </div>
+            
+            <div class="stat-card pending">
+                <div class="stat-label">PENDING</div>
+                <div class="stat-number" id="pending-ppaps">0</div>
+                <div style="font-size: 12px; color: #7f8c8d;">Awaiting validation</div>
+            </div>
+            
+            <div class="stat-card completed">
+                <div class="stat-label">COMPLETED</div>
+                <div class="stat-number" id="completed-ppaps">0</div>
+                <div style="font-size: 12px; color: #7f8c8d;">Approved PPAPs</div>
+            </div>
+            
+            <div class="stat-card finished">
+                <div class="stat-label">FINISHED PRODUCT</div>
+                <div class="stat-number" id="finished-product">0</div>
+                <div style="font-size: 12px; color: #7f8c8d;">Product Type</div>
+            </div>
+            
+            <div class="stat-card raw">
+                <div class="stat-label">RAW MATERIAL</div>
+                <div class="stat-number" id="raw-material">0</div>
+                <div style="font-size: 12px; color: #7f8c8d;">Product Type</div>
+            </div>
+            
+            <div class="stat-card subcomponent">
+                <div class="stat-label">SUBCOMPONENT</div>
+                <div class="stat-number" id="subcomponent">0</div>
+                <div style="font-size: 12px; color: #7f8c8d;">Product Type</div>
+            </div>
+        </div>
+        
+        <!-- Filters Section -->
+        <div class="filter-container">
+            <h3 style="color: #2c3e50; margin-bottom: 15px;">Filter PPAP Records</h3>
+            
+            <div class="filter-grid">
+                <div class="filter-group">
+                    <label for="filter-month">Month</label>
+                    <select id="filter-month">
+                        <option value="">All Months</option>
+                        <option value="01">January</option>
+                        <option value="02">February</option>
+                        <option value="03">March</option>
+                        <option value="04">April</option>
+                        <option value="05">May</option>
+                        <option value="06">June</option>
+                        <option value="07">July</option>
+                        <option value="08">August</option>
+                        <option value="09">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="filter-product-type">Product Type</label>
+                    <select id="filter-product-type">
+                        <option value="">All Types</option>
+                        <option value="Finished Product">Finished Product</option>
+                        <option value="Subcomponent">Subcomponent</option>
+                        <option value="Raw Material">Raw Material</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="filter-status">Status</label>
+                    <select id="filter-status">
+                        <option value="">All Status</option>
+                        <option value="Pending">Pending</option>
+                        <option value="In Process">In Process</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Rejected">Rejected</option>
+                        <option value="Completed">Completed</option>
+                        <option value="On Hold">On Hold</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="filter-year">Year</label>
+                    <select id="filter-year">
+                        <option value="">All Years</option>
+                        <option value="2024">2024</option>
+                        <option value="2025">2025</option>
+                        <option value="2026">2026</option>
+                        <option value="2027">2027</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="filter-actions">
+                <button class="btn-filter" id="apply-filters">Apply Filters</button>
+                <button class="btn-reset" id="reset-filters">Reset Filters</button>
+            </div>
+        </div>
+        
+        <!-- Results Table -->
+        <div class="results-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="color: #2c3e50; margin: 0;">Filtered Results</h3>
+                <div style="font-size: 12px; color: #7f8c8d;">
+                    Showing <span id="results-count">0</span> records
+                </div>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Item #</th>
+                            <th>PPAP Part Number</th>
+                            <th>Product Type</th>
+                            <th>Estatus</th>
+                            <th>Validation Date</th>
+                            <th>Component Description</th>
+                        </tr>
+                    </thead>
+                    <tbody id="filtered-results">
+                        <!-- Results will be inserted here -->
+                    </tbody>
+                </table>
+                <div id="no-results" class="no-results" style="display: none;">
+                    No records found with the selected filters
+                </div>
+            </div>
+        </div>
+        
+        <!-- Back Button -->
+        <button onclick="location.href='index.html'" style="width: 200px; margin: 30px auto; padding: 12px; background: #95a5a6; color: white; border: none; border-radius: 4px; cursor: pointer; display: block;">
+            BACK TO DASHBOARD
+        </button>
+    </div>
+
+    <!-- CORPORATE FOOTER -->
+    <div class="corporate-footer">
+        <strong>SMP Engine Management, S. de R.L. de C.V</strong> | PPAP Master Track System v2.0<br>
+        <span style="font-size: 11px;">© 2024 - All rights reserved</span>
+    </div>
+
+    <script type="module">
+        import { db, checkAuth } from './config.js';
+        import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        
+        // Show current date
+        const now = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
+        
+        // Show current user
+        const user = checkAuth();
+        if(user) {
+            document.getElementById('current-user-display').textContent = `👤 ${user.usuario}`;
+        }
+        
+        // Check permission for filters page
+        if(!user || !user.permisos || !user.permisos.consultar) {
+            if(user.usuario !== 'admin') {
+                alert("Access denied. You need 'Historical Queries' permission.");
+                window.location.href = "index.html";
+            }
+        }
+
+        let allProducts = [];
+        
+        async function loadAllProducts() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "productos"));
+                allProducts = [];
+                
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    allProducts.push(data);
+                });
+                
+                updateStatistics(allProducts);
+                applyFilters();
+                
+            } catch (error) {
+                console.error("Error loading products:", error);
+                alert("Error loading data from database");
+            }
+        }
+        
+        function updateStatistics(products) {
+            const total = products.length;
+            document.getElementById('total-ppaps').textContent = total;
+            
+            // Count by status
+            const pending = products.filter(p => p.Estatus === 'Pending').length;
+            const completed = products.filter(p => p.Estatus === 'Completed' || p.Estatus === 'Approved').length;
+            
+            document.getElementById('pending-ppaps').textContent = pending;
+            document.getElementById('completed-ppaps').textContent = completed;
+            
+            // Count by product type
+            const finished = products.filter(p => p['Product type'] === 'Finished Product').length;
+            const raw = products.filter(p => p['Product type'] === 'Raw Material').length;
+            const subcomponent = products.filter(p => p['Product type'] === 'Subcomponent').length;
+            
+            document.getElementById('finished-product').textContent = finished;
+            document.getElementById('raw-material').textContent = raw;
+            document.getElementById('subcomponent').textContent = subcomponent;
+        }
+        
+        function getStatusBadge(status) {
+            if (!status) return '<span class="status-badge status-pending">No Status</span>';
+            
+            const statusMap = {
+                'Pending': 'status-pending',
+                'In Process': 'status-in-process',
+                'Approved': 'status-approved',
+                'Rejected': 'status-rejected',
+                'Completed': 'status-completed',
+                'On Hold': 'status-pending'
+            };
+            
+            const badgeClass = statusMap[status] || 'status-pending';
+            return `<span class="status-badge ${badgeClass}">${status}</span>`;
+        }
+        
+        function getProductTypeBadge(type) {
+            if (!type) return '<span class="product-type-badge">Not Specified</span>';
+            
+            const badgeMap = {
+                'Finished Product': 'Finished Product',
+                'Raw Material': 'Raw Material',
+                'Subcomponent': 'Subcomponent'
+            };
+            
+            const badgeText = badgeMap[type] || type;
+            return `<span class="product-type-badge">${badgeText}</span>`;
+        }
+        
+        function applyFilters() {
+            const month = document.getElementById('filter-month').value;
+            const productType = document.getElementById('filter-product-type').value;
+            const status = document.getElementById('filter-status').value;
+            const year = document.getElementById('filter-year').value;
+            
+            let filtered = [...allProducts];
+            
+            // Apply month filter (extract month from Validation date)
+            if (month) {
+                filtered = filtered.filter(product => {
+                    if (!product['Validation date']) return false;
+                    
+                    // Try different date formats
+                    const dateStr = product['Validation date'];
+                    let date;
+                    
+                    if (dateStr.includes('/')) {
+                        // Format: MM/DD/YYYY or DD/MM/YYYY
+                        const parts = dateStr.split('/');
+                        if (parts.length === 3) {
+                            // Assuming MM/DD/YYYY
+                            date = new Date(parts[2], parts[0] - 1, parts[1]);
+                        }
+                    } else {
+                        date = new Date(dateStr);
+                    }
+                    
+                    if (!date || isNaN(date.getTime())) return false;
+                    
+                    const productMonth = (date.getMonth() + 1).toString().padStart(2, '0');
+                    return productMonth === month;
+                });
+            }
+            
+            // Apply product type filter
+            if (productType) {
+                filtered = filtered.filter(product => product['Product type'] === productType);
+            }
+            
+            // Apply status filter
+            if (status) {
+                filtered = filtered.filter(product => product.Estatus === status);
+            }
+            
+            // Apply year filter
+            if (year) {
+                filtered = filtered.filter(product => {
+                    if (!product['Validation date']) return false;
+                    
+                    const dateStr = product['Validation date'];
+                    let date;
+                    
+                    if (dateStr.includes('/')) {
+                        const parts = dateStr.split('/');
+                        if (parts.length === 3) {
+                            // Assuming MM/DD/YYYY
+                            date = new Date(parts[2], parts[0] - 1, parts[1]);
+                        }
+                    } else {
+                        date = new Date(dateStr);
+                    }
+                    
+                    if (!date || isNaN(date.getTime())) return false;
+                    
+                    const productYear = date.getFullYear().toString();
+                    return productYear === year;
+                });
+            }
+            
+            displayResults(filtered);
+        }
+        
+        function displayResults(products) {
+            const resultsBody = document.getElementById('filtered-results');
+            const resultsCount = document.getElementById('results-count');
+            const noResultsDiv = document.getElementById('no-results');
+            
+            resultsCount.textContent = products.length;
+            
+            if (products.length === 0) {
+                resultsBody.innerHTML = '';
+                noResultsDiv.style.display = 'block';
+                return;
+            }
+            
+            noResultsDiv.style.display = 'none';
+            
+            let html = '';
+            products.forEach(product => {
+                html += `
+                    <tr>
+                        <td><strong>${product['Item #'] || 'N/A'}</strong></td>
+                        <td>${product['PPAP Part Number'] || 'N/A'}</td>
+                        <td>${getProductTypeBadge(product['Product type'])}</td>
+                        <td>${getStatusBadge(product.Estatus)}</td>
+                        <td>${product['Validation date'] || 'Not set'}</td>
+                        <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            ${product['Component description'] || 'No description'}
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            resultsBody.innerHTML = html;
+        }
+        
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAllProducts();
+            
+            // Set current year in filter
+            const currentYear = new Date().getFullYear();
+            document.getElementById('filter-year').value = currentYear.toString();
+            
+            // Event listeners
+            document.getElementById('apply-filters').addEventListener('click', applyFilters);
+            document.getElementById('reset-filters').addEventListener('click', () => {
+                document.getElementById('filter-month').value = '';
+                document.getElementById('filter-product-type').value = '';
+                document.getElementById('filter-status').value = '';
+                document.getElementById('filter-year').value = currentYear.toString();
+                applyFilters();
+            });
+        });
+    </script>
+</body>
+</html>
