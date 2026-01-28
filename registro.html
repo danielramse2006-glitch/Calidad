@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><title>New PPAP Registration</title>
+    <meta charset="UTF-8">
+    <title>New PPAP Registration</title>
     <link rel="stylesheet" href="style.css">
     <style>
         .required-field {
@@ -65,7 +66,7 @@
         <h2 style="color: #2c3e50;">New PPAP Registration</h2>
         <div id="form-container" style="display:grid; grid-template-columns:1fr 1fr; gap:15px;"></div>
         <div id="item-status" class="status-message"></div>
-        <button id="btnGuardar" onclick="guardarRegistro()" style="width:100%; margin-top:20px; padding:15px; background:linear-gradient(135deg, #27ae60, #2ecc71); color:white; font-weight:bold; cursor:pointer; border:none; border-radius:5px;">SAVE REGISTRATION</button>
+        <button id="btnGuardar" style="width:100%; margin-top:20px; padding:15px; background:linear-gradient(135deg, #27ae60, #2ecc71); color:white; font-weight:bold; cursor:pointer; border:none; border-radius:5px;">SAVE REGISTRATION</button>
         <button onclick="location.href='index.html'" style="width:100%; margin-top:10px; padding:10px; background:#95a5a6; color:white; border:none; border-radius:5px; cursor:pointer;">BACK TO HOME</button>
     </div>
 
@@ -261,8 +262,8 @@
         }
 
         // Función principal para guardar
-        window.guardarRegistro = async function() {
-            console.log("Save button clicked - TEST");
+        async function guardarRegistro() {
+            console.log("Save button clicked");
             
             // Validar campos requeridos
             const validation = validateRequiredFields();
@@ -329,7 +330,10 @@
                 saveButton.classList.remove('btn-disabled');
                 saveButton.innerHTML = "SAVE REGISTRATION";
             }
-        };
+        }
+
+        // Asignar la función al botón
+        saveButton.onclick = guardarRegistro;
 
         // Enfocar el campo Item # al cargar la página
         window.addEventListener('load', () => {
