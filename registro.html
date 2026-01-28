@@ -341,9 +341,10 @@
             console.log("Registration page loaded");
         });
 
-        // También permitir guardar con Enter en cualquier campo
+        // ✅ Evento de tecla Enter DENTRO del módulo
         document.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
+            // Solo activar con Enter si no está en un textarea
+            if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
                 guardarRegistro();
             }
         });
