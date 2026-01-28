@@ -7,7 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
     <style>
         .table-wrapper { max-height: 600px; overflow-y: auto; border: 1px solid #ddd; background: white; border-radius: 8px; }
-        #btnUsuarios, #btnHistorial, #btnRegistrar, #btnActualizar, #btnEliminar, #btnConsultas, #btnComentarios { 
+        #btnUsuarios, #btnHistorial, #btnRegistrar, #btnActualizar, #btnEliminar, #btnConsultas, #btnComentarios, #btnFiltros { 
             display: none; 
         }
         
@@ -77,6 +77,11 @@
                 🔍 QUERIES
             </button>
             
+            <!-- Filters & Statistics (special permission) -->
+            <button id="btnFiltros" onclick="location.href='filtros.html'">
+                📊 FILTERS & STATS
+            </button>
+            
             <!-- Edit Comments (special permission) -->
             <button id="btnComentarios" onclick="location.href='comentarios.html'">
                 ✏️ EDIT COMMENTS
@@ -85,10 +90,6 @@
             <!-- Basic operations buttons -->
             <button id="btnRegistrar" onclick="location.href='registro.html'">
                 📝 NEW 
-            </button>
-            
-            <button id="btnFiltros" onclick="location.href='filtros.html'" style="display: none;">
-                📊 FILTERS & STATS
             </button>
 
             <button id="btnActualizar" onclick="location.href='actualizar.html'">
@@ -186,16 +187,18 @@
         // CONFIGURE BUTTONS BASED ON PERMISSIONS
         if(user) {
             if(user.usuario === 'admin') {
-                // Admin has all permissions
-                document.querySelectorAll('#btnUsuarios, #btnHistorial, #btnRegistrar, #btnActualizar, #btnEliminar, #btnConsultas, #btnComentarios').forEach(b => b.style.display = 'block');
+                // Admin has all permissions - INCLUYE btnFiltros
+                document.querySelectorAll('#btnUsuarios, #btnHistorial, #btnRegistrar, #btnActualizar, #btnEliminar, #btnConsultas, #btnComentarios, #btnFiltros').forEach(b => b.style.display = 'block');
             } else {
                 // Show buttons based on user permissions
                 if(user.permisos) {
                     if(user.permisos.registrar) document.getElementById('btnRegistrar').style.display = 'block';
                     if(user.permisos.actualizar) document.getElementById('btnActualizar').style.display = 'block';
                     if(user.permisos.eliminar) document.getElementById('btnEliminar').style.display = 'block';
-                    if(user.permisos.consultar) document.getElementById('btnConsultas').style.display = 'block';
-                    if(user.permisos.consultar) document.getElementById('btnFiltros').style.display = 'block';
+                    if(user.permisos.consultar) {
+                        document.getElementById('btnConsultas').style.display = 'block';
+                        document.getElementById('btnFiltros').style.display = 'block'; // Muestra filtros si tiene consultar
+                    }
                     if(user.permisos.editarComentarios) document.getElementById('btnComentarios').style.display = 'block';
                     
                     // Admin buttons always hidden for regular users
