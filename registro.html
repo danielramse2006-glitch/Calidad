@@ -65,7 +65,7 @@
         <h2 style="color: #2c3e50;">New PPAP Registration</h2>
         <div id="form-container" style="display:grid; grid-template-columns:1fr 1fr; gap:15px;"></div>
         <div id="item-status" class="status-message"></div>
-        <button id="btnGuardar" style="width:100%; margin-top:20px; padding:15px; background:linear-gradient(135deg, #27ae60, #2ecc71); color:white; font-weight:bold; cursor:pointer; border:none; border-radius:5px;">SAVE REGISTRATION</button>
+        <button id="btnGuardar" onclick="guardarRegistro()" style="width:100%; margin-top:20px; padding:15px; background:linear-gradient(135deg, #27ae60, #2ecc71); color:white; font-weight:bold; cursor:pointer; border:none; border-radius:5px;">SAVE REGISTRATION</button>
         <button onclick="location.href='index.html'" style="width:100%; margin-top:10px; padding:10px; background:#95a5a6; color:white; border:none; border-radius:5px; cursor:pointer;">BACK TO HOME</button>
     </div>
 
@@ -152,7 +152,6 @@
         
         // Variable para almacenar el estado de verificación del Item #
         let itemExists = false;
-        let itemCheckInProgress = false;
         
         camposDB.forEach((c, index) => {
             const div = document.createElement('div');
@@ -189,11 +188,6 @@
                 return false;
             }
 
-            itemCheckInProgress = true;
-            itemStatusDiv.innerHTML = 'Checking Item #...';
-            itemStatusDiv.className = 'status-message';
-            itemStatusDiv.style.display = 'block';
-            
             try {
                 const q = query(collection(db, "productos"), where("Item #", "==", itemNumber));
                 const snap = await getDocs(q);
@@ -204,48 +198,28 @@
                     itemField.classList.add('item-exists');
                     itemStatusDiv.innerHTML = `❌ Item # <strong>${itemNumber}</strong> already exists in the database.`;
                     itemStatusDiv.className = 'status-message status-error';
+                    itemStatusDiv.style.display = 'block';
+                    return true;
                 } else {
                     // Item disponible
                     itemExists = false;
                     itemField.classList.remove('item-exists');
                     itemStatusDiv.innerHTML = `✅ Item # <strong>${itemNumber}</strong> is available.`;
                     itemStatusDiv.className = 'status-message status-success';
+                    itemStatusDiv.style.display = 'block';
+                    return false;
                 }
             } catch (error) {
                 console.error("Error checking item:", error);
-                itemExists = false;
-                itemField.classList.remove('item-exists');
-                itemStatusDiv.innerHTML = '⚠️ Error checking Item # availability.';
-                itemStatusDiv.className = 'status-message status-error';
-            } finally {
-                itemCheckInProgress = false;
+                return false;
             }
         }
 
         // Event listener para verificar cuando el usuario sale del campo Item #
         itemField.addEventListener('blur', async () => {
             const itemValue = itemField.value.trim();
-            await checkItemExists(itemValue);
-        });
-
-        // Event listener para verificar cuando el usuario escribe (con debounce)
-        let debounceTimer;
-        itemField.addEventListener('input', () => {
-            clearTimeout(debounceTimer);
-            const itemValue = itemField.value.trim();
-            
-            // Solo verificar si el valor tiene al menos 2 caracteres
-            if (itemValue.length >= 2) {
-                debounceTimer = setTimeout(async () => {
-                    if (!itemCheckInProgress) {
-                        await checkItemExists(itemValue);
-                    }
-                }, 1000); // 1 segundo debounce
-            } else {
-                // Limpiar estado si el campo está vacío o tiene menos de 2 caracteres
-                itemExists = false;
-                itemField.classList.remove('item-exists');
-                itemStatusDiv.style.display = 'none';
+            if (itemValue) {
+                await checkItemExists(itemValue);
             }
         });
 
@@ -286,8 +260,8 @@
             return { isValid, errors };
         }
 
-        // Asignar la función directamente al botón
-        saveButton.onclick = async function() {
+        // Función principal para guardar
+        window.guardarRegistro = async function() {
             console.log("Save button clicked - TEST");
             
             // Validar campos requeridos
@@ -299,10 +273,10 @@
             
             // Verificar si el Item # ya existe
             const itemValue = itemField.value.trim();
-            await checkItemExists(itemValue);
+            const existe = await checkItemExists(itemValue);
             
-            if (itemExists) {
-                alert("Cannot save: Item # already exists in the database. Please use a different Item #.");
+            if (existe) {
+                alert("❌ Cannot save: Item # already exists in the database. Please use a different Item #.");
                 itemField.focus();
                 itemField.select();
                 return;
@@ -366,7 +340,7 @@
         // También permitir guardar con Enter en cualquier campo
         document.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                saveButton.click();
+                guardarRegistro();
             }
         });
     </script>
