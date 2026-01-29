@@ -468,6 +468,17 @@
             opacity: 0.5;
             cursor: not-allowed !important;
         }
+        
+        /* INDICATOR FOR IMAGE TYPE */
+        .image-type-indicator {
+            font-size: 6px !important;
+            padding: 0px 2px !important;
+            border-radius: 1px;
+            margin-left: 2px;
+            background: #f39c12;
+            color: white;
+        }
+        
         .vc2-header {
             background: linear-gradient(to right, #003366, #0056a9);
             color: white;
@@ -526,7 +537,7 @@
         <div id="content-view" class="main-grid" style="display:none;">
             <div class="card">
                 <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <h3>📋 History</h3>
+                    <h3>📋 Image Upload History</h3>
                     <span id="item-counter" class="record-count">0 records</span>
                 </div>
                 <div class="table-container">
@@ -545,6 +556,9 @@
                             <tr>
                                 <td colspan="6" class="empty-state">
                                     <p>Enter Item # and click SEARCH</p>
+                                    <p style="font-size:7px; margin-top:5px;">
+                                        <strong>NOTE:</strong> Only showing image upload events
+                                    </p>
                                 </td>
                             </tr>
                         </tbody>
@@ -733,9 +747,9 @@
             const btnConsultar = document.getElementById('btnConsultar');
             const originalBtnText = btnConsultar.innerHTML;
             
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:10px; font-size:9px;"><div style="display:inline-block; padding:6px; background:#f8f9fa; border-radius:3px;">🔍 Loading history...</div></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:10px; font-size:9px;"><div style="display:inline-block; padding:6px; background:#f8f9fa; border-radius:3px;">🔍 Loading IMAGE UPLOAD history...</div></td></tr>';
             document.getElementById('content-view').style.display = 'grid';
-            document.getElementById('search-status').textContent = '⚡ Fast search...';
+            document.getElementById('search-status').textContent = '⚡ Loading image uploads only...';
             btnConsultar.innerHTML = "⏳ SEARCHING...";
             btnConsultar.disabled = true;
 
@@ -755,7 +769,7 @@
                             </td>
                         </tr>
                     `;
-                    document.getElementById('item-counter').textContent = "0 records";
+                    document.getElementById('item-counter').textContent = "0 image uploads";
                     return;
                 }
 
@@ -764,7 +778,7 @@
                 const revision = producto["Revision"] || "N/A";
                 const status = producto["PPAP overall status"] || "Unknown";
 
-                // Search ALL movements and filter by item
+                // Search ALL movements and filter by item AND IMAGE UPLOADS ONLY
                 const qMovimientos = query(
                     collection(db, "movimientos"), 
                     orderBy("fecha", "desc")
@@ -777,14 +791,28 @@
                     snapMovimientos.forEach(doc => {
                         const m = doc.data();
                         const detalle = m.detalle || '';
+                        const accion = m.accion || '';
                         
-                        // Filtrar movimientos que contengan el item
-                        if (detalle.includes(`Item: ${itemBusqueda}`) || detalle.includes(itemBusqueda)) {
+                        // 1. Primero verificar que sea del item buscado
+                        const isItemMatch = detalle.includes(`Item: ${itemBusqueda}`) || 
+                                           detalle.includes(itemBusqueda);
+                        
+                        if (!isItemMatch) return;
+                        
+                        // 2. FILTRO EXCLUSIVO: Solo mostrar subidas de imágenes
+                        // Basado en las acciones definidas en "Update PPAP"
+                        const esSubidaImagen = 
+                            accion === "PSW Image Updated" || 
+                            accion === "PV Image Updated";
+                        
+                        // 3. Incluir solo si es una subida de imagen
+                        if (esSubidaImagen) {
                             movimientosFiltrados.push({ 
                                 id: doc.id, 
                                 ...m,
                                 partNumber: partNumber,
-                                revision: revision
+                                revision: revision,
+                                tipoImagen: accion === "PSW Image Updated" ? 'PSW' : 'PV'
                             });
                         }
                     });
@@ -793,111 +821,130 @@
                 // Agrupar por fecha para evitar duplicados
                 const movimientosAgrupados = groupMovementsByDate(movimientosFiltrados);
 
-                // Si no hay movimientos, mostrar solo el producto actual
-                if (movimientosAgrupados.length === 0) {
-                    movimientosAgrupados.push({
-                        id: 'current',
-                        usuario: 'System',
-                        accion: 'Current Status',
-                        detalle: `Item: ${itemBusqueda} - Current status`,
-                        fecha: { seconds: Math.floor(Date.now() / 1000) },
-                        statusMomento: status,
-                        partNumber: partNumber,
-                        revision: revision
-                    });
-                }
-
                 // Update counter
-                document.getElementById('item-counter').textContent = `${movimientosAgrupados.length} records`;
+                document.getElementById('item-counter').textContent = `${movimientosAgrupados.length} image uploads`;
 
                 // Show table IMMEDIATELY without image checking
                 tbody.innerHTML = '';
-                const maxRecords = Math.min(movimientosAgrupados.length, 100);
                 
-                for(let i = 0; i < maxRecords; i++) {
-                    const m = movimientosAgrupados[i];
-                    const fechaFull = m.fecha ? new Date(m.fecha.seconds * 1000) : new Date();
-                    const fechaStr = fechaFull.toLocaleDateString('en-US', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
-                    
-                    // Determine PPAP status
-                    const statusPPAP = m.statusMomento || status;
-                    const statusDisplay = statusPPAP.length > 6 ? statusPPAP.substring(0, 5) + '..' : statusPPAP;
-                    
-                    // Determine status class
-                    let statusClass = 'status-na';
-                    const statusLower = statusPPAP.toLowerCase();
-                    if (statusLower.includes('approved') || statusLower.includes('complete')) {
-                        statusClass = 'status-approved';
-                    } else if (statusLower.includes('pending') || statusLower.includes('process')) {
-                        statusClass = 'status-pending';
-                    } else if (statusLower.includes('rejected') || statusLower.includes('fail')) {
-                        statusClass = 'status-rejected';
-                    }
-                    
-                    const isoFecha = fechaFull.toISOString().split('T')[0];
-                    const nombreArchivoPSW = `${itemBusqueda}_${isoFecha}`;
-                    const nombreArchivoPV = `${itemBusqueda}-2-${isoFecha}`;
-                    
-                    // Show buttons immediately (they will check images on click)
-                    tbody.innerHTML += `
+                // Si no hay subidas de imágenes, mostrar mensaje específico
+                if (movimientosAgrupados.length === 0) {
+                    tbody.innerHTML = `
                         <tr>
-                            <td title="${fechaFull.toLocaleString()}">${fechaStr}</td>
-                            <td><span class="part-number-highlight" title="${m.partNumber || partNumber}">${m.partNumber || partNumber}</span></td>
-                            <td><span class="status-badge ${statusClass}" title="${statusPPAP}">${statusDisplay}</span></td>
-                            <td>${m.revision || revision}</td>
-                            <td>
-                                <button class="btn-view btn-psw" onclick="verImagen('${nombreArchivoPSW}', '${isoFecha}', 'PSW', this)" title="Check PSW image">
-                                    PSW
-                                </button>
-                            </td>
-                            <td>
-                                <button class="btn-view btn-pv" onclick="verImagen('${nombreArchivoPV}', '${isoFecha}', 'PV', this)" title="Check PV image">
-                                    PV
-                                </button>
+                            <td colspan="6" class="empty-state">
+                                <p>No image uploads found for item <strong>${itemBusqueda}</strong></p>
+                                <p style="font-size:7px; margin-top:5px;">
+                                    Showing ONLY image upload events (PSW Image Updated / PV Image Updated)<br>
+                                    Comments, edits, and other changes are hidden
+                                </p>
                             </td>
                         </tr>
                     `;
-                }
-                
-                if(movimientosAgrupados.length > 100) {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td colspan="6" style="text-align:center; padding:3px; font-size:7px; color:#7f8c8d;">
-                                Showing 100 of ${movimientosAgrupados.length} records
-                            </td>
-                        </tr>
-                    `;
-                }
-
-                document.getElementById('search-status').textContent = '✅ Ready';
-
-                // Check images for the FIRST record only (for preview) - sin bloquear la interfaz
-                if (movimientosAgrupados.length > 0) {
-                    setTimeout(async () => {
-                        const firstRecord = movimientosAgrupados[0];
-                        const fechaFull = firstRecord.fecha ? new Date(firstRecord.fecha.seconds * 1000) : new Date();
+                    document.getElementById('search-status').textContent = 'ℹ️ No image uploads found';
+                } else {
+                    const maxRecords = Math.min(movimientosAgrupados.length, 100);
+                    
+                    for(let i = 0; i < maxRecords; i++) {
+                        const m = movimientosAgrupados[i];
+                        const fechaFull = m.fecha ? new Date(m.fecha.seconds * 1000) : new Date();
+                        const fechaStr = fechaFull.toLocaleDateString('en-US', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        
+                        // Determine PPAP status
+                        const statusPPAP = m.statusMomento || status;
+                        const statusDisplay = statusPPAP.length > 6 ? statusPPAP.substring(0, 5) + '..' : statusPPAP;
+                        
+                        // Determine status class
+                        let statusClass = 'status-na';
+                        const statusLower = statusPPAP.toLowerCase();
+                        if (statusLower.includes('approved') || statusLower.includes('complete')) {
+                            statusClass = 'status-approved';
+                        } else if (statusLower.includes('pending') || statusLower.includes('process')) {
+                            statusClass = 'status-pending';
+                        } else if (statusLower.includes('rejected') || statusLower.includes('fail')) {
+                            statusClass = 'status-rejected';
+                        }
+                        
                         const isoFecha = fechaFull.toISOString().split('T')[0];
                         const nombreArchivoPSW = `${itemBusqueda}_${isoFecha}`;
+                        const nombreArchivoPV = `${itemBusqueda}-2-${isoFecha}`;
+                        const tipoImagen = m.tipoImagen || '';
                         
-                        try {
-                            const result = await checkImageFast(nombreArchivoPSW, 'PSW');
-                            if (result.exists) {
-                                document.getElementById('drive-preview').src = result.url;
-                                document.getElementById('image-filename').textContent = `${nombreArchivoPSW}.jpg`;
-                                document.getElementById('image-type').textContent = 'PSW';
-                                document.getElementById('image-date').textContent = isoFecha;
-                                document.getElementById('image-source').textContent = result.source;
+                        // Mostrar indicador de qué tipo de imagen se subió
+                        const indicadorPSW = tipoImagen === 'PSW' ? '<span class="image-type-indicator" title="PSW uploaded on this date">↑</span>' : '';
+                        const indicadorPV = tipoImagen === 'PV' ? '<span class="image-type-indicator" title="PV uploaded on this date">↑</span>' : '';
+                        
+                        // Show buttons with upload indicator
+                        tbody.innerHTML += `
+                            <tr>
+                                <td title="${fechaFull.toLocaleString()}">${fechaStr}</td>
+                                <td><span class="part-number-highlight" title="${m.partNumber || partNumber}">${m.partNumber || partNumber}</span></td>
+                                <td><span class="status-badge ${statusClass}" title="${statusPPAP}">${statusDisplay}</span></td>
+                                <td>${m.revision || revision}</td>
+                                <td>
+                                    <button class="btn-view btn-psw" onclick="verImagen('${nombreArchivoPSW}', '${isoFecha}', 'PSW', this)" title="Check PSW image">
+                                        PSW${indicadorPSW}
+                                    </button>
+                                </td>
+                                <td>
+                                    <button class="btn-view btn-pv" onclick="verImagen('${nombreArchivoPV}', '${isoFecha}', 'PV', this)" title="Check PV image">
+                                        PV${indicadorPV}
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                    
+                    if(movimientosAgrupados.length > 100) {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td colspan="6" style="text-align:center; padding:3px; font-size:7px; color:#7f8c8d;">
+                                    Showing 100 of ${movimientosAgrupados.length} image uploads
+                                </td>
+                            </tr>
+                        `;
+                    }
+
+                    document.getElementById('search-status').textContent = '✅ Showing image uploads only';
+
+                    // Check images for the FIRST record only (for preview) - sin bloquear la interfaz
+                    if (movimientosAgrupados.length > 0) {
+                        setTimeout(async () => {
+                            const firstRecord = movimientosAgrupados[0];
+                            const fechaFull = firstRecord.fecha ? new Date(firstRecord.fecha.seconds * 1000) : new Date();
+                            const isoFecha = fechaFull.toISOString().split('T')[0];
+                            const nombreArchivoPSW = `${itemBusqueda}_${isoFecha}`;
+                            
+                            try {
+                                const result = await checkImageFast(nombreArchivoPSW, 'PSW');
+                                if (result.exists) {
+                                    document.getElementById('drive-preview').src = result.url;
+                                    document.getElementById('image-filename').textContent = `${nombreArchivoPSW}.jpg`;
+                                    document.getElementById('image-type').textContent = 'PSW';
+                                    document.getElementById('image-date').textContent = isoFecha;
+                                    document.getElementById('image-source').textContent = result.source;
+                                } else {
+                                    // Si no hay PSW, intentar con PV
+                                    const nombreArchivoPV = `${itemBusqueda}-2-${isoFecha}`;
+                                    const resultPV = await checkImageFast(nombreArchivoPV, 'PV');
+                                    if (resultPV.exists) {
+                                        document.getElementById('drive-preview').src = resultPV.url;
+                                        document.getElementById('image-filename').textContent = `${nombreArchivoPV}.jpg`;
+                                        document.getElementById('image-type').textContent = 'PV';
+                                        document.getElementById('image-date').textContent = isoFecha;
+                                        document.getElementById('image-source').textContent = resultPV.source;
+                                    }
+                                }
+                            } catch (error) {
+                                console.log("Preview image check failed:", error);
                             }
-                        } catch (error) {
-                            console.log("Preview image check failed:", error);
-                        }
-                    }, 100);
+                        }, 100);
+                    }
                 }
 
             } catch(error) {
