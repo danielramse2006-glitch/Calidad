@@ -2,108 +2,88 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Comentarios</title>
+    <title>Procesar Comentarios por Item #</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: Arial, sans-serif;
         }
         
         body {
-            background-color: #f5f7fa;
-            color: #333;
-            line-height: 1.6;
+            background: #2c3e50;
+            color: white;
+            min-height: 100vh;
             padding: 20px;
-            max-width: 1000px;
-            margin: 0 auto;
         }
         
         .container {
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            padding: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
             margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 2px solid #e74c3c;
         }
         
         h1 {
-            color: #2c3e50;
+            color: #e74c3c;
             margin-bottom: 10px;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
+            font-size: 28px;
         }
         
-        h2 {
-            color: #2980b9;
-            margin-top: 25px;
+        .subtitle {
+            color: #cccccc;
+            font-size: 16px;
+        }
+        
+        .instructions {
+            background: rgba(231, 76, 60, 0.1);
+            border-left: 4px solid #e74c3c;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 5px;
+        }
+        
+        .instructions h3 {
+            color: #e74c3c;
+            margin-bottom: 10px;
+        }
+        
+        .search-section {
+            margin-bottom: 20px;
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 10px;
             margin-bottom: 15px;
         }
         
-        .error-message {
-            background-color: #ffeaea;
-            border: 1px solid #ffb8b8;
+        input {
+            flex: 1;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(231, 76, 60, 0.5);
             border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 20px;
-            color: #d32f2f;
-            font-weight: 500;
-        }
-        
-        .error-message strong {
-            display: block;
-            margin-bottom: 5px;
-        }
-        
-        .example {
-            background-color: #f8f9fa;
-            border-left: 4px solid #3498db;
-            padding: 15px;
-            margin: 20px 0;
-            font-family: 'Courier New', monospace;
-            white-space: pre-line;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-        
-        input, textarea, select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            color: white;
             font-size: 16px;
-            transition: border 0.3s;
         }
         
-        input:focus, textarea:focus, select:focus {
-            border-color: #3498db;
+        input:focus {
             outline: none;
+            border-color: #e74c3c;
+            box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.3);
         }
         
-        textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
-        
-        .button-group {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-        }
-        
-        button {
-            padding: 12px 24px;
+        .btn {
+            padding: 12px 25px;
             border: none;
             border-radius: 5px;
             font-size: 16px;
@@ -113,286 +93,445 @@
         }
         
         .btn-primary {
-            background-color: #3498db;
+            background: #e74c3c;
             color: white;
         }
         
         .btn-primary:hover {
-            background-color: #2980b9;
+            background: #c0392b;
         }
         
-        .btn-secondary {
-            background-color: #ecf0f1;
-            color: #2c3e50;
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
         
-        .btn-secondary:hover {
-            background-color: #d5dbdb;
+        .temp-storage {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            border: 1px dashed rgba(231, 76, 60, 0.5);
         }
         
-        .comments-section {
-            margin-top: 40px;
+        .temp-item {
+            background: rgba(231, 76, 60, 0.1);
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            border-left: 3px solid #e74c3c;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            word-break: break-word;
         }
         
-        .comment {
-            background-color: #f9f9f9;
+        .results-section {
+            margin-top: 30px;
+            padding: 25px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 1px solid rgba(231, 76, 60, 0.3);
+        }
+        
+        .comment-card {
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(231, 76, 60, 0.2);
         }
         
         .comment-header {
             display: flex;
             justify-content: space-between;
             margin-bottom: 10px;
-            font-weight: 600;
-            color: #2c3e50;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(231, 76, 60, 0.3);
         }
         
         .comment-id {
-            background-color: #3498db;
+            background: #e74c3c;
             color: white;
-            padding: 2px 8px;
-            border-radius: 3px;
+            padding: 3px 10px;
+            border-radius: 20px;
             font-size: 14px;
+            font-weight: bold;
         }
         
         .comment-content {
-            margin-bottom: 10px;
-            line-height: 1.5;
-        }
-        
-        .comment-footer {
-            color: #7f8c8d;
-            font-size: 14px;
-            font-style: italic;
-        }
-        
-        .quote-example {
-            background-color: #e8f4fc;
-            border: 1px dashed #3498db;
-            padding: 15px;
-            margin-top: 15px;
-            border-radius: 5px;
+            margin-top: 10px;
             font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            line-height: 1.8;
+        }
+        
+        .status-message {
+            padding: 12px 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-weight: 500;
+            display: none;
+        }
+        
+        .status-success {
+            background: rgba(46, 204, 113, 0.2);
+            border-left: 4px solid #2ecc71;
+            color: #2ecc71;
+            display: block;
+        }
+        
+        .status-error {
+            background: rgba(231, 76, 60, 0.2);
+            border-left: 4px solid #e74c3c;
+            color: #e74c3c;
+            display: block;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #95a5a6;
+        }
+        
+        .formatted-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(39, 174, 96, 0.1);
+            border: 2px solid #27ae60;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .formatted-text {
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
         }
         
         @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-            
-            .container {
-                padding: 20px;
-            }
-            
-            .button-group {
+            .search-box {
                 flex-direction: column;
             }
             
-            button {
+            .btn {
                 width: 100%;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Sistema de Comentarios</h1>
-        <p>Formulario para agregar y formatear comentarios con referencias</p>
+        <header>
+            <h1>Procesar Comentarios por Item #</h1>
+            <div class="subtitle">Buscar, almacenar temporalmente y procesar comentarios por Item #</div>
+        </header>
         
-        <div class="error-message">
-            <strong>Error detectado:</strong> "formatComments is not a function"
-            <p>Este error ocurre cuando se intenta llamar a una función que no ha sido definida o no está disponible en el contexto actual.</p>
+        <div class="instructions">
+            <h3>Instrucciones:</h3>
+            <p>1. Ingresa Item # para buscar comentarios</p>
+            <p>2. Los comentarios se almacenan temporalmente</p>
+            <p>3. Se borran los originales y se reinyectan con saltos de línea</p>
         </div>
         
-        <h2>Ejemplo de formato de cita:</h2>
-        <div class="example">3.Arias.- 9/19-el mismo
-
-FG que el 88514385:</div>
+        <div id="statusMessage" class="status-message"></div>
         
-        <h2>Agregar nuevo comentario</h2>
-        <form id="commentForm">
-            <div class="form-group">
-                <label for="commentId">ID del comentario:</label>
-                <input type="text" id="commentId" name="commentId" placeholder="Ej: 3" required>
+        <div class="search-section">
+            <div class="search-box">
+                <input type="text" id="searchItem" placeholder="Ej: 3, 5, 15 o 3-10 para rango">
+                <button class="btn btn-primary" id="searchBtn">Buscar</button>
             </div>
-            
-            <div class="form-group">
-                <label for="author">Autor:</label>
-                <input type="text" id="author" name="author" placeholder="Ej: Arias" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="date">Fecha:</label>
-                <input type="text" id="date" name="date" placeholder="Ej: 9/19" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="reference">Referencia:</label>
-                <input type="text" id="reference" name="reference" placeholder="Ej: el mismo" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="content">Contenido del comentario:</label>
-                <textarea id="content" name="content" placeholder="Escribe el contenido del comentario aquí..." required></textarea>
-            </div>
-            
-            <div class="form-group">
-                <label for="formatType">Formato de salida:</label>
-                <select id="formatType" name="formatType">
-                    <option value="standard">Formato estándar</option>
-                    <option value="detailed">Formato detallado</option>
-                </select>
-            </div>
-            
-            <div class="button-group">
-                <button type="submit" class="btn-primary" id="submitBtn">Agregar comentario</button>
-                <button type="button" class="btn-secondary" id="formatExampleBtn">Ver ejemplo formateado</button>
-            </div>
-        </form>
-        
-        <div class="quote-example">
-            <strong>Ejemplo de formato generado:</strong>
-            <div id="exampleOutput"></div>
         </div>
         
-        <div class="comments-section">
-            <h2>Comentarios existentes</h2>
-            <div id="commentsList">
-                <!-- Los comentarios se cargarán aquí -->
+        <div class="temp-storage">
+            <h4>Almacenamiento Temporal</h4>
+            <div id="tempStorageList">
+                <div class="empty-state">
+                    No hay comentarios almacenados temporalmente
+                </div>
             </div>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="btn btn-primary" id="processBtn" disabled>Procesar Comentarios</button>
+        </div>
+        
+        <div class="results-section" id="resultsSection" style="display: none;">
+            <h3>Comentarios Encontrados</h3>
+            <div id="resultsContainer"></div>
+        </div>
+        
+        <div class="formatted-section" id="formattedSection">
+            <h3>Comentarios Formateados</h3>
+            <div id="formattedComments" class="formatted-text"></div>
         </div>
     </div>
 
     <script>
-        // Definición de la función formatComments para evitar el error
-        function formatComments(commentData, formatType = "standard") {
-            if (!commentData) {
-                return "Error: Datos del comentario no proporcionados";
+        // Datos de ejemplo (simulando base de datos)
+        const mockDatabase = [
+            { 
+                "Item #": "3", 
+                "Comments(detalle)": "3.Arias.- 9/19-el mismo: FG que el 88514385:3.Arias.- 9/19-el mismo: FG que el 88514385:",
+                "Special instruccions": "Revisar documentación completa",
+                "Responsible": "Arias",
+                "Validation date": "9/19",
+                "PPAP Part Number": "P-001"
+            },
+            { 
+                "Item #": "5", 
+                "Comments(detalle)": "5.González.- 8/15-expediente 552211: Se requiere revisión:5.González.- 8/15-expediente 552211: Se requiere revisión:",
+                "Special instruccions": "Verificar muestras",
+                "Responsible": "González",
+                "Validation date": "8/15",
+                "PPAP Part Number": "P-002"
+            },
+            { 
+                "Item #": "8", 
+                "Comments(detalle)": "8.López.- 9/20-folio 3344: Documento aprobado:8.López.- 9/20-folio 3344: Documento aprobado:",
+                "Special instruccions": "Esperar firma",
+                "Responsible": "López",
+                "Validation date": "9/20",
+                "PPAP Part Number": "P-003"
+            }
+        ];
+        
+        let temporaryStorage = [];
+        
+        function showStatus(message, type = "info") {
+            const statusEl = document.getElementById("statusMessage");
+            statusEl.textContent = message;
+            
+            if (type === "success") {
+                statusEl.className = "status-message status-success";
+            } else if (type === "error") {
+                statusEl.className = "status-message status-error";
+            }
+        }
+        
+        // Función para buscar comentarios por Item #
+        function searchCommentsByItem(itemInput) {
+            if (!itemInput.trim()) {
+                showStatus("Por favor, ingresa al menos un Item #", "error");
+                return [];
             }
             
-            const { id, author, date, reference, content } = commentData;
+            let itemsToSearch = [];
             
-            if (formatType === "detailed") {
-                return `${id}.${author}.- ${date}-${reference}:\n\n${content}\n\n---`;
+            // Procesar entrada
+            if (itemInput.includes("-")) {
+                const [start, end] = itemInput.split("-").map(num => parseInt(num.trim()));
+                if (!isNaN(start) && !isNaN(end) && start <= end) {
+                    for (let i = start; i <= end; i++) {
+                        itemsToSearch.push(i.toString());
+                    }
+                }
             } else {
-                // Formato estándar
-                return `${id}.${author}.- ${date}-${reference}:\n\n${content}`;
+                itemsToSearch = itemInput.split(",")
+                    .map(item => item.trim())
+                    .filter(item => item !== "");
             }
+            
+            if (itemsToSearch.length === 0) {
+                showStatus("No se encontraron Items # válidos", "error");
+                return [];
+            }
+            
+            // Buscar en la base de datos
+            const results = mockDatabase.filter(product => 
+                itemsToSearch.includes(product["Item #"])
+            );
+            
+            if (results.length === 0) {
+                showStatus(`No se encontraron registros con los Items: ${itemsToSearch.join(", ")}`, "error");
+                return [];
+            }
+            
+            // Almacenar en memoria temporal
+            temporaryStorage = [...results];
+            
+            // Actualizar UI
+            updateTemporaryStorageUI();
+            updateResultsUI(results);
+            updateActionButtons();
+            
+            showStatus(`Encontrados ${results.length} registro(s) con los Items especificados`, "success");
+            
+            return results;
         }
         
-        // Función para mostrar un ejemplo del formato
-        function showExample() {
-            const exampleData = {
-                id: 3,
-                author: "Arias",
-                date: "9/19",
-                reference: "el mismo",
-                content: "FG que el 88514385:"
-            };
-            
-            const formattedExample = formatComments(exampleData, "standard");
-            document.getElementById("exampleOutput").textContent = formattedExample;
-        }
-        
-        // Función para manejar el envío del formulario
-        function handleFormSubmit(event) {
-            event.preventDefault();
-            
-            // Obtener datos del formulario
-            const commentData = {
-                id: document.getElementById("commentId").value,
-                author: document.getElementById("author").value,
-                date: document.getElementById("date").value,
-                reference: document.getElementById("reference").value,
-                content: document.getElementById("content").value
-            };
-            
-            const formatType = document.getElementById("formatType").value;
-            
-            // Validar datos
-            if (!commentData.id || !commentData.author || !commentData.date || !commentData.reference || !commentData.content) {
-                alert("Por favor, complete todos los campos");
+        // Función para procesar comentarios (formatear con saltos de línea)
+        function processComments() {
+            if (temporaryStorage.length === 0) {
+                showStatus("No hay comentarios para procesar", "error");
                 return;
             }
             
-            // Usar la función formatComments para formatear el comentario
-            const formattedComment = formatComments(commentData, formatType);
+            if (!confirm(`¿Estás seguro de procesar ${temporaryStorage.length} comentario(s)?`)) {
+                return;
+            }
             
-            // Agregar el comentario a la lista
-            addCommentToList(formattedComment, commentData);
-            
-            // Limpiar formulario
-            document.getElementById("commentForm").reset();
-            
-            // Mostrar mensaje de éxito
-            alert("Comentario agregado correctamente");
-        }
-        
-        // Función para agregar comentario a la lista
-        function addCommentToList(formattedText, commentData) {
-            const commentsList = document.getElementById("commentsList");
-            
-            const commentElement = document.createElement("div");
-            commentElement.className = "comment";
-            
-            const commentId = commentData.id;
-            const commentDate = new Date().toLocaleDateString("es-ES");
-            
-            commentElement.innerHTML = `
-                <div class="comment-header">
-                    <span>Comentario #${commentId}</span>
-                    <span class="comment-id">ID: ${commentId}</span>
-                </div>
-                <div class="comment-content">${formattedText.replace(/\n/g, '<br>')}</div>
-                <div class="comment-footer">Agregado el: ${commentDate}</div>
-            `;
-            
-            // Agregar al inicio de la lista
-            commentsList.insertBefore(commentElement, commentsList.firstChild);
-        }
-        
-        // Función para cargar comentarios de ejemplo
-        function loadExampleComments() {
-            const exampleComments = [
-                {
-                    id: 1,
-                    author: "González",
-                    date: "8/15",
-                    reference: "expediente 552211",
-                    content: "Se requiere revisión de documentación adjunta."
-                },
-                {
-                    id: 2,
-                    author: "Martínez",
-                    date: "9/05",
-                    reference: "ver anterior",
-                    content: "Confirmar los datos del solicitante."
+            // 1. Formatear los comentarios con saltos de línea
+            const formattedResults = temporaryStorage.map(product => {
+                const originalComment = product["Comments(detalle)"] || "";
+                
+                // Dividir el comentario por el patrón: número.punto-autor
+                // Expresión regular para encontrar patrones como "3.Arias.-"
+                const pattern = /(\d+\.[A-Za-záéíóúÁÉÍÓÚñÑ]+\.[-]\s\d+\/\d+-[^:]+:)/g;
+                
+                let formattedComment = originalComment;
+                
+                // Si encontramos el patrón, insertamos saltos de línea
+                if (pattern.test(originalComment)) {
+                    // Restablecer la regex
+                    const regex = /(\d+\.[A-Za-záéíóúÁÉÍÓÚñÑ]+\.[-]\s\d+\/\d+-[^:]+:)/g;
+                    
+                    // Reemplazar cada ocurrencia con: \n + el patrón (excepto el primero)
+                    formattedComment = originalComment.replace(regex, (match, p1, offset) => {
+                        return offset === 0 ? match : "\n" + match;
+                    });
                 }
-            ];
-            
-            exampleComments.forEach(comment => {
-                const formattedComment = formatComments(comment, "standard");
-                addCommentToList(formattedComment, comment);
+                
+                return {
+                    ...product,
+                    formattedComment: formattedComment
+                };
             });
+            
+            // 2. Mostrar resultados formateados
+            showFormattedResults(formattedResults);
+            
+            // 3. Mostrar mensaje de éxito
+            showStatus(`${temporaryStorage.length} comentario(s) formateados con saltos de línea`, "success");
+            
+            // 4. Opcional: Aquí se borrarían los originales y se reinyectarían los formateados
+            // En una implementación real, aquí iría la llamada a la API
+            
+            // 5. Limpiar almacenamiento temporal
+            setTimeout(() => {
+                temporaryStorage = [];
+                updateTemporaryStorageUI();
+                updateActionButtons();
+            }, 2000);
         }
         
-        // Inicializar la página
-        document.addEventListener('DOMContentLoaded', function() {
-            // Mostrar el ejemplo de formato
-            showExample();
+        function updateTemporaryStorageUI() {
+            const tempListEl = document.getElementById("tempStorageList");
             
-            // Cargar comentarios de ejemplo
-            loadExampleComments();
+            if (temporaryStorage.length === 0) {
+                tempListEl.innerHTML = `
+                    <div class="empty-state">
+                        No hay comentarios almacenados temporalmente
+                    </div>
+                `;
+                return;
+            }
             
-            // Asignar manejadores de eventos
-            document.getElementById('commentForm').addEventListener('submit', handleFormSubmit);
-            document.getElementById('formatExampleBtn').addEventListener('click', showExample);
+            let html = "";
+            temporaryStorage.forEach((product, index) => {
+                const comment = product["Comments(detalle)"] || "Sin comentarios";
+                html += `
+                    <div class="temp-item">
+                        <strong>Item ${product["Item #"]}:</strong><br>
+                        ${comment.substring(0, 100)}${comment.length > 100 ? '...' : ''}
+                    </div>
+                `;
+            });
             
-            // Confirmar que la función está disponible
-            console.log("Función formatComments definida:", typeof formatComments);
+            tempListEl.innerHTML = html;
+        }
+        
+        function updateResultsUI(products) {
+            const resultsContainer = document.getElementById("resultsContainer");
+            const resultsSection = document.getElementById("resultsSection");
+            
+            if (products.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="empty-state">
+                        No hay resultados para mostrar
+                    </div>
+                `;
+                resultsSection.style.display = 'none';
+                return;
+            }
+            
+            let html = "";
+            products.forEach(product => {
+                const comment = product["Comments(detalle)"] || "Sin comentarios";
+                html += `
+                    <div class="comment-card">
+                        <div class="comment-header">
+                            <div><strong>Item:</strong> ${product["Item #"]}</div>
+                            <div class="comment-id">ID: ${product["Item #"]}</div>
+                        </div>
+                        <div class="comment-content">${comment}</div>
+                    </div>
+                `;
+            });
+            
+            resultsContainer.innerHTML = html;
+            resultsSection.style.display = 'block';
+        }
+        
+        function showFormattedResults(formattedProducts) {
+            const formattedSection = document.getElementById("formattedSection");
+            const formattedComments = document.getElementById("formattedComments");
+            
+            let html = "";
+            formattedProducts.forEach(product => {
+                html += `Item: ${product["Item #"]}\n`;
+                html += "─".repeat(50) + "\n";
+                html += `${product.formattedComment}\n\n`;
+            });
+            
+            formattedComments.textContent = html;
+            formattedSection.style.display = 'block';
+            
+            // Scroll a la sección formateada
+            formattedSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function updateActionButtons() {
+            const processBtn = document.getElementById("processBtn");
+            
+            if (temporaryStorage.length > 0) {
+                processBtn.disabled = false;
+            } else {
+                processBtn.disabled = true;
+            }
+        }
+        
+        // Event Listeners
+        document.getElementById('searchBtn').addEventListener('click', function() {
+            const itemInput = document.getElementById('searchItem').value;
+            searchCommentsByItem(itemInput);
+        });
+        
+        document.getElementById('processBtn').addEventListener('click', processComments);
+        
+        // Enter para buscar
+        document.getElementById('searchItem').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('searchBtn').click();
+            }
+        });
+        
+        // Cargar ejemplo inicial
+        window.addEventListener('load', function() {
+            document.getElementById('searchItem').value = "3, 5";
         });
     </script>
 </body>
