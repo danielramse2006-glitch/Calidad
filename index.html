@@ -6,7 +6,14 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
     <style>
-        .table-wrapper { max-height: 600px; overflow-y: auto; border: 1px solid #ddd; background: white; border-radius: 8px; }
+        .table-wrapper { 
+            max-height: 600px; 
+            overflow-y: auto; 
+            border: 1px solid #ddd; 
+            background: white; 
+            border-radius: 8px; 
+        }
+        
         #btnUsuarios, #btnHistorial, #btnRegistrar, #btnActualizar, #btnEliminar, #btnConsultas, #btnComentarios, #btnFiltros { 
             display: none; 
         }
@@ -50,6 +57,143 @@
             border-bottom: 3px solid #0099cc;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+        
+        /* NUEVO: Estilos para texto truncado con "ver más" */
+        .truncate-text {
+            max-height: 60px;
+            overflow: hidden;
+            position: relative;
+            line-height: 1.4em;
+            font-size: 11px;
+            padding-right: 20px;
+            word-wrap: break-word;
+        }
+        
+        .truncate-text.expanded {
+            max-height: none;
+        }
+        
+        .truncate-text::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            bottom: 0;
+        }
+        
+        .show-more-btn {
+            background: none;
+            border: none;
+            color: #3498db;
+            cursor: pointer;
+            font-size: 10px;
+            padding: 0;
+            margin-left: 5px;
+            text-decoration: underline;
+        }
+        
+        .show-more-btn:hover {
+            color: #2980b9;
+        }
+        
+        /* Para las celdas de comentarios e instrucciones */
+        .comments-cell, .instructions-cell {
+            max-width: 250px;
+            min-width: 150px;
+        }
+        
+        /* Estilo para el modal de texto completo */
+        .full-text-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .full-text-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .full-text-title {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        .full-text-body {
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        
+        /* Tooltip para texto corto */
+        .cell-tooltip {
+            position: relative;
+            cursor: help;
+        }
+        
+        .cell-tooltip:hover::after {
+            content: attr(data-fulltext);
+            position: absolute;
+            left: 0;
+            top: 100%;
+            background: #2c3e50;
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: pre-wrap;
+            max-width: 400px;
+            z-index: 100;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        /* Mejoras para la tabla */
+        #tabla-prod {
+            table-layout: fixed;
+            width: 100%;
+        }
+        
+        #tabla-prod th, #tabla-prod td {
+            padding: 8px 4px;
+            vertical-align: top;
+        }
+        
+        .multiline-text {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
     </style>
 </head>
 <body class="bg-blue">
@@ -60,8 +204,7 @@
                 <img src="logos/logo_smp.png" alt="SMP Engine Management Logo">
             </div>
             
-            
-                
+            <div class="company-info">
                 <h1>PPAP Master Track System</h1>
                 <div class="subtitle" style="color: white;">SMP Engine Management, S. de R.L. de C.V</div>
             </div>
@@ -74,9 +217,9 @@
     </div>
     
     <div class="vc2-container">
-          <div class="vc2-header">
-             VC2
-          </div>
+        <div class="vc2-header">
+            VC2
+        </div>
     </div>
            
     <header><h1>PPAP Management System</h1></header>
@@ -145,6 +288,20 @@
         </section>
     </div>
 
+    <!-- MODAL PARA TEXTO COMPLETO -->
+    <div id="fullTextModal" class="full-text-modal">
+        <div class="full-text-content">
+            <button class="close-modal" onclick="closeFullTextModal()">×</button>
+            <h3 class="full-text-title" id="modalTitle"></h3>
+            <div class="full-text-body" id="modalBody"></div>
+            <div style="margin-top: 15px; font-size: 11px; color: #7f8c8d;">
+                <strong>Item #:</strong> <span id="modalItemNumber"></span> | 
+                <strong>Responsible:</strong> <span id="modalResponsible"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE REPORTE (existente) -->
     <div id="modalReporte" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; overflow-y:auto;">
         <div style="background:white; width:95%; max-width:850px; margin:20px auto; padding:10px; border-radius:8px;">
             <div id="reporte-print-area" style="padding:30px; color:black; font-family: Arial, sans-serif;">
@@ -178,12 +335,11 @@
 
         const user = checkAuth();
         
-        // Show user information in header
+        // Mostrar información del usuario
         if(user) {
             document.getElementById('current-user-display').textContent = `👤 ${user.usuario}`;
             document.getElementById('current-user').textContent = user.usuario;
             
-            // Show user permissions
             const permissionsDiv = document.getElementById('user-permissions');
             if(user.usuario === 'admin') {
                 permissionsDiv.innerHTML = '🔓 Permissions: <strong>ALL</strong>';
@@ -200,36 +356,30 @@
             }
         }
         
-        // Show current date
+        // Mostrar fecha actual
         const now = new Date();
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
         
-        // CONFIGURE BUTTONS BASED ON PERMISSIONS
+        // Configurar botones según permisos
         if(user) {
             if(user.usuario === 'admin') {
-                // Admin has all permissions - INCLUYE btnFiltros
                 document.querySelectorAll('#btnUsuarios, #btnHistorial, #btnRegistrar, #btnActualizar, #btnEliminar, #btnConsultas, #btnComentarios, #btnFiltros').forEach(b => b.style.display = 'block');
             } else {
-                // Show buttons based on user permissions
                 if(user.permisos) {
                     if(user.permisos.registrar) document.getElementById('btnRegistrar').style.display = 'block';
                     if(user.permisos.actualizar) document.getElementById('btnActualizar').style.display = 'block';
                     if(user.permisos.eliminar) document.getElementById('btnEliminar').style.display = 'block';
                     if(user.permisos.consultar) {
                         document.getElementById('btnConsultas').style.display = 'block';
-                        document.getElementById('btnFiltros').style.display = 'block'; // Muestra filtros si tiene consultar
+                        document.getElementById('btnFiltros').style.display = 'block';
                     }
                     if(user.permisos.editarComentarios) document.getElementById('btnComentarios').style.display = 'block';
-                    
-                    // Admin buttons always hidden for regular users
-                    document.getElementById('btnUsuarios').style.display = 'none';
-                    document.getElementById('btnHistorial').style.display = 'none';
                 }
             }
         }
 
-        // DB FIELDS (EXACTLY as specified)
+        // Campos de la base de datos
         const camposDB = [
             "Item #",
             "PPAP Part Number",
@@ -279,67 +429,145 @@
             "PPAP overall status"
         ];
 
-        // UI NAMES (replace line breaks with spaces for display)
         const camposUI = camposDB.map(field => field.replace(/\n/g, " "));
 
+        // Crear encabezados de tabla
         const head = document.getElementById('table-head');
         camposUI.forEach(c => {
             const th = document.createElement('th');
             th.className = 'compact-header';
             th.textContent = c;
+            
+            // Añadir clase específica para comentarios e instrucciones
+            if (c.includes("Comments") || c.includes("Special instruccions")) {
+                th.classList.add('comments-cell');
+            }
+            
             head.appendChild(th);
         });
         head.innerHTML += `<th>ACTIONS</th>`;
 
         let productosLocal = [];
+        
+        // Función para truncar texto largo
+        function truncateText(text, maxLength = 100) {
+            if (!text || text.length <= maxLength) return text;
+            return text.substring(0, maxLength) + '...';
+        }
+        
+        // Función para mostrar texto completo en modal
+        function showFullTextModal(title, content, itemNumber, responsible) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalBody').textContent = content;
+            document.getElementById('modalItemNumber').textContent = itemNumber || 'N/A';
+            document.getElementById('modalResponsible').textContent = responsible || 'N/A';
+            document.getElementById('fullTextModal').style.display = 'flex';
+        }
+        
+        // Función para cerrar modal
+        window.closeFullTextModal = function() {
+            document.getElementById('fullTextModal').style.display = 'none';
+        }
+        
+        // Renderizar tabla
+        function renderTable(lista) {
+            const tbody = document.getElementById('inventory-body');
+            tbody.innerHTML = '';
+            
+            lista.forEach(p => {
+                const tr = document.createElement('tr');
+                
+                camposDB.forEach(campoDB => {
+                    const td = document.createElement('td');
+                    const valor = p[campoDB] || '-';
+                    
+                    // Aplicar truncado a comentarios e instrucciones
+                    if (campoDB === "Comments(detalle)" || campoDB === "Special instruccions") {
+                        const cellClass = campoDB === "Comments(detalle)" ? "comments-cell" : "instructions-cell";
+                        td.classList.add(cellClass);
+                        
+                        if (valor !== '-' && valor.length > 100) {
+                            const truncated = truncateText(valor, 100);
+                            
+                            // Crear contenedor con texto truncado y botón "ver más"
+                            const container = document.createElement('div');
+                            container.style.position = 'relative';
+                            
+                            const textSpan = document.createElement('span');
+                            textSpan.textContent = truncated;
+                            textSpan.style.fontSize = '11px';
+                            
+                            const moreBtn = document.createElement('button');
+                            moreBtn.textContent = 'ver más';
+                            moreBtn.className = 'show-more-btn';
+                            moreBtn.onclick = (e) => {
+                                e.stopPropagation();
+                                showFullTextModal(
+                                    campoDB === "Comments(detalle)" ? "Comentarios Detallados" : "Instrucciones Especiales",
+                                    valor,
+                                    p["Item #"],
+                                    p["Responsible"]
+                                );
+                            };
+                            
+                            container.appendChild(textSpan);
+                            container.appendChild(moreBtn);
+                            td.appendChild(container);
+                            
+                            // Añadir tooltip para vista rápida
+                            td.classList.add('cell-tooltip');
+                            td.setAttribute('data-fulltext', valor);
+                        } else {
+                            // Texto corto, mostrar completo
+                            td.textContent = valor;
+                            if (valor !== '-' && valor.length > 50) {
+                                td.classList.add('cell-tooltip');
+                                td.setAttribute('data-fulltext', valor);
+                            }
+                        }
+                    } else if (campoDB === "Component description" || campoDB === "Reason") {
+                        // Para otros campos largos
+                        td.textContent = valor;
+                        td.classList.add('multiline-text');
+                        if (valor !== '-' && valor.length > 80) {
+                            td.classList.add('cell-tooltip');
+                            td.setAttribute('data-fulltext', valor);
+                        }
+                    } else {
+                        // Campos normales
+                        td.textContent = valor;
+                    }
+                    
+                    td.style.fontSize = '11px';
+                    tr.appendChild(td);
+                });
+                
+                // Columna de acciones
+                const tdBtn = document.createElement('td');
+                const btn = document.createElement('button');
+                btn.innerText = "REPORT";
+                btn.onclick = () => abrirReporte(p);
+                btn.className = "btn-report-row";
+                tdBtn.appendChild(btn);
+                tr.appendChild(tdBtn);
+                tbody.appendChild(tr);
+            });
+        }
+        
+        // Cargar datos desde Firestore
         onSnapshot(collection(db, "productos"), (snap) => {
             productosLocal = [];
             snap.forEach(doc => productosLocal.push(doc.data()));
             renderTable(productosLocal);
         });
-
-        function renderTable(lista) {
-            const tbody = document.getElementById('inventory-body'); //
-            tbody.innerHTML = ''; //
-            
-            lista.forEach(p => {
-                const tr = document.createElement('tr'); //
-                
-                // Iteramos por cada campo definido en la base de datos
-                camposDB.forEach(campoDB => { //
-                    const td = document.createElement('td'); //
-                    const valor = p[campoDB] || '-'; //
-                    td.textContent = valor; //
-                    td.style.fontSize = '11px'; //
-                    
-                    // Aplicamos una clase especial para permitir saltos de línea en campos largos
-                    if (campoDB === "Comments(detalle)" || campoDB === "Component description" || campoDB === "Reason") {
-                        td.classList.add('multiline-text');
-                    }
-                    
-                    tr.appendChild(td); //
-                });
-                
-                // Columna de acciones para el botón de reporte
-                const tdBtn = document.createElement('td'); //
-                const btn = document.createElement('button'); //
-                btn.innerText = "REPORT"; //
-                btn.onclick = () => abrirReporte(p); //
-                btn.className = "btn-report-row"; //
-                
-                tdBtn.appendChild(btn); //
-                tr.appendChild(tdBtn); //
-                tbody.appendChild(tr); //
-            });
-        }
         
+        // Función para abrir reporte (existente)
         window.abrirReporte = function(p) {
             document.getElementById('rep-fecha').innerText = "DATE: " + new Date().toLocaleDateString();
             const rMain = document.getElementById('rep-data-main');
             const rPpap = document.getElementById('rep-data-ppap');
             rMain.innerHTML = ''; rPpap.innerHTML = '';
 
-            // Show in report with UI names
             camposDB.forEach((key, index) => {
                 const nombreMostrar = camposUI[index] || key;
                 const html = `<div style="border-bottom:1px solid #eee; padding:2px 0;">
@@ -351,6 +579,7 @@
             document.getElementById('modalReporte').style.display = 'block';
         };
 
+        // Event listeners
         document.getElementById('btnDescargarPDF').onclick = () => {
             const element = document.getElementById('reporte-print-area');
             html2pdf().set({ margin: 10, filename: 'PPAP.pdf', jsPDF: { format: 'letter' } }).from(element).save();
@@ -368,8 +597,20 @@
             sessionStorage.clear(); 
             window.location.href = "login.html"; 
         };
+
+        // Cerrar modal al hacer clic fuera
+        document.getElementById('fullTextModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeFullTextModal();
+            }
+        });
+
+        // Cerrar modal con Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeFullTextModal();
+            }
+        });
     </script>
 </body>
-
 </html>
-
