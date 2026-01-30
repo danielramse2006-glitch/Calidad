@@ -301,22 +301,36 @@
         function renderTable(lista) {
             const tbody = document.getElementById('inventory-body');
             tbody.innerHTML = '';
+            
             lista.forEach(p => {
                 const tr = document.createElement('tr');
                 
-                // Use camposDB to access data, display in camposUI order
-                camposDB.forEach(campoDB => {
+                // Usamos camposDB para acceder a los datos en el orden correcto
+                camposDB.forEach((campoDB, index) => {
                     const td = document.createElement('td');
-                    td.textContent = p[campoDB] || '-';
+                    const valor = p[campoDB] || '-';
+                    td.textContent = valor;
                     td.style.fontSize = '11px';
+
+                    // Aplicamos la clase para que el texto sea multilínea en campos largos
+                    // Puedes agregar o quitar campos de esta lista según lo necesites
+                    if (campoDB === "Comments(detalle)" || 
+                        campoDB === "Component description" || 
+                        campoDB === "Reason" || 
+                        campoDB === "Special instruccions") {
+                        td.classList.add('multiline-text');
+                    }
+                    
                     tr.appendChild(td);
                 });
                 
+                // Columna de Acciones (Botón de Reporte)
                 const tdBtn = document.createElement('td');
                 const btn = document.createElement('button');
                 btn.innerText = "REPORT"; 
-                btn.onclick = () => abrirReporte(p);
                 btn.className = "btn-report-row";
+                btn.onclick = () => abrirReporte(p);
+                
                 tdBtn.appendChild(btn); 
                 tr.appendChild(tdBtn); 
                 tbody.appendChild(tr);
