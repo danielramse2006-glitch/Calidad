@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="style.css">
     <style>
         .export-container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 20px auto;
             background: white;
             padding: 25px;
@@ -31,7 +31,7 @@
         
         .results-section {
             margin-top: 20px;
-            max-height: 400px;
+            max-height: 500px;
             overflow-y: auto;
             border: 1px solid #ddd;
             border-radius: 5px;
@@ -39,11 +39,11 @@
         }
         
         .record-item {
-            padding: 8px;
+            padding: 10px;
             border-bottom: 1px solid #eee;
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
         }
         
         .record-item:hover {
@@ -75,22 +75,6 @@
         
         .btn-csv {
             background: linear-gradient(135deg, #3498db, #2980b9);
-        }
-        
-        .status-indicator {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 5px;
-        }
-        
-        .status-approved {
-            background: #27ae60;
-        }
-        
-        .status-not-approved {
-            background: #95a5a6;
         }
         
         .count-badge {
@@ -161,21 +145,72 @@
         }
         
         .comments-preview {
-            max-width: 150px;
+            max-width: 250px;
             overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
             font-size: 11px;
             color: #666;
+            background: #f8f9fa;
+            padding: 5px;
+            border-radius: 3px;
+            margin-top: 5px;
+            border: 1px solid #eee;
         }
         
         .comments-preview.multiline {
-            white-space: normal;
-            max-height: 40px;
+            white-space: pre-line;
+            max-height: 60px;
             overflow: hidden;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
+        }
+        
+        .record-details {
+            display: flex;
+            gap: 10px;
+            font-size: 11px;
+            margin-top: 5px;
+        }
+        
+        .detail-badge {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        .badge-raw {
+            background: #3498db;
+            color: white;
+        }
+        
+        .badge-process {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .badge-overall {
+            background: #8e44ad;
+            color: white;
+        }
+        
+        .badge-revision {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .badge-comments {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .comments-example {
+            background: #f8f9fa;
+            border: 1px dashed #3498db;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 11px;
+            font-family: monospace;
+            white-space: pre-line;
+            line-height: 1.4;
         }
     </style>
 </head>
@@ -224,12 +259,11 @@
                 </div>
                 
                 <div>
-                    <label style="display: block; font-size: 12px; margin-bottom: 5px; color: #666;">Product Type:</label>
-                    <select id="filter-type" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; width: 200px;">
-                        <option value="All">All Types</option>
-                        <option value="Raw Material">Raw Material</option>
-                        <option value="Finished Product">Finished Product</option>
-                        <option value="Subcomponent">Subcomponent</option>
+                    <label style="display: block; font-size: 12px; margin-bottom: 5px; color: #666;">Has Comments:</label>
+                    <select id="filter-comments" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; width: 200px;">
+                        <option value="All">All Records</option>
+                        <option value="WithComments">With Comments</option>
+                        <option value="WithoutComments">Without Comments</option>
                     </select>
                 </div>
                 
@@ -246,39 +280,54 @@
             
             <div class="conditions-list">
                 <h4 style="margin: 0 0 10px 0; color: #856404;">Update Conditions:</h4>
-                <div class="condition-item">1. Set Product Type to: <strong>RAW MATERIAL</strong> (todos los registros)</div>
-                <div class="condition-item">2. Set Process Steps 1-18 to: <strong>yes</strong> (solo si Estatus = "Approved")</div>
-                <div class="condition-item">3. Set "PPAP overall status" to: <strong>Approved</strong> (solo si Estatus = "Approved")</div>
-                <div class="condition-item">4. Format "Comments(detalle)" to max 2 líneas (saltos automáticos)</div>
-                <div class="condition-item">5. Saltar registros que ya tienen las condiciones aplicadas</div>
+                <div class="condition-item">1. Set <strong>Product Type</strong> to: <span class="detail-badge badge-raw">RAW MATERIAL</span> (todos)</div>
+                <div class="condition-item">2. Set <strong>Process Steps 1-18</strong> to: <span class="detail-badge badge-process">yes</span> (solo si Estatus = "Approved")</div>
+                <div class="condition-item">3. Set <strong>PPAP overall status</strong> to: <span class="detail-badge badge-overall">Approved</span> (solo si Estatus = "Approved")</div>
+                <div class="condition-item">4. Set <strong>Revision</strong> to: <span class="detail-badge badge-revision">A</span> (todos los registros)</div>
+                <div class="condition-item">5. Format <strong>Comments(detalle)</strong> - aproximadamente 2 palabras por línea</div>
+                <div class="condition-item">6. Saltar registros que ya tienen las condiciones aplicadas</div>
+            </div>
+            
+            <div class="comments-example">
+                Ejemplo de formato de comentarios:<br>
+                J.Arias.- 9/19-el mismo<br>
+                FG que el 80514385:<br>
+                16821432305- 10/20<br>
+                Se regresan a Jorge<br>
+                Arias=&gt;100% medicion
             </div>
             
             <div style="margin-bottom: 20px;">
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                     <input type="checkbox" id="chk-set-raw" checked>
-                    <label for="chk-set-raw" style="font-weight: bold;">1. Set Product Type to: <span style="color: #3498db;">RAW MATERIAL</span></label>
+                    <label for="chk-set-raw" style="font-weight: bold;">1. Set Product Type to: <span class="detail-badge badge-raw">RAW MATERIAL</span></label>
                 </div>
                 
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                     <input type="checkbox" id="chk-set-process-yes" checked>
-                    <label for="chk-set-process-yes" style="font-weight: bold;">2. Set Process Steps 1-18 to: <span style="color: #27ae60;">yes</span> (minúsculas)</label>
+                    <label for="chk-set-process-yes" style="font-weight: bold;">2. Set Process Steps 1-18 to: <span class="detail-badge badge-process">yes</span> (minúsculas)</label>
                 </div>
                 
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                     <input type="checkbox" id="chk-set-overall-approved" checked>
-                    <label for="chk-set-overall-approved" style="font-weight: bold;">3. Set "PPAP overall status" to: <span style="color: #8e44ad;">Approved</span></label>
+                    <label for="chk-set-overall-approved" style="font-weight: bold;">3. Set "PPAP overall status" to: <span class="detail-badge badge-overall">Approved</span></label>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                    <input type="checkbox" id="chk-set-revision-a" checked>
+                    <label for="chk-set-revision-a" style="font-weight: bold;">4. Set "Revision" to: <span class="detail-badge badge-revision">A</span> (todos)</label>
                 </div>
                 
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
                     <input type="checkbox" id="chk-format-comments" checked>
-                    <label for="chk-format-comments" style="font-weight: bold;">4. Format "Comments(detalle)" (max 2 líneas)</label>
+                    <label for="chk-format-comments" style="font-weight: bold;">5. Format "Comments(detalle)" (≈2 palabras por línea)</label>
                 </div>
                 
                 <div style="font-size: 12px; color: #666; background: #f0f7ff; padding: 10px; border-radius: 5px;">
                     <strong>Note:</strong> 
                     <ul style="margin: 5px 0; padding-left: 15px;">
-                        <li>Steps 2-3 solo aplican si Estatus = "Approved"</li>
-                        <li>Step 1 aplica a TODOS los registros</li>
+                        <li>Condiciones 2-3 solo aplican si Estatus = "Approved"</li>
+                        <li>Condiciones 1, 4, 5 aplican a TODOS los registros</li>
                         <li>Los registros que ya cumplen las condiciones serán saltados</li>
                         <li>"yes" en minúsculas, "RAW MATERIAL" en mayúsculas</li>
                     </ul>
@@ -301,7 +350,7 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <h3 style="color: #2c3e50; margin: 0;">Records Found: <span id="record-count" class="count-badge">0</span></h3>
             <div style="font-size: 12px; color: #7f8c8d;">
-                <span class="status-indicator status-approved"></span> Approved items
+                Showing: <span id="filter-info">All records</span>
             </div>
         </div>
         
@@ -363,20 +412,43 @@
             "18\nPSW\n(Full or Interim)"
         ];
 
-        // Function to format comments to max 2 lines
+        // Function to format comments - approximately 2 words per line
         function formatComments(comments) {
             if (!comments || comments.trim() === '') {
                 return '';
             }
             
-            // Split by existing line breaks
-            const lines = comments.split(/\r\n|\r|\n/);
+            // Remove extra spaces and normalize line breaks
+            let text = comments.trim().replace(/\s+/g, ' ').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
             
-            // Take only first 2 lines
-            const firstTwoLines = lines.slice(0, 2);
+            // Split by existing line breaks first
+            const lines = text.split('\n');
+            const resultLines = [];
             
-            // Join with line break
-            return firstTwoLines.join('\n');
+            // Process each line
+            lines.forEach(line => {
+                const trimmedLine = line.trim();
+                if (!trimmedLine) return;
+                
+                // Split into words
+                const words = trimmedLine.split(/\s+/);
+                
+                // If line is short enough, keep as is
+                if (words.length <= 3) {
+                    resultLines.push(trimmedLine);
+                    return;
+                }
+                
+                // Break into approximately 2-word chunks
+                for (let i = 0; i < words.length; i += 2) {
+                    const chunk = words.slice(i, i + 2).join(' ');
+                    if (chunk) {
+                        resultLines.push(chunk);
+                    }
+                }
+            });
+            
+            return resultLines.join('\n');
         }
 
         // Function to check if a record already meets conditions
@@ -386,6 +458,11 @@
             // Check Product Type condition
             if (options.setRawMaterial && record['Product type'] === 'RAW MATERIAL') {
                 conditions.push('Product Type');
+            }
+            
+            // Check Revision condition
+            if (options.setRevisionA && record['Revision'] === 'A') {
+                conditions.push('Revision');
             }
             
             // Only check process steps if record is Approved
@@ -424,7 +501,7 @@
         // Load records based on filters
         document.getElementById('btnLoad').onclick = async () => {
             const statusFilter = document.getElementById('filter-status').value;
-            const typeFilter = document.getElementById('filter-type').value;
+            const commentsFilter = document.getElementById('filter-comments').value;
             
             try {
                 // Start with base query
@@ -443,8 +520,13 @@
                     const data = docSnap.data();
                     const id = docSnap.id;
                     
-                    // Apply product type filter
-                    if (typeFilter !== 'All' && data['Product type'] !== typeFilter) {
+                    // Apply comments filter
+                    const hasComments = data['Comments(detalle)'] && data['Comments(detalle)'].trim() !== '';
+                    
+                    if (commentsFilter === 'WithComments' && !hasComments) {
+                        return;
+                    }
+                    if (commentsFilter === 'WithoutComments' && hasComments) {
                         return;
                     }
                     
@@ -456,6 +538,15 @@
                 
                 // Update record count
                 document.getElementById('record-count').textContent = currentRecords.length;
+                
+                // Update filter info
+                let filterInfo = statusFilter === 'All' ? 'All statuses' : `Status: ${statusFilter}`;
+                if (commentsFilter === 'WithComments') {
+                    filterInfo += ' | With comments';
+                } else if (commentsFilter === 'WithoutComments') {
+                    filterInfo += ' | Without comments';
+                }
+                document.getElementById('filter-info').textContent = filterInfo;
                 
                 // Display records
                 displayRecords(currentRecords);
@@ -485,54 +576,72 @@
                                   record.Estatus === 'Pending' ? '#f39c12' : 
                                   record.Estatus === 'Rejected' ? '#e74c3c' : '#3498db';
                 
+                const hasComments = record['Comments(detalle)'] && record['Comments(detalle)'].trim() !== '';
+                const commentsPreview = hasComments ? record['Comments(detalle)'] : 'No comments';
+                const isMultiline = commentsPreview.includes('\n');
+                
                 const currentOptions = {
                     setRawMaterial: true,
                     setProcessYes: true,
                     setOverallApproved: true,
+                    setRevisionA: true,
                     formatComments: true
                 };
                 
                 const conditionsCheck = recordAlreadyMeetsConditions(record, currentOptions);
                 
+                // Count how many process steps are already "yes"
+                const processYesCount = processFields.filter(field => 
+                    record[field] && record[field].toLowerCase() === 'yes'
+                ).length;
+                
                 html += `
                     <div class="record-item">
                         <div style="flex: 1;">
-                            <strong style="color: #2c3e50;">${record['Item #'] || 'N/A'}</strong>
-                            <div style="font-size: 11px; color: #666;">
-                                <span style="color: ${statusColor}; font-weight: bold;">${record.Estatus || 'No status'}</span> | 
-                                ${record['PPAP Part Number'] || 'No PPAP'} | 
-                                <span style="color: #7f8c8d; ${record['Product type'] === 'RAW MATERIAL' ? 'font-weight: bold; color: #3498db;' : ''}">
-                                    ${record['Product type'] || 'No type'}
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                                <strong style="color: #2c3e50;">${record['Item #'] || 'N/A'}</strong>
+                                <span style="font-size: 11px; padding: 2px 8px; border-radius: 10px; background: ${statusColor}; color: white;">
+                                    ${record.Estatus || 'No status'}
                                 </span>
+                                ${record['Revision'] === 'A' ? '<span class="detail-badge badge-revision">A</span>' : ''}
+                                ${record['Product type'] === 'RAW MATERIAL' ? '<span class="detail-badge badge-raw">RAW</span>' : ''}
+                                ${processYesCount === 18 ? '<span class="detail-badge badge-process">18/18</span>' : ''}
                             </div>
-                            <div class="comments-preview ${(record['Comments(detalle)'] || '').includes('\n') ? 'multiline' : ''}">
-                                ${record['Comments(detalle)'] ? '💬 ' + record['Comments(detalle)'].substring(0, 50) + (record['Comments(detalle)'].length > 50 ? '...' : '') : 'No comments'}
+                            
+                            <div style="font-size: 11px; color: #666; margin-bottom: 5px;">
+                                ${record['PPAP Part Number'] || 'No PPAP'} | 
+                                Overall: <strong style="${record['PPAP overall status'] === 'Approved' ? 'color: #27ae60;' : 'color: #666;'}">
+                                    ${record['PPAP overall status'] || 'None'}
+                                </strong>
                             </div>
+                            
+                            <div class="record-details">
+                                <div>Type: <strong>${record['Product type'] || 'None'}</strong></div>
+                                <div>Process: <strong>${processYesCount}/18 yes</strong></div>
+                            </div>
+                            
+                            ${hasComments ? `
+                                <div class="comments-preview ${isMultiline ? 'multiline' : ''}" title="${commentsPreview.replace(/"/g, '&quot;')}">
+                                    💬 ${commentsPreview.substring(0, 100)}${commentsPreview.length > 100 ? '...' : ''}
+                                </div>
+                            ` : ''}
                         </div>
-                        <div style="font-size: 10px; text-align: right;">
-                            <div style="color: #95a5a6; margin-bottom: 3px;">
-                                Steps: ${getProcessStepCount(record)}
+                        
+                        <div style="font-size: 10px; text-align: right; min-width: 120px;">
+                            ${conditionsCheck.conditionsMet.length > 0 ? `
+                                <div style="margin-bottom: 5px;">
+                                    <span class="skip-indicator">Skips: ${conditionsCheck.conditionsMet.length}</span>
+                                </div>
+                            ` : ''}
+                            <div style="color: #7f8c8d;">
+                                Needs update
                             </div>
-                            <div style="color: #9b59b6;">
-                                Overall: ${record['PPAP overall status'] || 'None'}
-                            </div>
-                            ${conditionsCheck.conditionsMet.length > 0 ? 
-                                `<div class="skip-indicator">Skips: ${conditionsCheck.conditionsMet.length}</div>` : 
-                                ''}
                         </div>
                     </div>
                 `;
             });
             
             resultsSection.innerHTML = html;
-        }
-
-        function getProcessStepCount(record) {
-            let count = 0;
-            processFields.forEach(field => {
-                if (record[field] && record[field].toLowerCase() === 'yes') count++;
-            });
-            return `${count}/18`;
         }
 
         // Export to CSV
@@ -548,11 +657,12 @@
                 'PPAP Part Number',
                 'Estatus',
                 'Product type',
+                'Revision',
+                'PPAP overall status',
                 'Component description',
                 'Validation date',
                 'Programmer',
                 'Quality Lead',
-                'PPAP overall status',
                 'Comments(detalle)'
             ];
             
@@ -570,11 +680,12 @@
                     record['PPAP Part Number'] || '',
                     record.Estatus || '',
                     record['Product type'] || '',
+                    record['Revision'] || '',
+                    record['PPAP overall status'] || '',
                     record['Component description'] || '',
                     record['Validation date'] || '',
                     record.Programmer || '',
                     record['Quality Lead'] || '',
-                    record['PPAP overall status'] || '',
                     `"${(record['Comments(detalle)'] || '').replace(/"/g, '""')}"`
                 ];
                 
@@ -612,21 +723,25 @@
             const setRawMaterial = document.getElementById('chk-set-raw').checked;
             const setProcessYes = document.getElementById('chk-set-process-yes').checked;
             const setOverallApproved = document.getElementById('chk-set-overall-approved').checked;
+            const setRevisionA = document.getElementById('chk-set-revision-a').checked;
             const formatComments = document.getElementById('chk-format-comments').checked;
             
-            if (!setRawMaterial && !setProcessYes && !setOverallApproved && !formatComments) {
+            if (!setRawMaterial && !setProcessYes && !setOverallApproved && !setRevisionA && !formatComments) {
                 alert("Please select at least one update option.");
                 return;
             }
             
-            const selectedOptions = { setRawMaterial, setProcessYes, setOverallApproved, formatComments };
+            const selectedOptions = { setRawMaterial, setProcessYes, setOverallApproved, setRevisionA, formatComments };
             
-            if (!confirm(`Are you sure you want to update ${currentRecords.length} records?\n\nThis will:` + 
-                        (setRawMaterial ? "\n• Set ALL Product Types to 'RAW MATERIAL'" : "") +
-                        (setProcessYes ? "\n• Set Process Steps 1-18 to 'yes' (only for Approved items)" : "") +
-                        (setOverallApproved ? "\n• Set 'PPAP overall status' to 'Approved' (only for Approved items)" : "") +
-                        (formatComments ? "\n• Format 'Comments(detalle)' to max 2 lines" : "") +
-                        "\n\nRecords that already meet conditions will be skipped.")) {
+            let confirmMessage = `Are you sure you want to update ${currentRecords.length} records?\n\nThis will:`;
+            if (setRawMaterial) confirmMessage += "\n• Set ALL Product Types to 'RAW MATERIAL'";
+            if (setProcessYes) confirmMessage += "\n• Set Process Steps 1-18 to 'yes' (only for Approved items)";
+            if (setOverallApproved) confirmMessage += "\n• Set 'PPAP overall status' to 'Approved' (only for Approved items)";
+            if (setRevisionA) confirmMessage += "\n• Set ALL 'Revision' fields to 'A'";
+            if (formatComments) confirmMessage += "\n• Format 'Comments(detalle)' to approx. 2 words per line";
+            confirmMessage += "\n\nRecords that already meet conditions will be skipped.";
+            
+            if (!confirm(confirmMessage)) {
                 return;
             }
             
@@ -679,6 +794,11 @@
                             updates['Product type'] = 'RAW MATERIAL';
                         }
                         
+                        // Apply Revision "A" to ALL records if selected
+                        if (setRevisionA && record['Revision'] !== 'A') {
+                            updates['Revision'] = 'A';
+                        }
+                        
                         // Apply process steps and overall status only if record is Approved
                         if (record.Estatus === 'Approved') {
                             // Apply process steps
@@ -698,7 +818,7 @@
                         }
                         
                         // Format comments if selected
-                        if (formatComments) {
+                        if (formatComments && record['Comments(detalle)']) {
                             const currentComments = record['Comments(detalle)'] || '';
                             const formattedComments = formatComments(currentComments);
                             if (currentComments !== formattedComments) {
@@ -739,7 +859,7 @@
                 await addDoc(collection(db, "movimientos"), {
                     usuario: user.usuario,
                     accion: "Bulk Update",
-                    detalle: `Updated ${updatedCount} records | Raw Material: ${setRawMaterial} | Process Steps: ${setProcessYes} | Overall Status: ${setOverallApproved} | Comments: ${formatComments}`,
+                    detalle: `Updated ${updatedCount} records | RAW MATERIAL: ${setRawMaterial} | Process Steps: ${setProcessYes} | Overall Status: ${setOverallApproved} | Revision: ${setRevisionA} | Comments: ${formatComments}`,
                     fecha: serverTimestamp(),
                     stats: {
                         total: currentRecords.length,
@@ -756,7 +876,8 @@
                 if (setRawMaterial) message += `• Product Type set to: RAW MATERIAL\n`;
                 if (setProcessYes) message += `• Process Steps set to: yes (for Approved items)\n`;
                 if (setOverallApproved) message += `• PPAP overall status set to: Approved (for Approved items)\n`;
-                if (formatComments) message += `• Comments formatted to max 2 lines\n`;
+                if (setRevisionA) message += `• Revision set to: A\n`;
+                if (formatComments) message += `• Comments formatted to ~2 words per line\n`;
                 
                 alert(message);
                 
