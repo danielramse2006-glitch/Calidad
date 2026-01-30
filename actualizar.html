@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -44,6 +44,19 @@
             background: #f1f1f1;
             border-radius: 4px;
         }
+        
+        /* Estilo para textareas en actualizar */
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 13px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+        }
+
         .current-status {
             display: inline-block;
             padding: 3px 10px;
@@ -125,7 +138,6 @@
         }
 
         .vc2-header {
-            /* background: linear-gradient(to right, #003366, #0056a9);*/
             color: white;
             text-align: center;
             padding: 12px 0;
@@ -133,7 +145,6 @@
             font-weight: bold;
             letter-spacing: 2px;
             margin: 0;
-          
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
@@ -143,11 +154,9 @@
             width: 100%;
             background: linear-gradient(to right, #003366, #0056a9);
         }
-
     </style>
 </head>
 <body class="bg-blue">
-    <!-- CORPORATE HEADER -->
     <div class="corporate-header">
         <div class="company-logo" onclick="location.href='index.html'" style="cursor:pointer;">
             <div class="logo-container">
@@ -165,7 +174,6 @@
         </div>
     </div>
 
-<!-- VC2 MÁS CHICO Y CENTRADO - AÑADIDO AQUÍ -->
     <div class="vc2-container">
         <div class="vc2-header">
             VC2
@@ -177,7 +185,6 @@
     <div style="padding: 20px; max-width: 1200px; margin: auto;">
         <div style="background: white; border-radius: 10px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: grid; grid-template-columns: 1fr 400px; gap: 25px;">
             
-            <!-- Left column - Form -->
             <div>
                 <h2 style="margin-bottom: 25px; color: #2c3e50; display: flex; align-items: center; justify-content: space-between;">
                     <span>📝 Update Record</span>
@@ -209,8 +216,7 @@
                 </div>
 
                 <div id="edit-form" style="display: none; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; padding-top: 20px; border-top: 2px solid #eee;">
-                    <!-- Fields generated dynamically -->
-                </div>
+                    </div>
 
                 <div id="action-buttons" style="display: none;">
                     <div style="display: flex; gap: 15px; margin-bottom: 15px;">
@@ -221,17 +227,12 @@
                             CANCEL
                         </button>
                     </div>
-                    <p style="font-size: 11px; color: #7f8c8d; text-align: center; margin: 0;">
-                        ⚠️ Changes will be recorded in the system history
-                    </p>
                 </div>
             </div>
 
-            <!-- Right column - Images -->
             <div style="border-left: 1px solid #eee; padding-left: 25px;">
                 <h3 style="color: #2c3e50; margin-bottom: 20px; text-align: center;">🖼️ Images</h3>
                 
-                <!-- PSW Image Section -->
                 <div class="image-section">
                     <div class="image-section-title">
                         <div style="background: #3498db; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
@@ -250,15 +251,8 @@
                     </button>
                     
                     <div id="upload-status-psw" class="upload-status"></div>
-                    
-                    <div class="file-info">
-                        <strong>Format:</strong> Item_Date.jpg<br>
-                        <strong>Example:</strong> 15_2024-01-27.jpg<br>
-                        <strong>Max:</strong> 10MB | <strong>Formats:</strong> JPG, PNG, GIF
-                    </div>
                 </div>
                 
-                <!-- PV Image Section -->
                 <div class="image-section">
                     <div class="image-section-title">
                         <div style="background: #9b59b6; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
@@ -277,12 +271,6 @@
                     </button>
                     
                     <div id="upload-status-pv" class="upload-status"></div>
-                    
-                    <div class="file-info">
-                        <strong>Format:</strong> Item-2-Date.jpg<br>
-                        <strong>Example:</strong> 15-2-2024-01-27.jpg<br>
-                        <strong>Max:</strong> 10MB | <strong>Formats:</strong> JPG, PNG, GIF
-                    </div>
                 </div>
                 
                 <div style="margin-top: 20px; padding: 15px; background: #f0f7ff; border-radius: 8px;">
@@ -291,14 +279,12 @@
                         <li>PSW = Part Submission Warrant (Standard format)</li>
                         <li>PV = Process Validation (Validation format)</li>
                         <li>Both images will be saved with today's date</li>
-                        <li>Images are stored separately in Google Drive</li>
                     </ul>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- CORPORATE FOOTER -->
     <div class="corporate-footer">
         <strong>SMP Engine Management, S. de R.L. de C.V</strong> | PPAP Master Track System v2.0<br>
         <span style="font-size: 11px;">© 2024 - All rights reserved</span>
@@ -320,16 +306,14 @@
         }
 
         // Verify update permission
-        if (!redirectIfNoPermission('actualizar')) {
-            // Already redirects automatically
-        }
+        if (!redirectIfNoPermission('actualizar')) { }
         
         const scriptURL = "https://script.google.com/macros/s/AKfycbz-zqhnPq-ZCVv1miDE8lF6WkKfTrw4KMj2ikRm8ZYkncyOpSG0VAqEkbfbnThTIdmb/exec";
 
         let currentId = null;
         let itemActual = null;
         
-        // DB FIELDS (EXACTLY as specified)
+        // DB FIELDS
         const camposDB = [
             "Item #",
             "PPAP Part Number",
@@ -379,18 +363,13 @@
             "PPAP overall status"
         ];
 
-        // UI NAMES (replace line breaks with spaces for display)
         const camposUI = camposDB.map(field => field.replace(/\n/g, " "));
-
-        // Important fields (to highlight)
         const importantFields = ["Item #", "Estatus", "PPAP overall status", "PPAP Part Number", "Revision"];
 
-        // Function to create safe ID
         function createSafeId(fieldName) {
             return fieldName.replace(/\n/g, "_").replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_]/g, "");
         }
 
-        // Function to validate PPAP Part Number
         window.validarPPAPPartNumber = function(input) {
             const valor = input.value.trim();
             const statusValues = ["Pending", "In Process", "Approved", "Rejected", "Completed", "On Hold"];
@@ -398,7 +377,7 @@
             if (statusValues.includes(valor)) {
                 input.classList.add("ppap-validation-error");
                 input.classList.remove("ppap-validation-ok");
-                input.title = "⚠️ PPAP Part Number should be a part number (like P-001), not a status";
+                input.title = "⚠️ PPAP Part Number should be a part number, not a status";
                 return false;
             } else if (valor) {
                 input.classList.add("ppap-validation-ok");
@@ -412,7 +391,6 @@
             }
         };
 
-        // Function to load images for an item
         async function loadImages(itemNumber) {
             if (!itemNumber) return;
             
@@ -420,7 +398,7 @@
             const nombreArchivoPSW = `${itemNumber}_${hoy}`;
             const nombreArchivoPV = `${itemNumber}-2-${hoy}`;
             
-            // Load PSW image
+            // Load PSW
             try {
                 const imgResponsePSW = await fetch(`${scriptURL}?itemName=${nombreArchivoPSW}`);
                 const imgDataPSW = await imgResponsePSW.json();
@@ -433,10 +411,9 @@
                 }
             } catch (imgError) {
                 document.getElementById('current-img-psw').src = "imagenes/sin_foto.jpg";
-                document.getElementById('upload-status-psw').innerHTML = `<span style="color:#7f8c8d;">Error loading PSW image</span>`;
             }
             
-            // Load PV image
+            // Load PV
             try {
                 const imgResponsePV = await fetch(`${scriptURL}?itemName=${nombreArchivoPV}`);
                 const imgDataPV = await imgResponsePV.json();
@@ -449,11 +426,9 @@
                 }
             } catch (imgError) {
                 document.getElementById('current-img-pv').src = "imagenes/sin_foto.jpg";
-                document.getElementById('upload-status-pv').innerHTML = `<span style="color:#7f8c8d;">Error loading PV image</span>`;
             }
         }
 
-        // SEARCH ITEM
         document.getElementById('btnBuscar').onclick = async () => {
             const val = document.getElementById('searchItem').value.trim();
             if(!val) {
@@ -461,7 +436,6 @@
                 return;
             }
 
-            // Show loading
             const btnBuscar = document.getElementById('btnBuscar');
             btnBuscar.innerHTML = "🔍 SEARCHING...";
             btnBuscar.disabled = true;
@@ -471,7 +445,7 @@
                 const snap = await getDocs(q);
 
                 if(snap.empty) {
-                    alert("❌ Item not found. Check the number and try again.");
+                    alert("❌ Item not found.");
                     resetForm();
                     return;
                 }
@@ -481,16 +455,13 @@
                 const data = d.data();
                 itemActual = data["Item #"];
 
-                // Show current information
                 document.getElementById('current-info').style.display = 'block';
                 document.getElementById('current-item-display').textContent = itemActual;
                 
-                // Show current status with color
                 const currentStatus = data["PPAP overall status"] || "No status";
                 const statusDisplay = document.getElementById('current-status-display');
                 statusDisplay.textContent = currentStatus;
                 
-                // Apply color class based on status
                 statusDisplay.className = "current-status ";
                 if (currentStatus.toLowerCase().includes("approved") || currentStatus.toLowerCase().includes("aprobado")) {
                     statusDisplay.classList.add("status-approved");
@@ -502,27 +473,6 @@
                     statusDisplay.classList.add("status-inprogress");
                 }
 
-                // Find last update
-                try {
-                    const historyQuery = query(
-                        collection(db, "movimientos"),
-                        where("detalle", "==", `Item: ${itemActual}`),
-                        orderBy("fecha", "desc"),
-                        limit(1)
-                    );
-                    const historySnap = await getDocs(historyQuery);
-                    if (!historySnap.empty) {
-                        const lastUpdate = historySnap.docs[0].data();
-                        const lastDate = lastUpdate.fecha ? 
-                            new Date(lastUpdate.fecha.seconds * 1000).toLocaleDateString() : 
-                            "Unknown date";
-                        document.getElementById('last-update').textContent = `Last modification: ${lastDate}`;
-                    }
-                } catch (historyError) {
-                    console.log("Could not get history:", historyError);
-                }
-
-                // Generate edit form
                 const form = document.getElementById('edit-form');
                 form.innerHTML = '';
                 
@@ -531,11 +481,9 @@
                     const div = document.createElement('div');
                     div.className = importantFields.includes(campoDB) ? 'field-group' : '';
                     
-                    // Determine if required field
                     const isRequired = importantFields.includes(campoDB);
                     const safeId = createSafeId(campoDB);
                     
-                    // For status fields, use select
                     if (campoDB === "PPAP overall status" || campoDB === "Estatus") {
                         const options = ["Pending", "In Process", "Approved", "Rejected", "Completed", "On Hold"];
                         const currentValue = data[campoDB] || "";
@@ -544,24 +492,28 @@
                             <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 5px; color: #2c3e50;">
                                 ${campoUI}${isRequired ? '<span style="color:#e74c3c;"> *</span>' : ''}
                             </label>
-                            <select id="upd_${safeId}" class="status-select" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px; font-size:13px;">
+                            <select id="upd_${safeId}" class="status-select">
                                 <option value="">Select status...</option>
                                 ${options.map(opt => 
                                     `<option value="${opt}" ${currentValue === opt ? 'selected' : ''}>${opt}</option>`
                                 ).join('')}
                             </select>
                         `;
-                    } else if (campoDB === "PPAP Part Number") {
-                        // PPAP Part Number MUST BE TEXT INPUT, NOT SELECT
+                    } else if (campoDB === "Comments(detalle)" || campoDB === "Component description" || campoDB === "Reason") {
+                        // USO DE TEXTAREA PARA CAMPOS LARGOS EN ACTUALIZAR
                         div.innerHTML = `
                             <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 5px; color: #2c3e50;">
                                 ${campoUI}${isRequired ? '<span style="color:#e74c3c;"> *</span>' : ''}
                             </label>
-                            <input type="text" 
-                                   id="upd_${safeId}" 
-                                   value="${data[campoDB] || ''}" 
-                                   style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px; font-size:13px;"
-                                   placeholder="Example: P-001, 12345-ABC, ABC-2024"
+                            <textarea id="upd_${safeId}" rows="4">${data[campoDB] || ''}</textarea>
+                        `;
+                    } else if (campoDB === "PPAP Part Number") {
+                        div.innerHTML = `
+                            <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 5px; color: #2c3e50;">
+                                ${campoUI}${isRequired ? '<span style="color:#e74c3c;"> *</span>' : ''}
+                            </label>
+                            <input type="text" id="upd_${safeId}" value="${data[campoDB] || ''}" 
+                                   style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;"
                                    onkeyup="validarPPAPPartNumber(this)">
                         `;
                     } else {
@@ -569,10 +521,8 @@
                             <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 5px; color: #2c3e50;">
                                 ${campoUI}${isRequired ? '<span style="color:#e74c3c;"> *</span>' : ''}
                             </label>
-                            <input type="text" 
-                                   id="upd_${safeId}" 
-                                   value="${data[campoDB] || ''}" 
-                                   style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px; font-size:13px;"
+                            <input type="text" id="upd_${safeId}" value="${data[campoDB] || ''}" 
+                                   style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;"
                                    ${campoDB === "Item #" ? 'readonly style="background:#f5f5f5;"' : ''}>
                         `;
                     }
@@ -585,28 +535,21 @@
                 document.getElementById('btnSubirPSW').style.display = 'block';
                 document.getElementById('btnSubirPV').style.display = 'block';
 
-                // Validate PPAP Part Number initially
                 const ppapInput = document.getElementById('upd_PPAP_Part_Number');
-                if (ppapInput) {
-                    validarPPAPPartNumber(ppapInput);
-                }
+                if (ppapInput) validarPPAPPartNumber(ppapInput);
 
-                // Load images
                 await loadImages(itemActual);
-
-                // Smooth scroll to form
                 form.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
             } catch(error) {
                 console.error("Error searching:", error);
-                alert("Error connecting to database. Try again.");
+                alert("Error connecting to database.");
             } finally {
                 btnBuscar.innerHTML = "SEARCH ITEM";
                 btnBuscar.disabled = false;
             }
         };
 
-        // Function to reset form
         function resetForm() {
             document.getElementById('edit-form').innerHTML = '';
             document.getElementById('edit-form').style.display = 'none';
@@ -622,73 +565,32 @@
             itemActual = null;
         }
 
-        // Cancel edit
         document.getElementById('btnCancel').onclick = resetForm;
 
-        // DRIVE LOGIC - PSW UPLOAD
+        // DRIVE LOGIC
         document.getElementById('btnSubirPSW').onclick = () => {
-            if (!itemActual) {
-                alert("First search for an Item to update");
-                return;
-            }
+            if (!itemActual) return alert("Search for an item first");
             document.getElementById('fileInputPSW').click();
         };
+        document.getElementById('fileInputPSW').onchange = function() { uploadImage(this.files[0], 'PSW'); };
 
-        document.getElementById('fileInputPSW').onchange = function() {
-            uploadImage(this.files[0], 'PSW');
-        };
-
-        // DRIVE LOGIC - PV UPLOAD
         document.getElementById('btnSubirPV').onclick = () => {
-            if (!itemActual) {
-                alert("First search for an Item to update");
-                return;
-            }
+            if (!itemActual) return alert("Search for an item first");
             document.getElementById('fileInputPV').click();
         };
+        document.getElementById('fileInputPV').onchange = function() { uploadImage(this.files[0], 'PV'); };
 
-        document.getElementById('fileInputPV').onchange = function() {
-            uploadImage(this.files[0], 'PV');
-        };
-
-        // Generic image upload function
         async function uploadImage(file, imageType) {
             if (!file) return;
-
-            // Validate size (maximum 10MB)
-            if (file.size > 10 * 1024 * 1024) {
-                alert("Image is too large. Maximum 10MB.");
-                return;
-            }
-
-            // Validate type
-            const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
-            if (!validTypes.includes(file.type)) {
-                alert("Invalid format. Use JPG, PNG or GIF.");
-                return;
-            }
+            if (file.size > 10 * 1024 * 1024) return alert("Image too large (>10MB).");
 
             const reader = new FileReader();
             const hoy = new Date().toISOString().slice(0, 10);
-            let nombreArchivo = '';
-            let btnId = '';
-            let statusId = '';
-            let imgId = '';
-            let actionType = '';
-
-            if (imageType === 'PSW') {
-                nombreArchivo = `${itemActual}_${hoy}`;
-                btnId = 'btnSubirPSW';
-                statusId = 'upload-status-psw';
-                imgId = 'current-img-psw';
-                actionType = 'PSW Image Updated';
-            } else {
-                nombreArchivo = `${itemActual}-2-${hoy}`;
-                btnId = 'btnSubirPV';
-                statusId = 'upload-status-pv';
-                imgId = 'current-img-pv';
-                actionType = 'PV Image Updated';
-            }
+            let nombreArchivo = imageType === 'PSW' ? `${itemActual}_${hoy}` : `${itemActual}-2-${hoy}`;
+            let btnId = imageType === 'PSW' ? 'btnSubirPSW' : 'btnSubirPV';
+            let statusId = imageType === 'PSW' ? 'upload-status-psw' : 'upload-status-pv';
+            let imgId = imageType === 'PSW' ? 'current-img-psw' : 'current-img-pv';
+            let actionType = imageType === 'PSW' ? 'PSW Image Updated' : 'PV Image Updated';
 
             reader.onload = async function() {
                 const base64 = reader.result.split(',')[1];
@@ -697,99 +599,52 @@
 
                 btn.innerHTML = "⏳ UPLOADING...";
                 btn.disabled = true;
-                status.innerHTML = `<span style="color:#f39c12;">⏳ Processing ${imageType} image...</span>`;
 
                 try {
                     const res = await fetch(scriptURL, { 
                         method: "POST", 
-                        body: JSON.stringify({ 
-                            itemName: nombreArchivo, 
-                            imageB64: base64 
-                        }) 
+                        body: JSON.stringify({ itemName: nombreArchivo, imageB64: base64 }) 
                     });
                     const resData = await res.json();
 
                     if(resData.result === "success") {
-                        // Show uploaded image
                         document.getElementById(imgId).src = `https://lh3.googleusercontent.com/d/${resData.id}`;
-                        status.innerHTML = `<span style="color:#27ae60;">✅ ${imageType} image uploaded successfully</span>`;
+                        status.innerHTML = `<span style="color:#27ae60;">✅ ${imageType} uploaded</span>`;
                         
-                        // Record in history
+                        // NOTA: Se mantiene el historial de subida de imágenes, solo se quitó el de "Update" principal
                         await addDoc(collection(db, "movimientos"), {
                             usuario: user.usuario,
                             accion: actionType,
-                            detalle: `Item: ${itemActual} (${imageType} - ${hoy})`,
+                            detalle: `Item: ${itemActual} (${imageType})`,
                             fecha: serverTimestamp()
                         });
 
                         alert(`✅ ${imageType} image saved correctly`);
-                    } else {
-                        throw new Error("Server error");
-                    }
+                    } else throw new Error("Server error");
                 } catch(e) { 
-                    console.error(e);
-                    status.innerHTML = `<span style="color:#e74c3c;">❌ Error uploading ${imageType} image</span>`;
-                    alert(`Error uploading ${imageType} image. Try again.`);
+                    alert(`Error uploading ${imageType}.`);
                 } finally { 
-                    btn.innerHTML = imageType === 'PSW' ? "📸 UPLOAD PSW PHOTO" : "📸 UPLOAD PV PHOTO"; 
+                    btn.innerHTML = `📸 UPLOAD ${imageType} PHOTO`; 
                     btn.disabled = false; 
-                    if (imageType === 'PSW') {
-                        document.getElementById('fileInputPSW').value = '';
-                    } else {
-                        document.getElementById('fileInputPV').value = '';
-                    }
                 }
             };
             reader.readAsDataURL(file);
         }
 
-        // UPDATE FIRESTORE
         document.getElementById('btnUpdate').onclick = async () => {
-            if (!currentId) {
-                alert("First search for a record to update");
-                return;
-            }
+            if (!currentId) return alert("Search for a record first");
 
-            // VALIDATE PPAP Part Number
             const ppapPartNumberInput = document.getElementById('upd_PPAP_Part_Number');
             if (ppapPartNumberInput) {
                 const ppapValue = ppapPartNumberInput.value.trim();
                 const statusValues = ["Pending", "In Process", "Approved", "Rejected", "Completed", "On Hold"];
-                
                 if (statusValues.includes(ppapValue)) {
-                    alert("❌ ERROR: 'PPAP Part Number' must be a part number (like P-001, ABC-123), not a status like '" + ppapValue + "'");
-                    ppapPartNumberInput.focus();
-                    ppapPartNumberInput.classList.add("ppap-validation-error");
+                    alert("❌ 'PPAP Part Number' must be a number, not a status.");
                     return;
                 }
             }
 
-            // Validate important fields
-            const importantValues = {};
-            let hasError = false;
-            importantFields.forEach(field => {
-                const safeId = createSafeId(field);
-                const element = document.getElementById(`upd_${safeId}`);
-                if (element) {
-                    const value = element.tagName === 'SELECT' ? element.value : element.value.trim();
-                    importantValues[field] = value;
-                    if (field !== "Item #" && !value) {
-                        alert(`Field "${field}" is required`);
-                        hasError = true;
-                        element.style.borderColor = "#e74c3c";
-                        element.focus();
-                    } else {
-                        element.style.borderColor = "#ddd";
-                    }
-                }
-            });
-
-            if (hasError) return;
-
-            // Confirm update
-            if (!confirm("Are you sure you want to update this record? Changes will be saved in history.")) {
-                return;
-            }
+            if (!confirm("Are you sure you want to update this record?")) return;
 
             const newData = {};
             camposDB.forEach(c => {
@@ -805,37 +660,25 @@
             btnUpdate.disabled = true;
 
             try {
-                // Update in Firestore
                 await setDoc(doc(db, "productos", currentId), newData, { merge: true });
                 
-                // Record in history
-                await addDoc(collection(db, "movimientos"), {
-                    usuario: user.usuario,
-                    accion: "PPAP Update",
-                    detalle: `Item: ${itemActual} | PPAP: ${newData["PPAP Part Number"] || 'No PPAP'} | Revision: ${newData["Revision"] || 'N/A'}`,
-                    statusMomento: newData["PPAP overall status"],
-                    fecha: serverTimestamp()
-                });
-
+                // NOTA: Se eliminó el registro en la colección "movimientos" como solicitaste
+                
                 alert("✅ Record updated successfully");
                 location.href = 'index.html';
             } catch(e) { 
                 console.error("Error updating:", e);
-                alert("❌ Error updating in database"); 
+                alert("❌ Error updating database"); 
             } finally {
                 btnUpdate.innerHTML = "💾 SAVE CHANGES";
                 btnUpdate.disabled = false;
             }
         };
 
-        // Allow search with Enter
         document.getElementById('searchItem').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                document.getElementById('btnBuscar').click();
-            }
+            if (e.key === 'Enter') document.getElementById('btnBuscar').click();
         });
 
-        // Show initial help
         window.addEventListener('load', function() {
             document.getElementById('searchItem').focus();
         });
