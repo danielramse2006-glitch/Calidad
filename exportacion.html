@@ -2,71 +2,189 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Procesamiento Automático de Comentarios</title>
+    <title>Divisor de Imagen QNCHO - Parte 3</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
         }
         
         body {
-            background: #2c3e50;
-            color: white;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
             min-height: 100vh;
             padding: 20px;
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
         
         header {
             text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            border: 2px solid #3498db;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            border: 2px solid #6c5ce7;
+            box-shadow: 0 10px 30px rgba(108, 92, 231, 0.2);
         }
         
         h1 {
-            color: #3498db;
+            color: #6c5ce7;
             margin-bottom: 10px;
-            font-size: 28px;
+            font-size: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
         }
         
         .subtitle {
-            color: #cccccc;
+            color: #a29bfe;
+            font-size: 18px;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .upload-section, .controls-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(108, 92, 231, 0.3);
+        }
+        
+        .section-title {
+            color: #6c5ce7;
+            margin-bottom: 20px;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .upload-area {
+            border: 3px dashed #6c5ce7;
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(108, 92, 231, 0.05);
+            margin-bottom: 20px;
+        }
+        
+        .upload-area:hover {
+            background: rgba(108, 92, 231, 0.1);
+            border-color: #a29bfe;
+        }
+        
+        .upload-icon {
+            font-size: 50px;
+            color: #6c5ce7;
+            margin-bottom: 15px;
+        }
+        
+        .preview-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        #imagePreview {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            display: none;
+        }
+        
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .control-group {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .control-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #a29bfe;
+            font-weight: 500;
+        }
+        
+        .number-input {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid #6c5ce7;
+            border-radius: 8px;
+            color: white;
             font-size: 16px;
         }
         
-        .control-panel {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(52, 152, 219, 0.5);
+        .number-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(108, 92, 231, 0.3);
         }
         
         .btn {
-            padding: 12px 25px;
+            padding: 15px 30px;
             border: none;
-            border-radius: 5px;
+            border-radius: 10px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
-            background: #3498db;
-            color: white;
-            margin-right: 10px;
-            margin-bottom: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            margin-bottom: 15px;
         }
         
-        .btn:hover {
-            background: #2980b9;
+        .btn-primary {
+            background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(108, 92, 231, 0.3);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-secondary:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.15);
         }
         
         .btn:disabled {
@@ -74,161 +192,94 @@
             cursor: not-allowed;
         }
         
-        .btn-danger {
-            background: #e74c3c;
-        }
-        
-        .btn-danger:hover {
-            background: #c0392b;
-        }
-        
-        .btn-success {
-            background: #2ecc71;
-        }
-        
-        .btn-success:hover {
-            background: #27ae60;
-        }
-        
-        .progress-container {
-            margin-top: 20px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 5px;
-            padding: 15px;
-            display: none;
-        }
-        
-        .progress-bar {
-            width: 100%;
-            height: 20px;
-            background: #34495e;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 10px;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #3498db, #2ecc71);
-            width: 0%;
-            transition: width 0.5s ease;
-        }
-        
-        .progress-text {
-            text-align: center;
-            font-size: 14px;
-            color: #ecf0f1;
-            margin-bottom: 5px;
-        }
-        
-        .status-log {
-            margin-top: 20px;
-            max-height: 200px;
-            overflow-y: auto;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 5px;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-        }
-        
-        .log-entry {
-            padding: 5px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .log-success {
-            color: #2ecc71;
-        }
-        
-        .log-error {
-            color: #e74c3c;
-        }
-        
-        .log-info {
-            color: #3498db;
-        }
-        
         .results-section {
-            margin-top: 30px;
+            margin-top: 40px;
             display: none;
         }
         
-        .results-grid {
+        .grid-preview {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-        
-        .result-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
+            gap: 5px;
+            margin: 20px 0;
             padding: 15px;
-            border: 1px solid rgba(52, 152, 219, 0.3);
-        }
-        
-        .result-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid rgba(52, 152, 219, 0.3);
-        }
-        
-        .item-badge {
-            background: #3498db;
-            color: white;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: bold;
-        }
-        
-        .comment-content {
-            font-family: 'Courier New', monospace;
-            white-space: pre-wrap;
-            line-height: 1.8;
-            font-size: 13px;
-        }
-        
-        .formatted-result {
-            margin-top: 20px;
-            padding: 20px;
-            background: rgba(39, 174, 96, 0.1);
-            border: 2px solid #27ae60;
-            border-radius: 5px;
-            display: none;
-        }
-        
-        .formatted-text {
-            font-family: 'Courier New', monospace;
-            white-space: pre-wrap;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 15px;
-            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
             max-height: 400px;
             overflow-y: auto;
         }
         
-        .summary {
-            background: rgba(241, 196, 15, 0.1);
-            border: 2px solid #f1c40f;
-            border-radius: 5px;
-            padding: 15px;
-            margin-top: 20px;
-            display: none;
+        .pieces-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
         }
         
-        .summary h3 {
-            color: #f1c40f;
-            margin-bottom: 10px;
+        .piece-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            transition: transform 0.3s;
+        }
+        
+        .piece-card:hover {
+            transform: translateY(-5px);
+            border-color: #6c5ce7;
+        }
+        
+        .piece-img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .piece-info {
+            padding: 10px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .piece-number {
+            color: #6c5ce7;
+            font-weight: bold;
+        }
+        
+        .download-btn {
+            padding: 8px 15px;
+            background: rgba(108, 92, 231, 0.2);
+            color: #a29bfe;
+            border: 1px solid #6c5ce7;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 8px;
+            transition: all 0.3s;
+            width: 100%;
+        }
+        
+        .download-btn:hover {
+            background: #6c5ce7;
+            color: white;
+        }
+        
+        .batch-download {
+            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
         }
         
         .stats {
             display: flex;
             justify-content: space-around;
-            margin-top: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
         }
         
         .stat-item {
@@ -236,382 +287,655 @@
         }
         
         .stat-value {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: bold;
-            color: #3498db;
+            color: #6c5ce7;
         }
         
         .stat-label {
-            font-size: 12px;
-            color: #95a5a6;
+            font-size: 14px;
+            color: #a29bfe;
+            margin-top: 5px;
         }
         
-        @media (max-width: 768px) {
-            .stats {
-                flex-direction: column;
-                gap: 10px;
-            }
-            
-            .btn {
-                width: 100%;
-                margin-right: 0;
-            }
+        .grid-overlay {
+            position: relative;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        
+        .grid-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .grid-line {
+            position: absolute;
+            background: rgba(108, 92, 231, 0.7);
+        }
+        
+        .grid-line.vertical {
+            width: 2px;
+            height: 100%;
+        }
+        
+        .grid-line.horizontal {
+            width: 100%;
+            height: 2px;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            background: #00b894;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transform: translateX(150%);
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.error {
+            background: #e74c3c;
+        }
+        
+        .notification.warning {
+            background: #f39c12;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🔍 Procesamiento Automático de Comentarios</h1>
-            <div class="subtitle">Búsqueda automática y procesamiento de todos los Items con comentarios</div>
+            <h1>
+                <span>🖼️</span>
+                DIVISOR DE IMAGEN QNCHO - PARTE 3
+            </h1>
+            <div class="subtitle">
+                Divide tu imagen en tantas partes como necesites. Control total sobre filas y columnas.
+                <br>Procesamiento 100% en el navegador - Tus imágenes no se suben a ningún servidor.
+            </div>
         </header>
         
-        <div class="control-panel">
-            <h3>Panel de Control</h3>
-            <button class="btn" id="scanBtn">🔍 Escanear Todos los Items</button>
-            <button class="btn btn-success" id="processAllBtn" disabled>🔄 Procesar Todos</button>
-            <button class="btn btn-danger" id="cancelBtn" disabled>❌ Cancelar</button>
-            
-            <div class="progress-container" id="progressContainer">
-                <div class="progress-text" id="progressText">Iniciando...</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
+        <div class="main-content">
+            <div class="upload-section">
+                <div class="section-title">
+                    <span>📤</span>
+                    SUBIR IMAGEN
                 </div>
-                <div class="progress-text" id="progressDetail">0/0 items procesados</div>
+                
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📁</div>
+                    <h3>Arrastra y suelta tu imagen aquí</h3>
+                    <p>o haz clic para seleccionar</p>
+                    <p style="color: #a29bfe; margin-top: 10px; font-size: 14px;">
+                        Formatos soportados: JPG, PNG, GIF, WEBP
+                    </p>
+                </div>
+                
+                <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                
+                <div class="preview-container">
+                    <img id="imagePreview" alt="Vista previa">
+                    <div id="imageInfo" style="margin-top: 10px; color: #a29bfe;"></div>
+                </div>
             </div>
             
-            <div class="status-log" id="statusLog">
-                <div class="log-entry log-info">Sistema listo. Haz clic en "Escanear Todos los Items" para comenzar.</div>
-            </div>
-        </div>
-        
-        <div class="summary" id="summarySection">
-            <h3>📊 Resumen del Procesamiento</h3>
-            <div class="stats">
-                <div class="stat-item">
-                    <div class="stat-value" id="totalItems">0</div>
-                    <div class="stat-label">Total Items</div>
+            <div class="controls-section">
+                <div class="section-title">
+                    <span>⚙️</span>
+                    CONTROLES DE DIVISIÓN
                 </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="processedItems">0</div>
-                    <div class="stat-label">Procesados</div>
+                
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <label class="control-label">Número de Filas</label>
+                        <input type="number" id="rowsInput" class="number-input" min="1" max="50" value="3">
+                        <div style="font-size: 12px; color: #888; margin-top: 5px;">Mín: 1, Máx: 50</div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">Número de Columnas</label>
+                        <input type="number" id="colsInput" class="number-input" min="1" max="50" value="3">
+                        <div style="font-size: 12px; color: #888; margin-top: 5px;">Mín: 1, Máx: 50</div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">Total de Partes</label>
+                        <input type="number" id="totalParts" class="number-input" readonly value="9">
+                        <div style="font-size: 12px; color: #888; margin-top: 5px;">Calculado automáticamente</div>
+                    </div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="formattedItems">0</div>
-                    <div class="stat-label">Formateados</div>
+                
+                <div class="control-group">
+                    <label class="control-label">Nombre base para las partes</label>
+                    <input type="text" id="baseName" class="number-input" value="QNCHO_parte">
+                    <div style="font-size: 12px; color: #888; margin-top: 5px;">Ej: QNCHO_parte_01.jpg</div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="errorsCount">0</div>
-                    <div class="stat-label">Errores</div>
+                
+                <div style="margin-top: 25px;">
+                    <button class="btn btn-primary" id="previewBtn" disabled>
+                        <span>👁️</span>
+                        PREVISUALIZAR DIVISIÓN
+                    </button>
+                    
+                    <button class="btn btn-secondary" id="divideBtn" disabled>
+                        <span>✂️</span>
+                        DIVIDIR IMAGEN
+                    </button>
+                    
+                    <button class="btn btn-secondary" id="resetBtn">
+                        <span>🔄</span>
+                        REINICIAR TODO
+                    </button>
                 </div>
             </div>
         </div>
         
         <div class="results-section" id="resultsSection">
-            <h3>📋 Items Encontrados con Comentarios</h3>
-            <div class="results-grid" id="resultsContainer"></div>
+            <div class="section-title">
+                <span>📊</span>
+                RESULTADOS DE LA DIVISIÓN
+            </div>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalPieces">0</div>
+                    <div class="stat-label">Total de Partes</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="imageWidth">0</div>
+                    <div class="stat-label">Ancho Original</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="imageHeight">0</div>
+                    <div class="stat-label">Alto Original</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="pieceWidth">0</div>
+                    <div class="stat-label">Ancho por Pieza</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="pieceHeight">0</div>
+                    <div class="stat-label">Alto por Pieza</div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <h3 style="color: #6c5ce7; margin-bottom: 15px;">Previsualización de la Cuadrícula</h3>
+                <div class="grid-overlay">
+                    <img id="gridPreview" style="max-width: 100%; max-height: 300px; border-radius: 10px;">
+                    <div id="gridLinesContainer" class="grid-lines"></div>
+                </div>
+            </div>
+            
+            <div class="batch-download">
+                <button class="btn btn-primary" id="downloadAllBtn">
+                    <span>💾</span>
+                    DESCARGAR TODAS LAS PARTES (ZIP)
+                </button>
+                <p style="margin-top: 10px; font-size: 14px;">Todas las partes se comprimirán en un archivo ZIP</p>
+            </div>
+            
+            <h3 style="color: #6c5ce7; margin: 30px 0 20px 0;">Partes Individuales</h3>
+            <div class="pieces-container" id="piecesContainer">
+                <!-- Las partes de la imagen aparecerán aquí -->
+            </div>
         </div>
         
-        <div class="formatted-result" id="formattedSection">
-            <h3>📝 Comentarios Formateados</h3>
-            <div id="formattedComments" class="formatted-text"></div>
+        <div class="notification" id="notification">
+            <div id="notificationText">Operación completada con éxito</div>
         </div>
     </div>
 
+    <!-- Biblioteca para generar ZIP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
     <script>
-        // Datos simulados de la base de datos
-        const mockDatabase = [
-            { 
-                "Item #": "3", 
-                "Comments(detalle)": "3.Arias.- 9/19-el mismo: FG que el 88514385:3.Arias.- 9/19-el mismo: FG que el 88514385:3.Arias.- 9/19-el mismo: FG que el 88514385:",
-                "Special instruccions": "Revisar documentación completa",
-                "Responsible": "Arias",
-                "Validation date": "9/19",
-                "PPAP Part Number": "P-001"
-            },
-            { 
-                "Item #": "5", 
-                "Comments(detalle)": "5.González.- 8/15-expediente 552211: Se requiere revisión:5.González.- 8/15-expediente 552211: Se requiere revisión:",
-                "Special instruccions": "Verificar muestras",
-                "Responsible": "González",
-                "Validation date": "8/15",
-                "PPAP Part Number": "P-002"
-            },
-            { 
-                "Item #": "8", 
-                "Comments(detalle)": "8.López.- 9/20-folio 3344: Documento aprobado:8.López.- 9/20-folio 3344: Documento aprobado:",
-                "Special instruccions": "Esperar firma",
-                "Responsible": "López",
-                "Validation date": "9/20",
-                "PPAP Part Number": "P-003"
-            },
-            { 
-                "Item #": "12", 
-                "Comments(detalle)": "",
-                "Special instruccions": "",
-                "Responsible": "Ramírez",
-                "Validation date": "9/21",
-                "PPAP Part Number": "P-004"
-            },
-            { 
-                "Item #": "15", 
-                "Comments(detalle)": "15.Fernández.- 9/22-caso 7788: Requiere atención inmediata:15.Fernández.- 9/22-caso 7788: Requiere atención inmediata:",
-                "Special instruccions": "Prioridad alta",
-                "Responsible": "Fernández",
-                "Validation date": "9/22",
-                "PPAP Part Number": "P-005"
-            },
-            { 
-                "Item #": "18", 
-                "Comments(detalle)": "18.Torres.- 9/18-nota 1122: Enviar a archivo central:18.Torres.- 9/18-nota 1122: Enviar a archivo central:",
-                "Special instruccions": "Archivar copia digital",
-                "Responsible": "Torres",
-                "Validation date": "9/18",
-                "PPAP Part Number": "P-006"
-            }
-        ];
-        
-        // Variables de estado
-        let allItems = [];
-        let itemsWithComments = [];
-        let processingActive = false;
-        let processingCancelled = false;
+        // Variables globales
+        let originalImage = null;
+        let imageUrl = null;
+        let pieces = [];
+        let rows = 3;
+        let cols = 3;
         
         // Elementos DOM
-        const scanBtn = document.getElementById('scanBtn');
-        const processAllBtn = document.getElementById('processAllBtn');
-        const cancelBtn = document.getElementById('cancelBtn');
-        const progressContainer = document.getElementById('progressContainer');
-        const progressFill = document.getElementById('progressFill');
-        const progressText = document.getElementById('progressText');
-        const progressDetail = document.getElementById('progressDetail');
-        const statusLog = document.getElementById('statusLog');
+        const uploadArea = document.getElementById('uploadArea');
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const imageInfo = document.getElementById('imageInfo');
+        const rowsInput = document.getElementById('rowsInput');
+        const colsInput = document.getElementById('colsInput');
+        const totalParts = document.getElementById('totalParts');
+        const baseName = document.getElementById('baseName');
+        const previewBtn = document.getElementById('previewBtn');
+        const divideBtn = document.getElementById('divideBtn');
+        const resetBtn = document.getElementById('resetBtn');
         const resultsSection = document.getElementById('resultsSection');
-        const resultsContainer = document.getElementById('resultsContainer');
-        const formattedSection = document.getElementById('formattedSection');
-        const formattedComments = document.getElementById('formattedComments');
-        const summarySection = document.getElementById('summarySection');
+        const piecesContainer = document.getElementById('piecesContainer');
+        const gridPreview = document.getElementById('gridPreview');
+        const gridLinesContainer = document.getElementById('gridLinesContainer');
+        const notification = document.getElementById('notification');
+        const notificationText = document.getElementById('notificationText');
         
-        // Funciones de utilidad
-        function addLog(message, type = 'info') {
-            const logEntry = document.createElement('div');
-            logEntry.className = `log-entry log-${type}`;
-            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-            statusLog.appendChild(logEntry);
-            statusLog.scrollTop = statusLog.scrollHeight;
+        // Elementos de estadísticas
+        const totalPiecesEl = document.getElementById('totalPieces');
+        const imageWidthEl = document.getElementById('imageWidth');
+        const imageHeightEl = document.getElementById('imageHeight');
+        const pieceWidthEl = document.getElementById('pieceWidth');
+        const pieceHeightEl = document.getElementById('pieceHeight');
+        const downloadAllBtn = document.getElementById('downloadAllBtn');
+        
+        // Función para mostrar notificación
+        function showNotification(message, type = 'success') {
+            notificationText.textContent = message;
+            notification.className = 'notification';
+            notification.classList.add(type);
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
         }
         
-        function updateProgress(current, total, message) {
-            const percentage = Math.round((current / total) * 100);
-            progressFill.style.width = `${percentage}%`;
-            progressText.textContent = message;
-            progressDetail.textContent = `${current}/${total} items procesados`;
+        // Calcular total de partes
+        function calculateTotalParts() {
+            rows = parseInt(rowsInput.value) || 1;
+            cols = parseInt(colsInput.value) || 1;
+            
+            // Limitar valores
+            if (rows > 50) rows = 50;
+            if (cols > 50) cols = 50;
+            if (rows < 1) rows = 1;
+            if (cols < 1) cols = 1;
+            
+            rowsInput.value = rows;
+            colsInput.value = cols;
+            
+            const total = rows * cols;
+            totalParts.value = total;
+            
+            return total;
         }
         
-        function updateSummary(total, processed, formatted, errors) {
-            document.getElementById('totalItems').textContent = total;
-            document.getElementById('processedItems').textContent = processed;
-            document.getElementById('formattedItems').textContent = formatted;
-            document.getElementById('errorsCount').textContent = errors;
-        }
+        // Actualizar controles cuando cambian las entradas
+        rowsInput.addEventListener('input', calculateTotalParts);
+        colsInput.addEventListener('input', calculateTotalParts);
         
-        // Función para escanear todos los items
-        async function scanAllItems() {
-            if (processingActive) return;
+        // Manejar la subida de imagen
+        uploadArea.addEventListener('click', () => imageInput.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#a29bfe';
+            uploadArea.style.background = 'rgba(108, 92, 231, 0.15)';
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = '#6c5ce7';
+            uploadArea.style.background = 'rgba(108, 92, 231, 0.05)';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#6c5ce7';
+            uploadArea.style.background = 'rgba(108, 92, 231, 0.05)';
             
-            processingActive = true;
-            scanBtn.disabled = true;
-            processAllBtn.disabled = true;
-            progressContainer.style.display = 'block';
-            resultsSection.style.display = 'none';
-            formattedSection.style.display = 'none';
-            summarySection.style.display = 'none';
-            
-            addLog('🔍 Iniciando escaneo de todos los Items...', 'info');
-            updateProgress(0, 100, 'Escaneando base de datos...');
-            
-            try {
-                // Simulación de búsqueda en base de datos
-                allItems = [...mockDatabase];
-                
-                // Filtrar items que tienen comentarios
-                itemsWithComments = allItems.filter(item => 
-                    item["Comments(detalle)"] && 
-                    item["Comments(detalle)"].trim() !== ""
-                );
-                
-                addLog(`✅ Escaneo completado. Encontrados ${itemsWithComments.length} items con comentarios de ${allItems.length} total.`, 'success');
-                
-                // Mostrar resultados
-                displayItemsWithComments();
-                
-                // Actualizar botones
-                if (itemsWithComments.length > 0) {
-                    processAllBtn.disabled = false;
-                    addLog(`✅ Listo para procesar ${itemsWithComments.length} items con comentarios.`, 'success');
+            if (e.dataTransfer.files.length > 0) {
+                const file = e.dataTransfer.files[0];
+                if (file.type.startsWith('image/')) {
+                    handleImageUpload(file);
                 } else {
-                    addLog('ℹ️ No se encontraron items con comentarios para procesar.', 'info');
+                    showNotification('Por favor, sube solo archivos de imagen', 'error');
                 }
-                
-            } catch (error) {
-                addLog(`❌ Error durante el escaneo: ${error.message}`, 'error');
-            } finally {
-                processingActive = false;
-                scanBtn.disabled = false;
             }
-        }
+        });
         
-        // Función para mostrar items con comentarios
-        function displayItemsWithComments() {
-            resultsContainer.innerHTML = '';
-            
-            if (itemsWithComments.length === 0) {
-                resultsContainer.innerHTML = '<div class="log-info">No se encontraron items con comentarios</div>';
+        imageInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                handleImageUpload(file);
+            }
+        });
+        
+        function handleImageUpload(file) {
+            if (!file.type.startsWith('image/')) {
+                showNotification('El archivo seleccionado no es una imagen válida', 'error');
                 return;
             }
             
-            itemsWithComments.forEach(item => {
-                const comment = item["Comments(detalle)"] || "Sin comentarios";
-                const card = document.createElement('div');
-                card.className = 'result-card';
-                card.innerHTML = `
-                    <div class="result-header">
-                        <div><strong>Item:</strong> ${item["Item #"]}</div>
-                        <div class="item-badge">ID: ${item["Item #"]}</div>
-                    </div>
-                    <div class="comment-content">${comment.substring(0, 150)}${comment.length > 150 ? '...' : ''}</div>
+            // Liberar URL anterior si existe
+            if (imageUrl) {
+                URL.revokeObjectURL(imageUrl);
+            }
+            
+            imageUrl = URL.createObjectURL(file);
+            originalImage = new Image();
+            
+            originalImage.onload = function() {
+                imagePreview.src = imageUrl;
+                imagePreview.style.display = 'block';
+                
+                // Mostrar información de la imagen
+                imageInfo.innerHTML = `
+                    <strong>${file.name}</strong><br>
+                    ${originalImage.width} × ${originalImage.height} px<br>
+                    ${(file.size / 1024 / 1024).toFixed(2)} MB
                 `;
-                resultsContainer.appendChild(card);
+                
+                // Habilitar botones
+                previewBtn.disabled = false;
+                divideBtn.disabled = false;
+                
+                // Mostrar previsualización de la cuadrícula
+                previewGrid();
+                
+                showNotification('Imagen cargada correctamente', 'success');
+            };
+            
+            originalImage.onerror = function() {
+                showNotification('Error al cargar la imagen', 'error');
+            };
+            
+            originalImage.src = imageUrl;
+        }
+        
+        // Previsualizar la cuadrícula
+        function previewGrid() {
+            if (!originalImage) return;
+            
+            calculateTotalParts();
+            
+            // Mostrar imagen de previsualización
+            gridPreview.src = imageUrl;
+            
+            // Calcular dimensiones de cada parte
+            const pieceWidth = originalImage.width / cols;
+            const pieceHeight = originalImage.height / rows;
+            
+            // Limpiar líneas anteriores
+            gridLinesContainer.innerHTML = '';
+            
+            // Dibujar líneas verticales
+            for (let i = 1; i < cols; i++) {
+                const line = document.createElement('div');
+                line.className = 'grid-line vertical';
+                line.style.left = `${(i / cols) * 100}%`;
+                gridLinesContainer.appendChild(line);
+            }
+            
+            // Dibujar líneas horizontales
+            for (let i = 1; i < rows; i++) {
+                const line = document.createElement('div');
+                line.className = 'grid-line horizontal';
+                line.style.top = `${(i / rows) * 100}%`;
+                gridLinesContainer.appendChild(line);
+            }
+            
+            // Actualizar estadísticas
+            updateStats(pieceWidth, pieceHeight);
+        }
+        
+        // Actualizar estadísticas
+        function updateStats(pieceWidth, pieceHeight) {
+            totalPiecesEl.textContent = rows * cols;
+            imageWidthEl.textContent = originalImage.width + 'px';
+            imageHeightEl.textContent = originalImage.height + 'px';
+            pieceWidthEl.textContent = Math.floor(pieceWidth) + 'px';
+            pieceHeightEl.textContent = Math.floor(pieceHeight) + 'px';
+        }
+        
+        // Dividir la imagen
+        function divideImage() {
+            if (!originalImage) {
+                showNotification('Primero debes subir una imagen', 'warning');
+                return;
+            }
+            
+            calculateTotalParts();
+            
+            pieces = [];
+            piecesContainer.innerHTML = '';
+            
+            const pieceWidth = originalImage.width / cols;
+            const pieceHeight = originalImage.height / rows;
+            
+            // Crear un canvas temporal
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            tempCanvas.width = pieceWidth;
+            tempCanvas.height = pieceHeight;
+            
+            let pieceIndex = 0;
+            
+            // Recorrer filas y columnas para cortar la imagen
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    pieceIndex++;
+                    
+                    // Calcular coordenadas de recorte
+                    const sx = col * pieceWidth;
+                    const sy = row * pieceHeight;
+                    
+                    // Limpiar canvas
+                    tempCtx.clearRect(0, 0, pieceWidth, pieceHeight);
+                    
+                    // Dibujar la parte en el canvas
+                    tempCtx.drawImage(
+                        originalImage,
+                        sx, sy, pieceWidth, pieceHeight,
+                        0, 0, pieceWidth, pieceHeight
+                    );
+                    
+                    // Obtener la URL de datos de la parte
+                    const pieceDataUrl = tempCanvas.toDataURL('image/png');
+                    
+                    // Guardar la parte
+                    pieces.push({
+                        index: pieceIndex,
+                        row: row + 1,
+                        col: col + 1,
+                        dataUrl: pieceDataUrl,
+                        width: pieceWidth,
+                        height: pieceHeight
+                    });
+                    
+                    // Crear elemento para mostrar la parte
+                    const pieceCard = document.createElement('div');
+                    pieceCard.className = 'piece-card';
+                    pieceCard.innerHTML = `
+                        <img src="${pieceDataUrl}" class="piece-img" alt="Parte ${pieceIndex}">
+                        <div class="piece-info">
+                            <div class="piece-number">Parte ${pieceIndex}</div>
+                            <div>Fila ${row + 1}, Col ${col + 1}</div>
+                            <button class="download-btn" data-index="${pieceIndex}">
+                                📥 Descargar
+                            </button>
+                        </div>
+                    `;
+                    
+                    piecesContainer.appendChild(pieceCard);
+                }
+            }
+            
+            // Mostrar sección de resultados
+            resultsSection.style.display = 'block';
+            
+            // Agregar event listeners a los botones de descarga individual
+            document.querySelectorAll('.download-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index')) - 1;
+                    downloadPiece(index);
+                });
             });
             
-            resultsSection.style.display = 'block';
-            summarySection.style.display = 'block';
-            updateSummary(allItems.length, 0, 0, 0);
+            showNotification(`Imagen dividida en ${pieces.length} partes`, 'success');
+            
+            // Desplazar hacia los resultados
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
         }
         
-        // Función para procesar todos los items automáticamente
-        async function processAllItems() {
-            if (processingActive || itemsWithComments.length === 0) return;
+        // Descargar una parte individual
+        function downloadPiece(index) {
+            if (index < 0 || index >= pieces.length) return;
             
-            processingActive = true;
-            processingCancelled = false;
-            scanBtn.disabled = true;
-            processAllBtn.disabled = true;
-            cancelBtn.disabled = false;
-            progressContainer.style.display = 'block';
+            const piece = pieces[index];
+            const link = document.createElement('a');
+            link.href = piece.dataUrl;
+            link.download = `${baseName.value}_${piece.row}_${piece.col}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
             
-            const totalItems = itemsWithComments.length;
-            let processedCount = 0;
-            let formattedCount = 0;
-            let errorCount = 0;
+            showNotification(`Parte ${piece.index} descargada`, 'success');
+        }
+        
+        // Descargar todas las partes como ZIP
+        async function downloadAllAsZip() {
+            if (pieces.length === 0) {
+                showNotification('No hay partes para descargar', 'warning');
+                return;
+            }
             
-            addLog(`🔄 Iniciando procesamiento de ${totalItems} items...`, 'info');
-            
-            // Resultados acumulativos
-            let allFormattedComments = "";
-            
-            // Procesar cada item con un pequeño retardo para simular procesamiento
-            for (let i = 0; i < itemsWithComments.length; i++) {
-                if (processingCancelled) {
-                    addLog('⏹️ Procesamiento cancelado por el usuario', 'info');
-                    break;
+            try {
+                showNotification('Creando archivo ZIP...', 'success');
+                
+                const zip = new JSZip();
+                const folder = zip.folder("QNCHO_partes");
+                
+                // Agregar cada parte al ZIP
+                for (let i = 0; i < pieces.length; i++) {
+                    const piece = pieces[i];
+                    
+                    // Convertir data URL a blob
+                    const blob = await fetch(piece.dataUrl).then(res => res.blob());
+                    
+                    // Agregar al ZIP
+                    folder.file(
+                        `${baseName.value}_${piece.row}_${piece.col}.png`, 
+                        blob
+                    );
                 }
                 
-                const item = itemsWithComments[i];
-                updateProgress(i, totalItems, `Procesando Item ${item["Item #"]}...`);
+                // Generar el ZIP
+                const content = await zip.generateAsync({type: "blob"});
                 
-                try {
-                    // Simular tiempo de procesamiento
-                    await new Promise(resolve => setTimeout(resolve, 300));
-                    
-                    // Procesar comentarios
-                    const formatted = formatComments(item);
-                    
-                    if (formatted) {
-                        allFormattedComments += formatted + "\n\n";
-                        formattedCount++;
-                        addLog(`✅ Item ${item["Item #"]}: Comentarios formateados correctamente`, 'success');
-                    } else {
-                        addLog(`ℹ️ Item ${item["Item #"]}: No se requirió formateo`, 'info');
-                    }
-                    
-                    processedCount++;
-                    
-                } catch (error) {
-                    errorCount++;
-                    addLog(`❌ Item ${item["Item #"]}: Error durante el procesamiento`, 'error');
-                }
+                // Descargar el ZIP
+                saveAs(content, "QNCHO_partes_completas.zip");
+                
+                showNotification('ZIP descargado correctamente', 'success');
+            } catch (error) {
+                console.error('Error al crear ZIP:', error);
+                showNotification('Error al crear el archivo ZIP', 'error');
+            }
+        }
+        
+        // Reiniciar todo
+        function resetAll() {
+            // Liberar URL de la imagen
+            if (imageUrl) {
+                URL.revokeObjectURL(imageUrl);
+                imageUrl = null;
             }
             
-            // Mostrar resultados finales
-            if (allFormattedComments.trim() !== "") {
-                formattedComments.textContent = allFormattedComments;
-                formattedSection.style.display = 'block';
-            }
+            // Restablecer variables
+            originalImage = null;
+            pieces = [];
             
-            // Actualizar resumen
-            updateSummary(allItems.length, processedCount, formattedCount, errorCount);
-            
-            // Mensaje final
-            if (processingCancelled) {
-                addLog(`⏹️ Procesamiento interrumpido. ${processedCount} items procesados de ${totalItems}.`, 'info');
-            } else {
-                addLog(`✅ Procesamiento completado. ${formattedCount} items formateados de ${processedCount} procesados.`, 'success');
-            }
+            // Restablecer UI
+            imagePreview.style.display = 'none';
+            imageInfo.innerHTML = '';
+            previewBtn.disabled = true;
+            divideBtn.disabled = true;
+            resultsSection.style.display = 'none';
+            piecesContainer.innerHTML = '';
+            gridLinesContainer.innerHTML = '';
+            gridPreview.src = '';
             
             // Restablecer controles
-            processingActive = false;
-            scanBtn.disabled = false;
-            processAllBtn.disabled = false;
-            cancelBtn.disabled = true;
+            rowsInput.value = 3;
+            colsInput.value = 3;
+            baseName.value = 'QNCHO_parte';
+            calculateTotalParts();
             
-            // Scroll a resultados
-            formattedSection.scrollIntoView({ behavior: 'smooth' });
-        }
-        
-        // Función para formatear comentarios (igual que antes)
-        function formatComments(product) {
-            const originalComment = product["Comments(detalle)"] || "";
-            
-            if (!originalComment.trim()) return "";
-            
-            // Buscar patrones como "3.Arias.- 9/19-el mismo:"
-            const pattern = /(\d+\.[A-Za-záéíóúÁÉÍÓÚñÑ]+\.[-]\s\d+\/\d+-[^:]+:)/g;
-            
-            let formattedComment = originalComment;
-            
-            // Si encontramos el patrón, insertamos saltos de línea
-            if (pattern.test(originalComment)) {
-                // Restablecer la regex
-                const regex = /(\d+\.[A-Za-záéíóúÁÉÍÓÚñÑ]+\.[-]\s\d+\/\d+-[^:]+:)/g;
-                
-                // Reemplazar cada ocurrencia con: \n + el patrón (excepto el primero)
-                formattedComment = originalComment.replace(regex, (match, p1, offset) => {
-                    return offset === 0 ? match : "\n" + match;
-                });
-            }
-            
-            return `Item #${product["Item #"]}:\n${formattedComment}`;
-        }
-        
-        // Función para cancelar procesamiento
-        function cancelProcessing() {
-            if (processingActive) {
-                processingCancelled = true;
-                addLog('Solicitando cancelación...', 'info');
-            }
+            showNotification('Sistema reiniciado', 'success');
         }
         
         // Event Listeners
-        scanBtn.addEventListener('click', scanAllItems);
-        processAllBtn.addEventListener('click', processAllItems);
-        cancelBtn.addEventListener('click', cancelProcessing);
+        previewBtn.addEventListener('click', previewGrid);
+        divideBtn.addEventListener('click', divideImage);
+        resetBtn.addEventListener('click', resetAll);
+        downloadAllBtn.addEventListener('click', downloadAllAsZip);
         
         // Inicialización
-        window.addEventListener('load', function() {
-            addLog('Sistema de procesamiento automático listo.', 'info');
-            addLog('Haz clic en "Escanear Todos los Items" para comenzar.', 'info');
+        window.addEventListener('load', () => {
+            calculateTotalParts();
+            showNotification('Sistema de división de imágenes listo. Sube una imagen para comenzar.', 'success');
+            
+            // Precargar una imagen de ejemplo (opcional)
+            // Para pruebas, puedes descomentar la siguiente línea:
+            // loadSampleImage();
         });
+        
+        // Función para cargar una imagen de ejemplo (opcional)
+        function loadSampleImage() {
+            // Crear una imagen de ejemplo con canvas
+            const sampleCanvas = document.createElement('canvas');
+            sampleCanvas.width = 800;
+            sampleCanvas.height = 600;
+            const ctx = sampleCanvas.getContext('2d');
+            
+            // Dibujar un fondo degradado
+            const gradient = ctx.createLinearGradient(0, 0, 800, 600);
+            gradient.addColorStop(0, '#6c5ce7');
+            gradient.addColorStop(0.5, '#a29bfe');
+            gradient.addColorStop(1, '#00b894');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 800, 600);
+            
+            // Dibujar texto
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 60px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('QNCHO', 400, 250);
+            ctx.font = '30px Arial';
+            ctx.fillText('Imagen de Ejemplo', 400, 320);
+            ctx.fillText(`${rows}×${cols} = ${rows*cols} partes`, 400, 370);
+            
+            // Convertir a data URL y cargar
+            const dataUrl = sampleCanvas.toDataURL('image/png');
+            originalImage = new Image();
+            originalImage.onload = function() {
+                imagePreview.src = dataUrl;
+                imagePreview.style.display = 'block';
+                imageInfo.innerHTML = `
+                    <strong>ejemplo_qncho.png</strong><br>
+                    800 × 600 px<br>
+                    Imagen de demostración
+                `;
+                previewBtn.disabled = false;
+                divideBtn.disabled = false;
+                previewGrid();
+                showNotification('Imagen de ejemplo cargada', 'success');
+            };
+            originalImage.src = dataUrl;
+        }
+        
+        // Para cargar automáticamente la imagen de ejemplo, descomenta:
+        // setTimeout(loadSampleImage, 1000);
     </script>
 </body>
 </html>
