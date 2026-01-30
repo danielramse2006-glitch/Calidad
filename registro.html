@@ -35,6 +35,20 @@
             opacity: 0.6;
             cursor: not-allowed !important;
         }
+        
+        /* Estilo para los nuevos textareas */
+        textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 13px;
+            resize: vertical;
+            min-height: 80px;
+        }
+
         .vc2-header {
             background: linear-gradient(to right, #003366, #0056a9);
             color: white;
@@ -56,7 +70,6 @@
     </style>
 </head>
 <body class="bg-blue">
-    <!-- CORPORATE HEADER -->
     <div class="corporate-header">
         <div class="company-logo" onclick="location.href='index.html'" style="cursor:pointer;">
             <div class="logo-container">
@@ -73,12 +86,13 @@
             <div id="current-date" class="current-date"></div>
         </div>
     </div>
-<!-- VC2 MÁS CHICO Y CENTRADO - AÑADIDO AQUÍ -->
+    
     <div class="vc2-container">
         <div class="vc2-header">
             VC2
         </div>
     </div>
+    
     <header><h1>New PPAP Registration</h1></header>
     
     <div style="padding:20px; max-width:1000px; margin:auto; background:white; color:black; border-radius:10px;">
@@ -89,7 +103,6 @@
         <button onclick="location.href='index.html'" style="width:100%; margin-top:10px; padding:10px; background:#95a5a6; color:white; border:none; border-radius:5px; cursor:pointer;">BACK TO HOME</button>
     </div>
 
-    <!-- CORPORATE FOOTER -->
     <div class="corporate-footer">
         <strong>SMP Engine Management, S. de R.L. de C.V</strong> | PPAP Master Track System v2.0<br>
         <span style="font-size: 11px;">© 2024 - All rights reserved</span>
@@ -99,7 +112,7 @@
         import { db, checkAuth, redirectIfNoPermission } from './config.js';
         import { collection, addDoc, serverTimestamp, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         
-        // DB FIELDS (EXACTLY as specified)
+        // DB FIELDS
         const camposDB = [
             "Item #",
             "PPAP Part Number",
@@ -149,53 +162,55 @@
             "PPAP overall status"
         ];
 
-        // UI NAMES (replace line breaks with spaces for display)
         const camposUI = camposDB.map(field => field.replace(/\n/g, " "));
 
         const container = document.getElementById('form-container');
-        
-        // Variable para almacenar el estado de verificación del Item #
         let itemExists = false;
         
         camposDB.forEach((c, index) => {
             const div = document.createElement('div');
-            // Create safe ID for HTML
             const safeId = c.replace(/\n/g, "_").replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_]/g, "");
             const campoLabel = camposUI[index];
             const isRequired = c === "Item #" || c === "PPAP Part Number";
             
+            // Lógica para decidir si usar Textarea o Input
+            let inputHtml = '';
+            // Si es Comentarios, Descripción o Razón, usamos Textarea
+            if (c === "Comments(detalle)" || c === "Component description" || c === "Reason") {
+                inputHtml = `
+                    <textarea id="ins_${safeId}" 
+                           placeholder="Enter ${campoLabel}..." 
+                           rows="4"></textarea>
+                `;
+            } else {
+                inputHtml = `
+                    <input type="text" id="ins_${safeId}" 
+                           placeholder="Enter ${campoLabel}" 
+                           style="width:100%; padding:8px; box-sizing:border-box; border:1px solid #ddd; border-radius:4px;"
+                           ${isRequired ? 'class="required-field"' : ''}
+                           autocomplete="off">
+                `;
+            }
+
             div.innerHTML = `
                 <label style="font-size:12px; font-weight:bold; color: #2c3e50;">
                     ${campoLabel}${isRequired ? ' <span style="color:#e74c3c;">*</span>' : ''}
                 </label>
-                <input type="text" id="ins_${safeId}" 
-                       placeholder="Enter ${campoLabel}" 
-                       style="width:100%; padding:8px; box-sizing:border-box; border:1px solid #ddd; border-radius:4px;"
-                       ${isRequired ? 'class="required-field"' : ''}
-                       autocomplete="off">
+                ${inputHtml}
                 ${isRequired ? '<div class="field-note">Required field</div>' : ''}
             `;
             container.appendChild(div);
         });
 
-        // Obtener referencia al campo Item #
-        const itemField = document.getElementById('ins_Item_'); // CAMBIADO: ins_Item_ (un guión)
-        const itemStatusDiv = document.getElementById('item-status');
+        const itemField = document.getElementById('ins_Item_');
         const saveButton = document.getElementById('btnGuardar');
-        
-        // Variable para evitar múltiples guardados
         let isSaving = false;
 
-        // Función para verificar si el Item # ya existe
         async function checkItemExists(itemNumber) {
-            if (!itemNumber || itemNumber.trim() === '') {
-                return false;
-            }
-
+            if (!itemNumber || itemNumber.trim() === '') return false;
             try {
                 const q = query(collection(db, "productos"), where("Item #", "==", itemNumber));
                 const snap = await getDocs(q);
-                
                 return !snap.empty;
             } catch (error) {
                 console.error("Error checking item:", error);
@@ -203,12 +218,10 @@
             }
         }
 
-        // Función para validar campos requeridos
         function validateRequiredFields() {
             let errors = [];
             let isValid = true;
             
-            // Validar Item #
             const itemValue = itemField.value.trim();
             if (!itemValue) {
                 errors.push("Item # is required");
@@ -218,7 +231,6 @@
                 itemField.style.borderColor = "#ddd";
             }
             
-            // Validar PPAP Part Number
             const ppapField = document.getElementById('ins_PPAP_Part_Number');
             const ppapValue = ppapField.value.trim();
             if (!ppapValue) {
@@ -226,7 +238,6 @@
                 ppapField.style.borderColor = "#e74c3c";
                 isValid = false;
             } else {
-                // Validate it's not a status
                 const statusValues = ["Pending", "In Process", "Approved", "Rejected", "Completed", "On Hold"];
                 if (statusValues.includes(ppapValue)) {
                     errors.push("PPAP Part Number must be a part number (like P-001), not a status");
@@ -240,74 +251,52 @@
             return { isValid, errors };
         }
 
-        // Declarar la función guardarRegistro como una función normal
         async function guardarRegistro() {
-            if (isSaving) return; // Prevenir múltiples clics
+            if (isSaving) return;
             
-            console.log("Save button clicked");
-            
-            // Validar campos requeridos
             const validation = validateRequiredFields();
             if (!validation.isValid) {
                 alert("Please fix the following errors:\n\n" + validation.errors.join("\n"));
                 return;
             }
             
-            // Verificar si el Item # ya existe
             const itemValue = itemField.value.trim();
             const existe = await checkItemExists(itemValue);
             
             if (existe) {
-                alert("❌ Cannot save: Item # already exists in the database. Please use a different Item #.");
+                alert("❌ Cannot save: Item # already exists. Please use a different Item #.");
                 itemField.focus();
                 itemField.select();
                 return;
             }
             
-            // Mostrar confirmación
-            if (!confirm("Are you sure you want to save this new PPAP registration?")) {
-                return;
-            }
+            if (!confirm("Are you sure you want to save this new PPAP registration?")) return;
             
-            // Deshabilitar botón mientras se guarda
             isSaving = true;
             saveButton.disabled = true;
             saveButton.classList.add('btn-disabled');
             saveButton.innerHTML = "⏳ Saving...";
             
             try {
-                // Recopilar todos los datos del formulario
                 const data = {};
                 camposDB.forEach(c => { 
                     const safeId = c.replace(/\n/g, "_").replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_]/g, "");
-                    const valor = document.getElementById(`ins_${safeId}`).value.trim();
-                    data[c] = valor; // Aquí usamos el nombre original de la base de datos
+                    const element = document.getElementById(`ins_${safeId}`);
+                    // Obtenemos el valor correctamente sea input o textarea
+                    const valor = element.value.trim();
+                    data[c] = valor;
                 });
                 
-                // Guardar producto en Firestore
-                console.log("Saving data to Firestore:", data);
                 await addDoc(collection(db, "productos"), data);
                 
-                // Registrar en el historial
-                await addDoc(collection(db, "movimientos"), {
-                    usuario: user.usuario,
-                    accion: "New Registration",
-                    detalle: `Item: ${data["Item #"]} | PPAP: ${data["PPAP Part Number"]} | Desc: ${data["Component description"] || 'No description'}`,
-                    statusMomento: data["PPAP overall status"] || "Pending",
-                    fecha: serverTimestamp(),
-                    itemId: data["Item #"],
-                    ppapNumber: data["PPAP Part Number"]
-                });
+                // NOTA: Se eliminó el registro en la colección "movimientos" como solicitaste
                 
-                console.log("Registration saved successfully");
                 alert("✅ PPAP registration saved successfully!");
                 location.href = 'index.html';
                 
             } catch(error) { 
                 console.error("Save error:", error);
                 alert("❌ Error saving registration: " + error.message);
-                
-                // Rehabilitar botón en caso de error
                 isSaving = false;
                 saveButton.disabled = false;
                 saveButton.classList.remove('btn-disabled');
@@ -315,45 +304,25 @@
             }
         }
 
-        // Asignar la función al botón
         saveButton.onclick = guardarRegistro;
 
-        // Mostrar fecha y usuario después de que el DOM esté cargado
         window.addEventListener('load', () => {
-            // Show current date
             const now = new Date();
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
             
-            // Show current user
             const user = checkAuth();
             if(user) {
                 document.getElementById('current-user-display').textContent = `👤 ${user.usuario}`;
             }
 
-            // Verify register permission
-            if (!redirectIfNoPermission('registrar')) {
-                // Already redirects automatically
-            }
+            if (!redirectIfNoPermission('registrar')) { }
             
-            // Debug: Verificar que el campo Item existe
-            console.log("Item field found:", itemField);
-            
-            if (itemField) {
-                itemField.focus();
-            } else {
-                console.error("Item field not found! Check the ID generation.");
-                // Listar todos los inputs para debug
-                const allInputs = document.querySelectorAll('input[id^="ins_"]');
-                console.log("All input IDs:", Array.from(allInputs).map(inp => inp.id));
-            }
-            
-            console.log("Registration page loaded");
+            if (itemField) itemField.focus();
         });
 
-        // ✅ Evento de tecla Enter DENTRO del módulo
+        // Evento de tecla Enter (ignora si está en un textarea para permitir saltos de línea)
         document.addEventListener('keypress', function(e) {
-            // Solo activar con Enter si no está en un textarea
             if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
                 guardarRegistro();
             }
