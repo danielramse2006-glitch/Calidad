@@ -299,44 +299,40 @@
         });
 
         function renderTable(lista) {
-            const tbody = document.getElementById('inventory-body');
-            tbody.innerHTML = '';
+            const tbody = document.getElementById('inventory-body'); //
+            tbody.innerHTML = ''; //
             
             lista.forEach(p => {
-                const tr = document.createElement('tr');
+                const tr = document.createElement('tr'); //
                 
-                // Usamos camposDB para acceder a los datos en el orden correcto
-                camposDB.forEach((campoDB, index) => {
-                    const td = document.createElement('td');
-                    const valor = p[campoDB] || '-';
-                    td.textContent = valor;
-                    td.style.fontSize = '11px';
-
-                    // Aplicamos la clase para que el texto sea multilínea en campos largos
-                    // Puedes agregar o quitar campos de esta lista según lo necesites
-                    if (campoDB === "Comments(detalle)" || 
-                        campoDB === "Component description" || 
-                        campoDB === "Reason" || 
-                        campoDB === "Special instruccions") {
+                // Iteramos por cada campo definido en la base de datos
+                camposDB.forEach(campoDB => { //
+                    const td = document.createElement('td'); //
+                    const valor = p[campoDB] || '-'; //
+                    td.textContent = valor; //
+                    td.style.fontSize = '11px'; //
+                    
+                    // Aplicamos una clase especial para permitir saltos de línea en campos largos
+                    if (campoDB === "Comments(detalle)" || campoDB === "Component description" || campoDB === "Reason") {
                         td.classList.add('multiline-text');
                     }
                     
-                    tr.appendChild(td);
+                    tr.appendChild(td); //
                 });
                 
-                // Columna de Acciones (Botón de Reporte)
-                const tdBtn = document.createElement('td');
-                const btn = document.createElement('button');
-                btn.innerText = "REPORT"; 
-                btn.className = "btn-report-row";
-                btn.onclick = () => abrirReporte(p);
+                // Columna de acciones para el botón de reporte
+                const tdBtn = document.createElement('td'); //
+                const btn = document.createElement('button'); //
+                btn.innerText = "REPORT"; //
+                btn.onclick = () => abrirReporte(p); //
+                btn.className = "btn-report-row"; //
                 
-                tdBtn.appendChild(btn); 
-                tr.appendChild(tdBtn); 
-                tbody.appendChild(tr);
+                tdBtn.appendChild(btn); //
+                tr.appendChild(tdBtn); //
+                tbody.appendChild(tr); //
             });
         }
-
+        
         window.abrirReporte = function(p) {
             document.getElementById('rep-fecha').innerText = "DATE: " + new Date().toLocaleDateString();
             const rMain = document.getElementById('rep-data-main');
