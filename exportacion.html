@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Procesar Comentarios por Item #</title>
+    <title>Procesamiento Automático de Comentarios</title>
     <style>
         * {
             margin: 0;
@@ -29,11 +29,11 @@
             padding: 20px;
             background: rgba(0, 0, 0, 0.3);
             border-radius: 10px;
-            border: 2px solid #e74c3c;
+            border: 2px solid #3498db;
         }
         
         h1 {
-            color: #e74c3c;
+            color: #3498db;
             margin-bottom: 10px;
             font-size: 28px;
         }
@@ -43,43 +43,12 @@
             font-size: 16px;
         }
         
-        .instructions {
-            background: rgba(231, 76, 60, 0.1);
-            border-left: 4px solid #e74c3c;
-            padding: 15px;
-            margin-bottom: 25px;
-            border-radius: 5px;
-        }
-        
-        .instructions h3 {
-            color: #e74c3c;
-            margin-bottom: 10px;
-        }
-        
-        .search-section {
+        .control-panel {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
             margin-bottom: 20px;
-        }
-        
-        .search-box {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        
-        input {
-            flex: 1;
-            padding: 12px 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(231, 76, 60, 0.5);
-            border-radius: 5px;
-            color: white;
-            font-size: 16px;
-        }
-        
-        input:focus {
-            outline: none;
-            border-color: #e74c3c;
-            box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.3);
+            border: 1px solid rgba(52, 152, 219, 0.5);
         }
         
         .btn {
@@ -90,67 +59,125 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
-        }
-        
-        .btn-primary {
-            background: #e74c3c;
+            background: #3498db;
             color: white;
+            margin-right: 10px;
+            margin-bottom: 10px;
         }
         
-        .btn-primary:hover {
-            background: #c0392b;
+        .btn:hover {
+            background: #2980b9;
         }
         
         .btn:disabled {
-            opacity: 0.6;
+            opacity: 0.5;
             cursor: not-allowed;
         }
         
-        .temp-storage {
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 5px;
-            border: 1px dashed rgba(231, 76, 60, 0.5);
+        .btn-danger {
+            background: #e74c3c;
         }
         
-        .temp-item {
-            background: rgba(231, 76, 60, 0.1);
-            padding: 10px;
-            margin-bottom: 8px;
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .btn-success {
+            background: #2ecc71;
+        }
+        
+        .btn-success:hover {
+            background: #27ae60;
+        }
+        
+        .progress-container {
+            margin-top: 20px;
+            background: rgba(0, 0, 0, 0.5);
             border-radius: 5px;
-            border-left: 3px solid #e74c3c;
+            padding: 15px;
+            display: none;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #34495e;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .progress-text {
+            text-align: center;
+            font-size: 14px;
+            color: #ecf0f1;
+            margin-bottom: 5px;
+        }
+        
+        .status-log {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
             font-family: 'Courier New', monospace;
-            white-space: pre-wrap;
-            word-break: break-word;
+            font-size: 12px;
+        }
+        
+        .log-entry {
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .log-success {
+            color: #2ecc71;
+        }
+        
+        .log-error {
+            color: #e74c3c;
+        }
+        
+        .log-info {
+            color: #3498db;
         }
         
         .results-section {
             margin-top: 30px;
-            padding: 25px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            border: 1px solid rgba(231, 76, 60, 0.3);
+            display: none;
         }
         
-        .comment-card {
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .result-card {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 8px;
             padding: 15px;
-            margin-bottom: 15px;
-            border: 1px solid rgba(231, 76, 60, 0.2);
+            border: 1px solid rgba(52, 152, 219, 0.3);
         }
         
-        .comment-header {
+        .result-header {
             display: flex;
             justify-content: space-between;
             margin-bottom: 10px;
             padding-bottom: 8px;
-            border-bottom: 1px solid rgba(231, 76, 60, 0.3);
+            border-bottom: 1px solid rgba(52, 152, 219, 0.3);
         }
         
-        .comment-id {
-            background: #e74c3c;
+        .item-badge {
+            background: #3498db;
             color: white;
             padding: 3px 10px;
             border-radius: 20px;
@@ -159,41 +186,13 @@
         }
         
         .comment-content {
-            margin-top: 10px;
             font-family: 'Courier New', monospace;
             white-space: pre-wrap;
             line-height: 1.8;
+            font-size: 13px;
         }
         
-        .status-message {
-            padding: 12px 15px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            font-weight: 500;
-            display: none;
-        }
-        
-        .status-success {
-            background: rgba(46, 204, 113, 0.2);
-            border-left: 4px solid #2ecc71;
-            color: #2ecc71;
-            display: block;
-        }
-        
-        .status-error {
-            background: rgba(231, 76, 60, 0.2);
-            border-left: 4px solid #e74c3c;
-            color: #e74c3c;
-            display: block;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #95a5a6;
-        }
-        
-        .formatted-section {
+        .formatted-result {
             margin-top: 20px;
             padding: 20px;
             background: rgba(39, 174, 96, 0.1);
@@ -208,27 +207,54 @@
             background: rgba(0, 0, 0, 0.5);
             padding: 15px;
             border-radius: 5px;
-            max-height: 300px;
+            max-height: 400px;
             overflow-y: auto;
         }
         
-        .action-buttons {
-            display: flex;
-            gap: 10px;
+        .summary {
+            background: rgba(241, 196, 15, 0.1);
+            border: 2px solid #f1c40f;
+            border-radius: 5px;
+            padding: 15px;
             margin-top: 20px;
+            display: none;
+        }
+        
+        .summary h3 {
+            color: #f1c40f;
+            margin-bottom: 10px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #95a5a6;
         }
         
         @media (max-width: 768px) {
-            .search-box {
+            .stats {
                 flex-direction: column;
+                gap: 10px;
             }
             
             .btn {
                 width: 100%;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
+                margin-right: 0;
             }
         }
     </style>
@@ -236,56 +262,68 @@
 <body>
     <div class="container">
         <header>
-            <h1>Procesar Comentarios por Item #</h1>
-            <div class="subtitle">Buscar, almacenar temporalmente y procesar comentarios por Item #</div>
+            <h1>🔍 Procesamiento Automático de Comentarios</h1>
+            <div class="subtitle">Búsqueda automática y procesamiento de todos los Items con comentarios</div>
         </header>
         
-        <div class="instructions">
-            <h3>Instrucciones:</h3>
-            <p>1. Ingresa Item # para buscar comentarios</p>
-            <p>2. Los comentarios se almacenan temporalmente</p>
-            <p>3. Se borran los originales y se reinyectan con saltos de línea</p>
-        </div>
-        
-        <div id="statusMessage" class="status-message"></div>
-        
-        <div class="search-section">
-            <div class="search-box">
-                <input type="text" id="searchItem" placeholder="Ej: 3, 5, 15 o 3-10 para rango">
-                <button class="btn btn-primary" id="searchBtn">Buscar</button>
+        <div class="control-panel">
+            <h3>Panel de Control</h3>
+            <button class="btn" id="scanBtn">🔍 Escanear Todos los Items</button>
+            <button class="btn btn-success" id="processAllBtn" disabled>🔄 Procesar Todos</button>
+            <button class="btn btn-danger" id="cancelBtn" disabled>❌ Cancelar</button>
+            
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-text" id="progressText">Iniciando...</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressDetail">0/0 items procesados</div>
+            </div>
+            
+            <div class="status-log" id="statusLog">
+                <div class="log-entry log-info">Sistema listo. Haz clic en "Escanear Todos los Items" para comenzar.</div>
             </div>
         </div>
         
-        <div class="temp-storage">
-            <h4>Almacenamiento Temporal</h4>
-            <div id="tempStorageList">
-                <div class="empty-state">
-                    No hay comentarios almacenados temporalmente
+        <div class="summary" id="summarySection">
+            <h3>📊 Resumen del Procesamiento</h3>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalItems">0</div>
+                    <div class="stat-label">Total Items</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="processedItems">0</div>
+                    <div class="stat-label">Procesados</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="formattedItems">0</div>
+                    <div class="stat-label">Formateados</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="errorsCount">0</div>
+                    <div class="stat-label">Errores</div>
                 </div>
             </div>
         </div>
         
-        <div class="action-buttons">
-            <button class="btn btn-primary" id="processBtn" disabled>Procesar Comentarios</button>
+        <div class="results-section" id="resultsSection">
+            <h3>📋 Items Encontrados con Comentarios</h3>
+            <div class="results-grid" id="resultsContainer"></div>
         </div>
         
-        <div class="results-section" id="resultsSection" style="display: none;">
-            <h3>Comentarios Encontrados</h3>
-            <div id="resultsContainer"></div>
-        </div>
-        
-        <div class="formatted-section" id="formattedSection">
-            <h3>Comentarios Formateados</h3>
+        <div class="formatted-result" id="formattedSection">
+            <h3>📝 Comentarios Formateados</h3>
             <div id="formattedComments" class="formatted-text"></div>
         </div>
     </div>
 
     <script>
-        // Datos de ejemplo (simulando base de datos)
+        // Datos simulados de la base de datos
         const mockDatabase = [
             { 
                 "Item #": "3", 
-                "Comments(detalle)": "3.Arias.- 9/19-el mismo: FG que el 88514385:3.Arias.- 9/19-el mismo: FG que el 88514385:",
+                "Comments(detalle)": "3.Arias.- 9/19-el mismo: FG que el 88514385:3.Arias.- 9/19-el mismo: FG que el 88514385:3.Arias.- 9/19-el mismo: FG que el 88514385:",
                 "Special instruccions": "Revisar documentación completa",
                 "Responsible": "Arias",
                 "Validation date": "9/19",
@@ -306,232 +344,273 @@
                 "Responsible": "López",
                 "Validation date": "9/20",
                 "PPAP Part Number": "P-003"
+            },
+            { 
+                "Item #": "12", 
+                "Comments(detalle)": "",
+                "Special instruccions": "",
+                "Responsible": "Ramírez",
+                "Validation date": "9/21",
+                "PPAP Part Number": "P-004"
+            },
+            { 
+                "Item #": "15", 
+                "Comments(detalle)": "15.Fernández.- 9/22-caso 7788: Requiere atención inmediata:15.Fernández.- 9/22-caso 7788: Requiere atención inmediata:",
+                "Special instruccions": "Prioridad alta",
+                "Responsible": "Fernández",
+                "Validation date": "9/22",
+                "PPAP Part Number": "P-005"
+            },
+            { 
+                "Item #": "18", 
+                "Comments(detalle)": "18.Torres.- 9/18-nota 1122: Enviar a archivo central:18.Torres.- 9/18-nota 1122: Enviar a archivo central:",
+                "Special instruccions": "Archivar copia digital",
+                "Responsible": "Torres",
+                "Validation date": "9/18",
+                "PPAP Part Number": "P-006"
             }
         ];
         
-        let temporaryStorage = [];
+        // Variables de estado
+        let allItems = [];
+        let itemsWithComments = [];
+        let processingActive = false;
+        let processingCancelled = false;
         
-        function showStatus(message, type = "info") {
-            const statusEl = document.getElementById("statusMessage");
-            statusEl.textContent = message;
-            
-            if (type === "success") {
-                statusEl.className = "status-message status-success";
-            } else if (type === "error") {
-                statusEl.className = "status-message status-error";
-            }
+        // Elementos DOM
+        const scanBtn = document.getElementById('scanBtn');
+        const processAllBtn = document.getElementById('processAllBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const progressDetail = document.getElementById('progressDetail');
+        const statusLog = document.getElementById('statusLog');
+        const resultsSection = document.getElementById('resultsSection');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const formattedSection = document.getElementById('formattedSection');
+        const formattedComments = document.getElementById('formattedComments');
+        const summarySection = document.getElementById('summarySection');
+        
+        // Funciones de utilidad
+        function addLog(message, type = 'info') {
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            statusLog.appendChild(logEntry);
+            statusLog.scrollTop = statusLog.scrollHeight;
         }
         
-        // Función para buscar comentarios por Item #
-        function searchCommentsByItem(itemInput) {
-            if (!itemInput.trim()) {
-                showStatus("Por favor, ingresa al menos un Item #", "error");
-                return [];
-            }
-            
-            let itemsToSearch = [];
-            
-            // Procesar entrada
-            if (itemInput.includes("-")) {
-                const [start, end] = itemInput.split("-").map(num => parseInt(num.trim()));
-                if (!isNaN(start) && !isNaN(end) && start <= end) {
-                    for (let i = start; i <= end; i++) {
-                        itemsToSearch.push(i.toString());
-                    }
-                }
-            } else {
-                itemsToSearch = itemInput.split(",")
-                    .map(item => item.trim())
-                    .filter(item => item !== "");
-            }
-            
-            if (itemsToSearch.length === 0) {
-                showStatus("No se encontraron Items # válidos", "error");
-                return [];
-            }
-            
-            // Buscar en la base de datos
-            const results = mockDatabase.filter(product => 
-                itemsToSearch.includes(product["Item #"])
-            );
-            
-            if (results.length === 0) {
-                showStatus(`No se encontraron registros con los Items: ${itemsToSearch.join(", ")}`, "error");
-                return [];
-            }
-            
-            // Almacenar en memoria temporal
-            temporaryStorage = [...results];
-            
-            // Actualizar UI
-            updateTemporaryStorageUI();
-            updateResultsUI(results);
-            updateActionButtons();
-            
-            showStatus(`Encontrados ${results.length} registro(s) con los Items especificados`, "success");
-            
-            return results;
+        function updateProgress(current, total, message) {
+            const percentage = Math.round((current / total) * 100);
+            progressFill.style.width = `${percentage}%`;
+            progressText.textContent = message;
+            progressDetail.textContent = `${current}/${total} items procesados`;
         }
         
-        // Función para procesar comentarios (formatear con saltos de línea)
-        function processComments() {
-            if (temporaryStorage.length === 0) {
-                showStatus("No hay comentarios para procesar", "error");
-                return;
-            }
+        function updateSummary(total, processed, formatted, errors) {
+            document.getElementById('totalItems').textContent = total;
+            document.getElementById('processedItems').textContent = processed;
+            document.getElementById('formattedItems').textContent = formatted;
+            document.getElementById('errorsCount').textContent = errors;
+        }
+        
+        // Función para escanear todos los items
+        async function scanAllItems() {
+            if (processingActive) return;
             
-            if (!confirm(`¿Estás seguro de procesar ${temporaryStorage.length} comentario(s)?`)) {
-                return;
-            }
+            processingActive = true;
+            scanBtn.disabled = true;
+            processAllBtn.disabled = true;
+            progressContainer.style.display = 'block';
+            resultsSection.style.display = 'none';
+            formattedSection.style.display = 'none';
+            summarySection.style.display = 'none';
             
-            // 1. Formatear los comentarios con saltos de línea
-            const formattedResults = temporaryStorage.map(product => {
-                const originalComment = product["Comments(detalle)"] || "";
+            addLog('🔍 Iniciando escaneo de todos los Items...', 'info');
+            updateProgress(0, 100, 'Escaneando base de datos...');
+            
+            try {
+                // Simulación de búsqueda en base de datos
+                allItems = [...mockDatabase];
                 
-                // Dividir el comentario por el patrón: número.punto-autor
-                // Expresión regular para encontrar patrones como "3.Arias.-"
-                const pattern = /(\d+\.[A-Za-záéíóúÁÉÍÓÚñÑ]+\.[-]\s\d+\/\d+-[^:]+:)/g;
+                // Filtrar items que tienen comentarios
+                itemsWithComments = allItems.filter(item => 
+                    item["Comments(detalle)"] && 
+                    item["Comments(detalle)"].trim() !== ""
+                );
                 
-                let formattedComment = originalComment;
+                addLog(`✅ Escaneo completado. Encontrados ${itemsWithComments.length} items con comentarios de ${allItems.length} total.`, 'success');
                 
-                // Si encontramos el patrón, insertamos saltos de línea
-                if (pattern.test(originalComment)) {
-                    // Restablecer la regex
-                    const regex = /(\d+\.[A-Za-záéíóúÁÉÍÓÚñÑ]+\.[-]\s\d+\/\d+-[^:]+:)/g;
-                    
-                    // Reemplazar cada ocurrencia con: \n + el patrón (excepto el primero)
-                    formattedComment = originalComment.replace(regex, (match, p1, offset) => {
-                        return offset === 0 ? match : "\n" + match;
-                    });
+                // Mostrar resultados
+                displayItemsWithComments();
+                
+                // Actualizar botones
+                if (itemsWithComments.length > 0) {
+                    processAllBtn.disabled = false;
+                    addLog(`✅ Listo para procesar ${itemsWithComments.length} items con comentarios.`, 'success');
+                } else {
+                    addLog('ℹ️ No se encontraron items con comentarios para procesar.', 'info');
                 }
                 
-                return {
-                    ...product,
-                    formattedComment: formattedComment
-                };
-            });
-            
-            // 2. Mostrar resultados formateados
-            showFormattedResults(formattedResults);
-            
-            // 3. Mostrar mensaje de éxito
-            showStatus(`${temporaryStorage.length} comentario(s) formateados con saltos de línea`, "success");
-            
-            // 4. Opcional: Aquí se borrarían los originales y se reinyectarían los formateados
-            // En una implementación real, aquí iría la llamada a la API
-            
-            // 5. Limpiar almacenamiento temporal
-            setTimeout(() => {
-                temporaryStorage = [];
-                updateTemporaryStorageUI();
-                updateActionButtons();
-            }, 2000);
+            } catch (error) {
+                addLog(`❌ Error durante el escaneo: ${error.message}`, 'error');
+            } finally {
+                processingActive = false;
+                scanBtn.disabled = false;
+            }
         }
         
-        function updateTemporaryStorageUI() {
-            const tempListEl = document.getElementById("tempStorageList");
+        // Función para mostrar items con comentarios
+        function displayItemsWithComments() {
+            resultsContainer.innerHTML = '';
             
-            if (temporaryStorage.length === 0) {
-                tempListEl.innerHTML = `
-                    <div class="empty-state">
-                        No hay comentarios almacenados temporalmente
-                    </div>
-                `;
+            if (itemsWithComments.length === 0) {
+                resultsContainer.innerHTML = '<div class="log-info">No se encontraron items con comentarios</div>';
                 return;
             }
             
-            let html = "";
-            temporaryStorage.forEach((product, index) => {
-                const comment = product["Comments(detalle)"] || "Sin comentarios";
-                html += `
-                    <div class="temp-item">
-                        <strong>Item ${product["Item #"]}:</strong><br>
-                        ${comment.substring(0, 100)}${comment.length > 100 ? '...' : ''}
+            itemsWithComments.forEach(item => {
+                const comment = item["Comments(detalle)"] || "Sin comentarios";
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                card.innerHTML = `
+                    <div class="result-header">
+                        <div><strong>Item:</strong> ${item["Item #"]}</div>
+                        <div class="item-badge">ID: ${item["Item #"]}</div>
                     </div>
+                    <div class="comment-content">${comment.substring(0, 150)}${comment.length > 150 ? '...' : ''}</div>
                 `;
+                resultsContainer.appendChild(card);
             });
             
-            tempListEl.innerHTML = html;
-        }
-        
-        function updateResultsUI(products) {
-            const resultsContainer = document.getElementById("resultsContainer");
-            const resultsSection = document.getElementById("resultsSection");
-            
-            if (products.length === 0) {
-                resultsContainer.innerHTML = `
-                    <div class="empty-state">
-                        No hay resultados para mostrar
-                    </div>
-                `;
-                resultsSection.style.display = 'none';
-                return;
-            }
-            
-            let html = "";
-            products.forEach(product => {
-                const comment = product["Comments(detalle)"] || "Sin comentarios";
-                html += `
-                    <div class="comment-card">
-                        <div class="comment-header">
-                            <div><strong>Item:</strong> ${product["Item #"]}</div>
-                            <div class="comment-id">ID: ${product["Item #"]}</div>
-                        </div>
-                        <div class="comment-content">${comment}</div>
-                    </div>
-                `;
-            });
-            
-            resultsContainer.innerHTML = html;
             resultsSection.style.display = 'block';
+            summarySection.style.display = 'block';
+            updateSummary(allItems.length, 0, 0, 0);
         }
         
-        function showFormattedResults(formattedProducts) {
-            const formattedSection = document.getElementById("formattedSection");
-            const formattedComments = document.getElementById("formattedComments");
+        // Función para procesar todos los items automáticamente
+        async function processAllItems() {
+            if (processingActive || itemsWithComments.length === 0) return;
             
-            let html = "";
-            formattedProducts.forEach(product => {
-                html += `Item: ${product["Item #"]}\n`;
-                html += "─".repeat(50) + "\n";
-                html += `${product.formattedComment}\n\n`;
-            });
+            processingActive = true;
+            processingCancelled = false;
+            scanBtn.disabled = true;
+            processAllBtn.disabled = true;
+            cancelBtn.disabled = false;
+            progressContainer.style.display = 'block';
             
-            formattedComments.textContent = html;
-            formattedSection.style.display = 'block';
+            const totalItems = itemsWithComments.length;
+            let processedCount = 0;
+            let formattedCount = 0;
+            let errorCount = 0;
             
-            // Scroll a la sección formateada
+            addLog(`🔄 Iniciando procesamiento de ${totalItems} items...`, 'info');
+            
+            // Resultados acumulativos
+            let allFormattedComments = "";
+            
+            // Procesar cada item con un pequeño retardo para simular procesamiento
+            for (let i = 0; i < itemsWithComments.length; i++) {
+                if (processingCancelled) {
+                    addLog('⏹️ Procesamiento cancelado por el usuario', 'info');
+                    break;
+                }
+                
+                const item = itemsWithComments[i];
+                updateProgress(i, totalItems, `Procesando Item ${item["Item #"]}...`);
+                
+                try {
+                    // Simular tiempo de procesamiento
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    
+                    // Procesar comentarios
+                    const formatted = formatComments(item);
+                    
+                    if (formatted) {
+                        allFormattedComments += formatted + "\n\n";
+                        formattedCount++;
+                        addLog(`✅ Item ${item["Item #"]}: Comentarios formateados correctamente`, 'success');
+                    } else {
+                        addLog(`ℹ️ Item ${item["Item #"]}: No se requirió formateo`, 'info');
+                    }
+                    
+                    processedCount++;
+                    
+                } catch (error) {
+                    errorCount++;
+                    addLog(`❌ Item ${item["Item #"]}: Error durante el procesamiento`, 'error');
+                }
+            }
+            
+            // Mostrar resultados finales
+            if (allFormattedComments.trim() !== "") {
+                formattedComments.textContent = allFormattedComments;
+                formattedSection.style.display = 'block';
+            }
+            
+            // Actualizar resumen
+            updateSummary(allItems.length, processedCount, formattedCount, errorCount);
+            
+            // Mensaje final
+            if (processingCancelled) {
+                addLog(`⏹️ Procesamiento interrumpido. ${processedCount} items procesados de ${totalItems}.`, 'info');
+            } else {
+                addLog(`✅ Procesamiento completado. ${formattedCount} items formateados de ${processedCount} procesados.`, 'success');
+            }
+            
+            // Restablecer controles
+            processingActive = false;
+            scanBtn.disabled = false;
+            processAllBtn.disabled = false;
+            cancelBtn.disabled = true;
+            
+            // Scroll a resultados
             formattedSection.scrollIntoView({ behavior: 'smooth' });
         }
         
-        function updateActionButtons() {
-            const processBtn = document.getElementById("processBtn");
+        // Función para formatear comentarios (igual que antes)
+        function formatComments(product) {
+            const originalComment = product["Comments(detalle)"] || "";
             
-            if (temporaryStorage.length > 0) {
-                processBtn.disabled = false;
-            } else {
-                processBtn.disabled = true;
+            if (!originalComment.trim()) return "";
+            
+            // Buscar patrones como "3.Arias.- 9/19-el mismo:"
+            const pattern = /(\d+\.[A-Za-záéíóúÁÉÍÓÚñÑ]+\.[-]\s\d+\/\d+-[^:]+:)/g;
+            
+            let formattedComment = originalComment;
+            
+            // Si encontramos el patrón, insertamos saltos de línea
+            if (pattern.test(originalComment)) {
+                // Restablecer la regex
+                const regex = /(\d+\.[A-Za-záéíóúÁÉÍÓÚñÑ]+\.[-]\s\d+\/\d+-[^:]+:)/g;
+                
+                // Reemplazar cada ocurrencia con: \n + el patrón (excepto el primero)
+                formattedComment = originalComment.replace(regex, (match, p1, offset) => {
+                    return offset === 0 ? match : "\n" + match;
+                });
+            }
+            
+            return `Item #${product["Item #"]}:\n${formattedComment}`;
+        }
+        
+        // Función para cancelar procesamiento
+        function cancelProcessing() {
+            if (processingActive) {
+                processingCancelled = true;
+                addLog('Solicitando cancelación...', 'info');
             }
         }
         
         // Event Listeners
-        document.getElementById('searchBtn').addEventListener('click', function() {
-            const itemInput = document.getElementById('searchItem').value;
-            searchCommentsByItem(itemInput);
-        });
+        scanBtn.addEventListener('click', scanAllItems);
+        processAllBtn.addEventListener('click', processAllItems);
+        cancelBtn.addEventListener('click', cancelProcessing);
         
-        document.getElementById('processBtn').addEventListener('click', processComments);
-        
-        // Enter para buscar
-        document.getElementById('searchItem').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                document.getElementById('searchBtn').click();
-            }
-        });
-        
-        // Cargar ejemplo inicial
+        // Inicialización
         window.addEventListener('load', function() {
-            document.getElementById('searchItem').value = "3, 5";
+            addLog('Sistema de procesamiento automático listo.', 'info');
+            addLog('Haz clic en "Escanear Todos los Items" para comenzar.', 'info');
         });
     </script>
 </body>
