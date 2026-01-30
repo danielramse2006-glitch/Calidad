@@ -319,9 +319,9 @@
                     <label for="filter-product-type">Product Type</label>
                     <select id="filter-product-type">
                         <option value="">All Types</option>
-                        <option value="Finished Product">Finished Product</option>
-                        <option value="Subcomponent">Subcomponent</option>
-                        <option value="Raw Material">Raw Material</option>
+                        <option value="FINISHED PRODUCT">Finished Product</option>
+                        <option value="SUBCOMPONENT">Subcomponent</option>
+                        <option value="RAW MATERIAL">Raw Material</option>
                     </select>
                 </div>
                 
@@ -454,10 +454,13 @@
             document.getElementById('pending-ppaps').textContent = pending;
             document.getElementById('completed-ppaps').textContent = completed;
             
-            // Count by product type
-            const finished = products.filter(p => p['Product type'] === 'Finished Product').length;
-            const raw = products.filter(p => p['Product type'] === 'Raw Material').length;
-            const subcomponent = products.filter(p => p['Product type'] === 'Subcomponent').length;
+            // Count by product type - ACEPTA MAYÚSCULAS
+            const finished = products.filter(p => p['Product type'] && 
+                p['Product type'].toUpperCase() === 'FINISHED PRODUCT').length;
+            const raw = products.filter(p => p['Product type'] && 
+                p['Product type'].toUpperCase() === 'RAW MATERIAL').length;
+            const subcomponent = products.filter(p => p['Product type'] && 
+                p['Product type'].toUpperCase() === 'SUBCOMPONENT').length;
             
             document.getElementById('finished-product').textContent = finished;
             document.getElementById('raw-material').textContent = raw;
@@ -483,14 +486,18 @@
         function getProductTypeBadge(type) {
             if (!type) return '<span class="product-type-badge">Not Specified</span>';
             
-            const badgeMap = {
-                'Finished Product': 'Finished Product',
-                'Raw Material': 'Raw Material',
-                'Subcomponent': 'Subcomponent'
-            };
+            // Convertir a formato de título para mostrar (pero mantiene el valor original)
+            let displayText = type;
+            try {
+                displayText = type.toLowerCase()
+                    .split(' ')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ');
+            } catch (e) {
+                // Si hay error, mostrar el texto original
+            }
             
-            const badgeText = badgeMap[type] || type;
-            return `<span class="product-type-badge">${badgeText}</span>`;
+            return `<span class="product-type-badge">${displayText}</span>`;
         }
         
         function applyFilters() {
@@ -528,9 +535,12 @@
                 });
             }
             
-            // Apply product type filter
+            // Apply product type filter - ACEPTA MAYÚSCULAS
             if (productType) {
-                filtered = filtered.filter(product => product['Product type'] === productType);
+                filtered = filtered.filter(product => {
+                    if (!product['Product type']) return false;
+                    return product['Product type'].toUpperCase() === productType;
+                });
             }
             
             // Apply status filter
