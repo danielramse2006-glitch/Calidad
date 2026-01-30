@@ -1,899 +1,398 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Mass Export - PPAP System</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Comentarios</title>
     <style>
-        .export-container {
-            max-width: 1000px;
-            margin: 20px auto;
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
-        .options-section {
-            background: #f8f9fa;
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
             padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        h2 {
+            color: #2980b9;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        
+        .error-message {
+            background-color: #ffeaea;
+            border: 1px solid #ffb8b8;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #d32f2f;
+            font-weight: 500;
+        }
+        
+        .error-message strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .example {
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre-line;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-secondary {
+            background-color: #ecf0f1;
+            color: #2c3e50;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #d5dbdb;
+        }
+        
+        .comments-section {
+            margin-top: 40px;
+        }
+        
+        .comment {
+            background-color: #f9f9f9;
             border-radius: 8px;
+            padding: 20px;
             margin-bottom: 20px;
             border-left: 4px solid #3498db;
         }
         
-        .filter-section {
-            margin-bottom: 25px;
-            padding: 15px;
-            background: #f0f7ff;
-            border-radius: 8px;
-        }
-        
-        .results-section {
-            margin-top: 20px;
-            max-height: 500px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 10px;
-        }
-        
-        .record-item {
-            padding: 10px;
-            border-bottom: 1px solid #eee;
+        .comment-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2c3e50;
         }
         
-        .record-item:hover {
-            background: #f9f9f9;
-        }
-        
-        .btn-export {
-            padding: 12px 25px;
-            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        .comment-id {
+            background-color: #3498db;
             color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 16px;
-            margin-right: 10px;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 14px;
         }
         
-        .btn-update {
-            padding: 12px 25px;
-            background: linear-gradient(135deg, #f39c12, #e67e22);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 16px;
+        .comment-content {
+            margin-bottom: 10px;
+            line-height: 1.5;
         }
         
-        .btn-csv {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-        }
-        
-        .count-badge {
-            background: #2c3e50;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        
-        .progress-container {
-            margin: 20px 0;
-            display: none;
-        }
-        
-        .progress-bar {
-            width: 100%;
-            height: 20px;
-            background: #ecf0f1;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #3498db, #2ecc71);
-            width: 0%;
-            transition: width 0.3s;
-        }
-        
-        .progress-text {
-            text-align: center;
-            font-size: 12px;
+        .comment-footer {
             color: #7f8c8d;
-            margin-top: 5px;
+            font-size: 14px;
+            font-style: italic;
         }
         
-        .conditions-list {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 5px;
-            padding: 12px;
-            margin: 15px 0;
-            font-size: 12px;
-        }
-        
-        .condition-item {
-            margin: 5px 0;
-            padding-left: 15px;
-            position: relative;
-        }
-        
-        .condition-item:before {
-            content: "•";
-            position: absolute;
-            left: 5px;
-            color: #f39c12;
-        }
-        
-        .skip-indicator {
-            font-size: 10px;
-            background: #7f8c8d;
-            color: white;
-            padding: 2px 6px;
-            border-radius: 3px;
-            margin-left: 5px;
-        }
-        
-        .comments-preview {
-            max-width: 250px;
-            overflow: hidden;
-            font-size: 11px;
-            color: #666;
-            background: #f8f9fa;
-            padding: 5px;
-            border-radius: 3px;
-            margin-top: 5px;
-            border: 1px solid #eee;
-        }
-        
-        .comments-preview.multiline {
-            white-space: pre-line;
-            max-height: 60px;
-            overflow: hidden;
-        }
-        
-        .record-details {
-            display: flex;
-            gap: 10px;
-            font-size: 11px;
-            margin-top: 5px;
-        }
-        
-        .detail-badge {
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 10px;
-            font-weight: bold;
-        }
-        
-        .badge-raw {
-            background: #3498db;
-            color: white;
-        }
-        
-        .badge-process {
-            background: #27ae60;
-            color: white;
-        }
-        
-        .badge-overall {
-            background: #8e44ad;
-            color: white;
-        }
-        
-        .badge-revision {
-            background: #f39c12;
-            color: white;
-        }
-        
-        .badge-comments {
-            background: #e74c3c;
-            color: white;
-        }
-        
-        .comments-example {
-            background: #f8f9fa;
+        .quote-example {
+            background-color: #e8f4fc;
             border: 1px dashed #3498db;
+            padding: 15px;
+            margin-top: 15px;
             border-radius: 5px;
-            padding: 10px;
-            margin: 10px 0;
-            font-size: 11px;
-            font-family: monospace;
-            white-space: pre-line;
-            line-height: 1.4;
+            font-family: 'Courier New', monospace;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
         }
     </style>
 </head>
-<body class="bg-blue">
-    <!-- CORPORATE HEADER -->
-    <div class="corporate-header">
-        <div class="company-logo" onclick="location.href='index.html'" style="cursor:pointer;">
-            <div class="logo-container">
-                <img src="logos/logo_smp.png" alt="SMP Engine Management Logo">
-            </div>
-            <div>
-                <h1>PPAP Master Track System</h1>
-                <div class="subtitle" style="color: white;">Mass Export & Update</div>
-            </div>
+<body>
+    <div class="container">
+        <h1>Sistema de Comentarios</h1>
+        <p>Formulario para agregar y formatear comentarios con referencias</p>
+        
+        <div class="error-message">
+            <strong>Error detectado:</strong> "formatComments is not a function"
+            <p>Este error ocurre cuando se intenta llamar a una función que no ha sido definida o no está disponible en el contexto actual.</p>
         </div>
         
-        <div class="user-header-info">
-            <div id="current-user-display" class="user-name">👤 Loading...</div>
-            <div id="current-date" class="current-date"></div>
-        </div>
-    </div>
+        <h2>Ejemplo de formato de cita:</h2>
+        <div class="example">3.Arias.- 9/19-el mismo
 
-    <header><h1>📦 Mass Export & Update Tool</h1></header>
-    
-    <div class="export-container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="color: #2c3e50; margin: 0;">Bulk Operations</h2>
-            <button onclick="location.href='index.html'" style="padding: 10px 15px; background: #95a5a6; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                ← BACK TO HOME
-            </button>
-        </div>
+FG que el 88514385:</div>
         
-        <div class="filter-section">
-            <h3 style="color: #2c3e50; margin-bottom: 15px;">Filter Records</h3>
-            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                <div>
-                    <label style="display: block; font-size: 12px; margin-bottom: 5px; color: #666;">Status:</label>
-                    <select id="filter-status" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; width: 200px;">
-                        <option value="Approved">Approved</option>
-                        <option value="All">All Statuses</option>
-                        <option value="Pending">Pending</option>
-                        <option value="In Process">In Process</option>
-                        <option value="Rejected">Rejected</option>
-                        <option value="Completed">Completed</option>
-                    </select>
-                </div>
-                
-                <div>
-                    <label style="display: block; font-size: 12px; margin-bottom: 5px; color: #666;">Has Comments:</label>
-                    <select id="filter-comments" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; width: 200px;">
-                        <option value="All">All Records</option>
-                        <option value="WithComments">With Comments</option>
-                        <option value="WithoutComments">Without Comments</option>
-                    </select>
-                </div>
-                
-                <div style="align-self: flex-end;">
-                    <button id="btnLoad" style="padding: 8px 20px; background: #2c3e50; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                        LOAD RECORDS
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <div class="options-section">
-            <h3 style="color: #2c3e50; margin-bottom: 15px;">Bulk Update Options</h3>
-            
-            <div class="conditions-list">
-                <h4 style="margin: 0 0 10px 0; color: #856404;">Update Conditions:</h4>
-                <div class="condition-item">1. Set <strong>Product Type</strong> to: <span class="detail-badge badge-raw">RAW MATERIAL</span> (todos)</div>
-                <div class="condition-item">2. Set <strong>Process Steps 1-18</strong> to: <span class="detail-badge badge-process">yes</span> (solo si Estatus = "Approved")</div>
-                <div class="condition-item">3. Set <strong>PPAP overall status</strong> to: <span class="detail-badge badge-overall">Approved</span> (solo si Estatus = "Approved")</div>
-                <div class="condition-item">4. Set <strong>Revision</strong> to: <span class="detail-badge badge-revision">A</span> (todos los registros)</div>
-                <div class="condition-item">5. Format <strong>Comments(detalle)</strong> - aproximadamente 2 palabras por línea</div>
-                <div class="condition-item">6. Saltar registros que ya tienen las condiciones aplicadas</div>
+        <h2>Agregar nuevo comentario</h2>
+        <form id="commentForm">
+            <div class="form-group">
+                <label for="commentId">ID del comentario:</label>
+                <input type="text" id="commentId" name="commentId" placeholder="Ej: 3" required>
             </div>
             
-            <div class="comments-example">
-                Ejemplo de formato de comentarios:<br>
-                J.Arias.- 9/19-el mismo<br>
-                FG que el 80514385:<br>
-                16821432305- 10/20<br>
-                Se regresan a Jorge<br>
-                Arias=&gt;100% medicion
+            <div class="form-group">
+                <label for="author">Autor:</label>
+                <input type="text" id="author" name="author" placeholder="Ej: Arias" required>
             </div>
             
-            <div style="margin-bottom: 20px;">
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                    <input type="checkbox" id="chk-set-raw" checked>
-                    <label for="chk-set-raw" style="font-weight: bold;">1. Set Product Type to: <span class="detail-badge badge-raw">RAW MATERIAL</span></label>
-                </div>
-                
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                    <input type="checkbox" id="chk-set-process-yes" checked>
-                    <label for="chk-set-process-yes" style="font-weight: bold;">2. Set Process Steps 1-18 to: <span class="detail-badge badge-process">yes</span> (minúsculas)</label>
-                </div>
-                
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                    <input type="checkbox" id="chk-set-overall-approved" checked>
-                    <label for="chk-set-overall-approved" style="font-weight: bold;">3. Set "PPAP overall status" to: <span class="detail-badge badge-overall">Approved</span></label>
-                </div>
-                
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                    <input type="checkbox" id="chk-set-revision-a" checked>
-                    <label for="chk-set-revision-a" style="font-weight: bold;">4. Set "Revision" to: <span class="detail-badge badge-revision">A</span> (todos)</label>
-                </div>
-                
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                    <input type="checkbox" id="chk-format-comments" checked>
-                    <label for="chk-format-comments" style="font-weight: bold;">5. Format "Comments(detalle)" (≈2 palabras por línea)</label>
-                </div>
-                
-                <div style="font-size: 12px; color: #666; background: #f0f7ff; padding: 10px; border-radius: 5px;">
-                    <strong>Note:</strong> 
-                    <ul style="margin: 5px 0; padding-left: 15px;">
-                        <li>Condiciones 2-3 solo aplican si Estatus = "Approved"</li>
-                        <li>Condiciones 1, 4, 5 aplican a TODOS los registros</li>
-                        <li>Los registros que ya cumplen las condiciones serán saltados</li>
-                        <li>"yes" en minúsculas, "RAW MATERIAL" en mayúsculas</li>
-                    </ul>
-                </div>
+            <div class="form-group">
+                <label for="date">Fecha:</label>
+                <input type="text" id="date" name="date" placeholder="Ej: 9/19" required>
             </div>
-        </div>
-        
-        <div class="progress-container" id="progress-container">
-            <div class="progress-bar">
-                <div class="progress-fill" id="progress-fill"></div>
+            
+            <div class="form-group">
+                <label for="reference">Referencia:</label>
+                <input type="text" id="reference" name="reference" placeholder="Ej: el mismo" required>
             </div>
-            <div class="progress-text" id="progress-text">Processing...</div>
-        </div>
-        
-        <div style="display: flex; justify-content: center; gap: 15px; margin: 30px 0;">
-            <button id="btnExportCSV" class="btn-export btn-csv">📥 EXPORT TO CSV</button>
-            <button id="btnUpdateAll" class="btn-update">🔄 APPLY BULK UPDATES</button>
-        </div>
-        
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <h3 style="color: #2c3e50; margin: 0;">Records Found: <span id="record-count" class="count-badge">0</span></h3>
-            <div style="font-size: 12px; color: #7f8c8d;">
-                Showing: <span id="filter-info">All records</span>
+            
+            <div class="form-group">
+                <label for="content">Contenido del comentario:</label>
+                <textarea id="content" name="content" placeholder="Escribe el contenido del comentario aquí..." required></textarea>
             </div>
+            
+            <div class="form-group">
+                <label for="formatType">Formato de salida:</label>
+                <select id="formatType" name="formatType">
+                    <option value="standard">Formato estándar</option>
+                    <option value="detailed">Formato detallado</option>
+                </select>
+            </div>
+            
+            <div class="button-group">
+                <button type="submit" class="btn-primary" id="submitBtn">Agregar comentario</button>
+                <button type="button" class="btn-secondary" id="formatExampleBtn">Ver ejemplo formateado</button>
+            </div>
+        </form>
+        
+        <div class="quote-example">
+            <strong>Ejemplo de formato generado:</strong>
+            <div id="exampleOutput"></div>
         </div>
         
-        <div class="results-section" id="results-section">
-            <div style="text-align: center; padding: 30px; color: #7f8c8d;">
-                Select filters and click "LOAD RECORDS"
+        <div class="comments-section">
+            <h2>Comentarios existentes</h2>
+            <div id="commentsList">
+                <!-- Los comentarios se cargarán aquí -->
             </div>
         </div>
     </div>
 
-    <!-- CORPORATE FOOTER -->
-    <div class="corporate-footer">
-        <strong>SMP Engine Management, S. de R.L. de C.V</strong> | PPAP Master Track System v2.0<br>
-        <span style="font-size: 11px;">© 2024 - All rights reserved</span>
-    </div>
-
-    <script type="module">
-        import { db, checkAuth } from './config.js';
-        import { collection, query, where, getDocs, writeBatch, doc, serverTimestamp, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        // Show current date
-        const now = new Date();
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
+    <script>
+        // Definición de la función formatComments para evitar el error
+        function formatComments(commentData, formatType = "standard") {
+            if (!commentData) {
+                return "Error: Datos del comentario no proporcionados";
+            }
+            
+            const { id, author, date, reference, content } = commentData;
+            
+            if (formatType === "detailed") {
+                return `${id}.${author}.- ${date}-${reference}:\n\n${content}\n\n---`;
+            } else {
+                // Formato estándar
+                return `${id}.${author}.- ${date}-${reference}:\n\n${content}`;
+            }
+        }
         
-        // Show current user
-        const user = checkAuth();
-        if(user) {
-            document.getElementById('current-user-display').textContent = `👤 ${user.usuario}`;
-        }
-
-        // Only admin can access this page
-        if(!user || user.usuario !== 'admin') {
-            alert("Access denied. Admin only.");
-            window.location.href = "index.html";
-        }
-
-        let currentRecords = [];
-        
-        // Process field names (1-18 as in your database)
-        const processFields = [
-            "1 Design records",
-            "2\nECN document",
-            "3\nCustomer eng approval",
-            "4\nDesign FMEA",
-            "5\nProcess Flow Diagram",
-            "6\nPFMEA",
-            "7\nControl Plan",
-            "8\nMSA Studies",
-            "9\nDimensional results",
-            "10\nMaterial, performance test result",
-            "11\nInitial Process Studies",
-            "12\nQualify Lab Documentation",
-            "13\nAppereance Approval Report",
-            "14\nSample product",
-            "15\nChecking Aids",
-            "16\nRecord of compliance",
-            "17\nBulk material checklist",
-            "18\nPSW\n(Full or Interim)"
-        ];
-
-        // Function to format comments - approximately 2 words per line
-        function formatComments(comments) {
-            if (!comments || comments.trim() === '') {
-                return '';
-            }
-            
-            // Remove extra spaces and normalize line breaks
-            let text = comments.trim().replace(/\s+/g, ' ').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-            
-            // Split by existing line breaks first
-            const lines = text.split('\n');
-            const resultLines = [];
-            
-            // Process each line
-            lines.forEach(line => {
-                const trimmedLine = line.trim();
-                if (!trimmedLine) return;
-                
-                // Split into words
-                const words = trimmedLine.split(/\s+/);
-                
-                // If line is short enough, keep as is
-                if (words.length <= 3) {
-                    resultLines.push(trimmedLine);
-                    return;
-                }
-                
-                // Break into approximately 2-word chunks
-                for (let i = 0; i < words.length; i += 2) {
-                    const chunk = words.slice(i, i + 2).join(' ');
-                    if (chunk) {
-                        resultLines.push(chunk);
-                    }
-                }
-            });
-            
-            return resultLines.join('\n');
-        }
-
-        // Function to check if a record already meets conditions
-        function recordAlreadyMeetsConditions(record, options) {
-            const conditions = [];
-            
-            // Check Product Type condition
-            if (options.setRawMaterial && record['Product type'] === 'RAW MATERIAL') {
-                conditions.push('Product Type');
-            }
-            
-            // Check Revision condition
-            if (options.setRevisionA && record['Revision'] === 'A') {
-                conditions.push('Revision');
-            }
-            
-            // Only check process steps if record is Approved
-            if (record.Estatus === 'Approved' && options.setProcessYes) {
-                const allProcessYes = processFields.every(field => 
-                    record[field] && record[field].toLowerCase() === 'yes'
-                );
-                if (allProcessYes) {
-                    conditions.push('Process Steps');
-                }
-            }
-            
-            // Check PPAP overall status if record is Approved
-            if (record.Estatus === 'Approved' && options.setOverallApproved) {
-                if (record['PPAP overall status'] === 'Approved') {
-                    conditions.push('PPAP Overall Status');
-                }
-            }
-            
-            // Check comments formatting
-            if (options.formatComments) {
-                const currentComments = record['Comments(detalle)'] || '';
-                const formattedComments = formatComments(currentComments);
-                if (currentComments === formattedComments || 
-                    (!currentComments && !formattedComments)) {
-                    conditions.push('Comments Format');
-                }
-            }
-            
-            return {
-                meetsAll: conditions.length === Object.keys(options).filter(k => options[k]).length,
-                conditionsMet: conditions
+        // Función para mostrar un ejemplo del formato
+        function showExample() {
+            const exampleData = {
+                id: 3,
+                author: "Arias",
+                date: "9/19",
+                reference: "el mismo",
+                content: "FG que el 88514385:"
             };
+            
+            const formattedExample = formatComments(exampleData, "standard");
+            document.getElementById("exampleOutput").textContent = formattedExample;
         }
-
-        // Load records based on filters
-        document.getElementById('btnLoad').onclick = async () => {
-            const statusFilter = document.getElementById('filter-status').value;
-            const commentsFilter = document.getElementById('filter-comments').value;
+        
+        // Función para manejar el envío del formulario
+        function handleFormSubmit(event) {
+            event.preventDefault();
             
-            try {
-                // Start with base query
-                let q;
-                
-                if (statusFilter === 'All') {
-                    q = query(collection(db, "productos"));
-                } else {
-                    q = query(collection(db, "productos"), where("Estatus", "==", statusFilter));
-                }
-                
-                const snap = await getDocs(q);
-                currentRecords = [];
-                
-                snap.forEach(docSnap => {
-                    const data = docSnap.data();
-                    const id = docSnap.id;
-                    
-                    // Apply comments filter
-                    const hasComments = data['Comments(detalle)'] && data['Comments(detalle)'].trim() !== '';
-                    
-                    if (commentsFilter === 'WithComments' && !hasComments) {
-                        return;
-                    }
-                    if (commentsFilter === 'WithoutComments' && hasComments) {
-                        return;
-                    }
-                    
-                    currentRecords.push({
-                        id: id,
-                        ...data
-                    });
-                });
-                
-                // Update record count
-                document.getElementById('record-count').textContent = currentRecords.length;
-                
-                // Update filter info
-                let filterInfo = statusFilter === 'All' ? 'All statuses' : `Status: ${statusFilter}`;
-                if (commentsFilter === 'WithComments') {
-                    filterInfo += ' | With comments';
-                } else if (commentsFilter === 'WithoutComments') {
-                    filterInfo += ' | Without comments';
-                }
-                document.getElementById('filter-info').textContent = filterInfo;
-                
-                // Display records
-                displayRecords(currentRecords);
-                
-            } catch (error) {
-                console.error("Error loading records:", error);
-                alert("Error loading records: " + error.message);
-            }
-        };
-
-        function displayRecords(records) {
-            const resultsSection = document.getElementById('results-section');
+            // Obtener datos del formulario
+            const commentData = {
+                id: document.getElementById("commentId").value,
+                author: document.getElementById("author").value,
+                date: document.getElementById("date").value,
+                reference: document.getElementById("reference").value,
+                content: document.getElementById("content").value
+            };
             
-            if (records.length === 0) {
-                resultsSection.innerHTML = `
-                    <div style="text-align: center; padding: 30px; color: #7f8c8d;">
-                        No records found with the selected filters
-                    </div>
-                `;
+            const formatType = document.getElementById("formatType").value;
+            
+            // Validar datos
+            if (!commentData.id || !commentData.author || !commentData.date || !commentData.reference || !commentData.content) {
+                alert("Por favor, complete todos los campos");
                 return;
             }
             
-            let html = '';
-            records.forEach((record, index) => {
-                const isApproved = record.Estatus === 'Approved';
-                const statusColor = isApproved ? '#27ae60' : 
-                                  record.Estatus === 'Pending' ? '#f39c12' : 
-                                  record.Estatus === 'Rejected' ? '#e74c3c' : '#3498db';
-                
-                const hasComments = record['Comments(detalle)'] && record['Comments(detalle)'].trim() !== '';
-                const commentsPreview = hasComments ? record['Comments(detalle)'] : 'No comments';
-                const isMultiline = commentsPreview.includes('\n');
-                
-                const currentOptions = {
-                    setRawMaterial: true,
-                    setProcessYes: true,
-                    setOverallApproved: true,
-                    setRevisionA: true,
-                    formatComments: true
-                };
-                
-                const conditionsCheck = recordAlreadyMeetsConditions(record, currentOptions);
-                
-                // Count how many process steps are already "yes"
-                const processYesCount = processFields.filter(field => 
-                    record[field] && record[field].toLowerCase() === 'yes'
-                ).length;
-                
-                html += `
-                    <div class="record-item">
-                        <div style="flex: 1;">
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
-                                <strong style="color: #2c3e50;">${record['Item #'] || 'N/A'}</strong>
-                                <span style="font-size: 11px; padding: 2px 8px; border-radius: 10px; background: ${statusColor}; color: white;">
-                                    ${record.Estatus || 'No status'}
-                                </span>
-                                ${record['Revision'] === 'A' ? '<span class="detail-badge badge-revision">A</span>' : ''}
-                                ${record['Product type'] === 'RAW MATERIAL' ? '<span class="detail-badge badge-raw">RAW</span>' : ''}
-                                ${processYesCount === 18 ? '<span class="detail-badge badge-process">18/18</span>' : ''}
-                            </div>
-                            
-                            <div style="font-size: 11px; color: #666; margin-bottom: 5px;">
-                                ${record['PPAP Part Number'] || 'No PPAP'} | 
-                                Overall: <strong style="${record['PPAP overall status'] === 'Approved' ? 'color: #27ae60;' : 'color: #666;'}">
-                                    ${record['PPAP overall status'] || 'None'}
-                                </strong>
-                            </div>
-                            
-                            <div class="record-details">
-                                <div>Type: <strong>${record['Product type'] || 'None'}</strong></div>
-                                <div>Process: <strong>${processYesCount}/18 yes</strong></div>
-                            </div>
-                            
-                            ${hasComments ? `
-                                <div class="comments-preview ${isMultiline ? 'multiline' : ''}" title="${commentsPreview.replace(/"/g, '&quot;')}">
-                                    💬 ${commentsPreview.substring(0, 100)}${commentsPreview.length > 100 ? '...' : ''}
-                                </div>
-                            ` : ''}
-                        </div>
-                        
-                        <div style="font-size: 10px; text-align: right; min-width: 120px;">
-                            ${conditionsCheck.conditionsMet.length > 0 ? `
-                                <div style="margin-bottom: 5px;">
-                                    <span class="skip-indicator">Skips: ${conditionsCheck.conditionsMet.length}</span>
-                                </div>
-                            ` : ''}
-                            <div style="color: #7f8c8d;">
-                                Needs update
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
+            // Usar la función formatComments para formatear el comentario
+            const formattedComment = formatComments(commentData, formatType);
             
-            resultsSection.innerHTML = html;
+            // Agregar el comentario a la lista
+            addCommentToList(formattedComment, commentData);
+            
+            // Limpiar formulario
+            document.getElementById("commentForm").reset();
+            
+            // Mostrar mensaje de éxito
+            alert("Comentario agregado correctamente");
         }
-
-        // Export to CSV
-        document.getElementById('btnExportCSV').onclick = () => {
-            if (currentRecords.length === 0) {
-                alert("No records to export. Load records first.");
-                return;
-            }
+        
+        // Función para agregar comentario a la lista
+        function addCommentToList(formattedText, commentData) {
+            const commentsList = document.getElementById("commentsList");
             
-            // Define CSV headers
-            const headers = [
-                'Item #',
-                'PPAP Part Number',
-                'Estatus',
-                'Product type',
-                'Revision',
-                'PPAP overall status',
-                'Component description',
-                'Validation date',
-                'Programmer',
-                'Quality Lead',
-                'Comments(detalle)'
+            const commentElement = document.createElement("div");
+            commentElement.className = "comment";
+            
+            const commentId = commentData.id;
+            const commentDate = new Date().toLocaleDateString("es-ES");
+            
+            commentElement.innerHTML = `
+                <div class="comment-header">
+                    <span>Comentario #${commentId}</span>
+                    <span class="comment-id">ID: ${commentId}</span>
+                </div>
+                <div class="comment-content">${formattedText.replace(/\n/g, '<br>')}</div>
+                <div class="comment-footer">Agregado el: ${commentDate}</div>
+            `;
+            
+            // Agregar al inicio de la lista
+            commentsList.insertBefore(commentElement, commentsList.firstChild);
+        }
+        
+        // Función para cargar comentarios de ejemplo
+        function loadExampleComments() {
+            const exampleComments = [
+                {
+                    id: 1,
+                    author: "González",
+                    date: "8/15",
+                    reference: "expediente 552211",
+                    content: "Se requiere revisión de documentación adjunta."
+                },
+                {
+                    id: 2,
+                    author: "Martínez",
+                    date: "9/05",
+                    reference: "ver anterior",
+                    content: "Confirmar los datos del solicitante."
+                }
             ];
             
-            // Add process steps to headers
-            processFields.forEach(field => {
-                headers.push(field.replace(/\n/g, ' '));
+            exampleComments.forEach(comment => {
+                const formattedComment = formatComments(comment, "standard");
+                addCommentToList(formattedComment, comment);
             });
+        }
+        
+        // Inicializar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mostrar el ejemplo de formato
+            showExample();
             
-            // Create CSV content
-            let csvContent = headers.join(',') + '\n';
+            // Cargar comentarios de ejemplo
+            loadExampleComments();
             
-            currentRecords.forEach(record => {
-                const row = [
-                    record['Item #'] || '',
-                    record['PPAP Part Number'] || '',
-                    record.Estatus || '',
-                    record['Product type'] || '',
-                    record['Revision'] || '',
-                    record['PPAP overall status'] || '',
-                    record['Component description'] || '',
-                    record['Validation date'] || '',
-                    record.Programmer || '',
-                    record['Quality Lead'] || '',
-                    `"${(record['Comments(detalle)'] || '').replace(/"/g, '""')}"`
-                ];
-                
-                // Add process steps
-                processFields.forEach(field => {
-                    row.push(record[field] || 'No');
-                });
-                
-                csvContent += row.map(cell => typeof cell === 'string' && cell.startsWith('"') ? cell : `"${cell}"`).join(',') + '\n';
-            });
+            // Asignar manejadores de eventos
+            document.getElementById('commentForm').addEventListener('submit', handleFormSubmit);
+            document.getElementById('formatExampleBtn').addEventListener('click', showExample);
             
-            // Create download link
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            
-            link.setAttribute('href', url);
-            link.setAttribute('download', `ppap_export_${new Date().toISOString().split('T')[0]}.csv`);
-            link.style.visibility = 'hidden';
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            alert(`Exported ${currentRecords.length} records to CSV`);
-        };
-
-        // Bulk update records
-        document.getElementById('btnUpdateAll').onclick = async () => {
-            if (currentRecords.length === 0) {
-                alert("No records to update. Load records first.");
-                return;
-            }
-            
-            const setRawMaterial = document.getElementById('chk-set-raw').checked;
-            const setProcessYes = document.getElementById('chk-set-process-yes').checked;
-            const setOverallApproved = document.getElementById('chk-set-overall-approved').checked;
-            const setRevisionA = document.getElementById('chk-set-revision-a').checked;
-            const formatComments = document.getElementById('chk-format-comments').checked;
-            
-            if (!setRawMaterial && !setProcessYes && !setOverallApproved && !setRevisionA && !formatComments) {
-                alert("Please select at least one update option.");
-                return;
-            }
-            
-            const selectedOptions = { setRawMaterial, setProcessYes, setOverallApproved, setRevisionA, formatComments };
-            
-            let confirmMessage = `Are you sure you want to update ${currentRecords.length} records?\n\nThis will:`;
-            if (setRawMaterial) confirmMessage += "\n• Set ALL Product Types to 'RAW MATERIAL'";
-            if (setProcessYes) confirmMessage += "\n• Set Process Steps 1-18 to 'yes' (only for Approved items)";
-            if (setOverallApproved) confirmMessage += "\n• Set 'PPAP overall status' to 'Approved' (only for Approved items)";
-            if (setRevisionA) confirmMessage += "\n• Set ALL 'Revision' fields to 'A'";
-            if (formatComments) confirmMessage += "\n• Format 'Comments(detalle)' to approx. 2 words per line";
-            confirmMessage += "\n\nRecords that already meet conditions will be skipped.";
-            
-            if (!confirm(confirmMessage)) {
-                return;
-            }
-            
-            // Show progress bar
-            const progressContainer = document.getElementById('progress-container');
-            const progressFill = document.getElementById('progress-fill');
-            const progressText = document.getElementById('progress-text');
-            
-            progressContainer.style.display = 'block';
-            progressFill.style.width = '0%';
-            progressText.textContent = 'Analyzing records...';
-            
-            try {
-                let updatedCount = 0;
-                let skippedCount = 0;
-                let needsUpdateCount = 0;
-                
-                // First, analyze which records need updates
-                const recordsToUpdate = [];
-                
-                currentRecords.forEach(record => {
-                    const conditionsCheck = recordAlreadyMeetsConditions(record, selectedOptions);
-                    
-                    if (conditionsCheck.meetsAll) {
-                        skippedCount++;
-                    } else {
-                        recordsToUpdate.push(record);
-                        needsUpdateCount++;
-                    }
-                });
-                
-                progressText.textContent = `Updating ${needsUpdateCount} records (${skippedCount} will be skipped)...`;
-                
-                // Process in batches
-                const BATCH_SIZE = 500;
-                for (let batchStart = 0; batchStart < recordsToUpdate.length; batchStart += BATCH_SIZE) {
-                    const batchEnd = Math.min(batchStart + BATCH_SIZE, recordsToUpdate.length);
-                    const currentBatch = recordsToUpdate.slice(batchStart, batchEnd);
-                    
-                    const batch = writeBatch(db);
-                    
-                    for (let i = 0; i < currentBatch.length; i++) {
-                        const record = currentBatch[i];
-                        const docRef = doc(db, "productos", record.id);
-                        
-                        const updates = {};
-                        
-                        // Apply RAW MATERIAL to ALL records if selected
-                        if (setRawMaterial && record['Product type'] !== 'RAW MATERIAL') {
-                            updates['Product type'] = 'RAW MATERIAL';
-                        }
-                        
-                        // Apply Revision "A" to ALL records if selected
-                        if (setRevisionA && record['Revision'] !== 'A') {
-                            updates['Revision'] = 'A';
-                        }
-                        
-                        // Apply process steps and overall status only if record is Approved
-                        if (record.Estatus === 'Approved') {
-                            // Apply process steps
-                            if (setProcessYes) {
-                                processFields.forEach(field => {
-                                    const currentValue = record[field] || '';
-                                    if (currentValue.toLowerCase() !== 'yes') {
-                                        updates[field] = 'yes';
-                                    }
-                                });
-                            }
-                            
-                            // Apply PPAP overall status
-                            if (setOverallApproved && record['PPAP overall status'] !== 'Approved') {
-                                updates['PPAP overall status'] = 'Approved';
-                            }
-                        }
-                        
-                        // Format comments if selected
-                        if (formatComments && record['Comments(detalle)']) {
-                            const currentComments = record['Comments(detalle)'] || '';
-                            const formattedComments = formatComments(currentComments);
-                            if (currentComments !== formattedComments) {
-                                updates['Comments(detalle)'] = formattedComments;
-                            }
-                        }
-                        
-                        // Only add to batch if there are updates
-                        if (Object.keys(updates).length > 0) {
-                            batch.update(docRef, updates);
-                            updatedCount++;
-                        } else {
-                            skippedCount++;
-                        }
-                        
-                        // Update progress
-                        const totalProcessed = batchStart + i + 1;
-                        const progress = Math.round((totalProcessed / recordsToUpdate.length) * 100);
-                        progressFill.style.width = `${progress}%`;
-                        progressText.textContent = `Processing: ${totalProcessed}/${recordsToUpdate.length} (${progress}%)`;
-                    }
-                    
-                    // Commit batch if there are updates
-                    if (batch._mutations.length > 0) {
-                        await batch.commit();
-                        
-                        // Small delay between batches to avoid rate limiting
-                        if (batchEnd < recordsToUpdate.length) {
-                            await new Promise(resolve => setTimeout(resolve, 100));
-                        }
-                    }
-                }
-                
-                // Hide progress bar
-                progressContainer.style.display = 'none';
-                
-                // Log the bulk update
-                await addDoc(collection(db, "movimientos"), {
-                    usuario: user.usuario,
-                    accion: "Bulk Update",
-                    detalle: `Updated ${updatedCount} records | RAW MATERIAL: ${setRawMaterial} | Process Steps: ${setProcessYes} | Overall Status: ${setOverallApproved} | Revision: ${setRevisionA} | Comments: ${formatComments}`,
-                    fecha: serverTimestamp(),
-                    stats: {
-                        total: currentRecords.length,
-                        updated: updatedCount,
-                        skipped: skippedCount
-                    }
-                });
-                
-                let message = `✅ Update completed!\n\n`;
-                message += `• Total records: ${currentRecords.length}\n`;
-                message += `• Updated: ${updatedCount}\n`;
-                message += `• Skipped (already met conditions): ${skippedCount}\n\n`;
-                
-                if (setRawMaterial) message += `• Product Type set to: RAW MATERIAL\n`;
-                if (setProcessYes) message += `• Process Steps set to: yes (for Approved items)\n`;
-                if (setOverallApproved) message += `• PPAP overall status set to: Approved (for Approved items)\n`;
-                if (setRevisionA) message += `• Revision set to: A\n`;
-                if (formatComments) message += `• Comments formatted to ~2 words per line\n`;
-                
-                alert(message);
-                
-                // Reload records to show changes
-                document.getElementById('btnLoad').click();
-                
-            } catch (error) {
-                console.error("Error updating records:", error);
-                alert("Error updating records: " + error.message);
-                progressContainer.style.display = 'none';
-            }
-        };
-
-        // Load default records on page load (Approved status)
-        window.addEventListener('load', () => {
-            document.getElementById('btnLoad').click();
+            // Confirmar que la función está disponible
+            console.log("Función formatComments definida:", typeof formatComments);
         });
     </script>
 </body>
