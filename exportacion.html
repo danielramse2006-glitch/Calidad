@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mass Export - PPAP System</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .export-container {
+            max-width: 900px;
+            margin: 20px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .options-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .filter-section {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #f0f7ff;
+            border-radius: 8px;
+        }
+        
+        .results-section {
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        
+        .record-item {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .record-item:hover {
+            background: #f9f9f9;
+        }
+        
+        .btn-export {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        
+        .btn-update {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .btn-csv {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .status-approved {
+            background: #27ae60;
+        }
+        
+        .status-not-approved {
+            background: #95a5a6;
+        }
+        
+        .count-badge {
+            background: #2c3e50;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .progress-container {
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #ecf0f1;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .progress-text {
+            text-align: center;
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        
+        .conditions-list {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 12px;
+            margin: 15px 0;
+            font-size: 12px;
+        }
+        
+        .condition-item {
+            margin: 5px 0;
+            padding-left: 15px;
+            position: relative;
+        }
+        
+        .condition-item:before {
+            content: "•";
+            position: absolute;
+            left: 5px;
+            color: #f39c12;
+        }
+        
+        .skip-indicator {
+            font-size: 10px;
+            background: #7f8c8d;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-left: 5px;
+        }
+        
+        .comments-preview {
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 11px;
+            color: #666;
+        }
+        
+        .comments-preview.multiline {
+            white-space: normal;
+            max-height: 40px;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+    </style>
+</head>
+<body class="bg-blue">
+    <!-- CORPORATE HEADER -->
+    <div class="corporate-header">
+        <div class="company-logo" onclick="location.href='index.html'" style="cursor:pointer;">
+            <div class="logo-container">
+                <img src="logos/logo_smp.png" alt="SMP Engine Management Logo">
+            </div>
+            <div>
+                <h1>PPAP Master Track System</h1>
+                <div class="subtitle" style="color: white;">Mass Export & Update</div>
+            </div>
+        </div>
+        
+        <div class="user-header-info">
+            <div id="current-user-display" class="user-name">👤 Loading...</div>
+            <div id="current-date" class="current-date"></div>
+        </div>
+    </div>
+
+    <header><h1>📦 Mass Export & Update Tool</h1></header>
+    
+    <div class="export-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="color: #2c3e50; margin: 0;">Bulk Operations</h2>
+            <button onclick="location.href='index.html'" style="padding: 10px 15px; background: #95a5a6; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                ← BACK TO HOME
+            </button>
+        </div>
+        
+        <div class="filter-section">
+            <h3 style="color: #2c3e50; margin-bottom: 15px;">Filter Records</h3>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <div>
+                    <label style="display: block; font-size: 12px; margin-bottom: 5px; color: #666;">Status:</label>
+                    <select id="filter-status" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; width: 200px;">
+                        <option value="Approved">Approved</option>
+                        <option value="All">All Statuses</option>
+                        <option value="Pending">Pending</option>
+                        <option value="In Process">In Process</option>
+                        <option value="Rejected">Rejected</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label style="display: block; font-size: 12px; margin-bottom: 5px; color: #666;">Product Type:</label>
+                    <select id="filter-type" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; width: 200px;">
+                        <option value="All">All Types</option>
+                        <option value="Raw Material">Raw Material</option>
+                        <option value="Finished Product">Finished Product</option>
+                        <option value="Subcomponent">Subcomponent</option>
+                    </select>
+                </div>
+                
+                <div style="align-self: flex-end;">
+                    <button id="btnLoad" style="padding: 8px 20px; background: #2c3e50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        LOAD RECORDS
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="options-section">
+            <h3 style="color: #2c3e50; margin-bottom: 15px;">Bulk Update Options</h3>
+            
+            <div class="conditions-list">
+                <h4 style="margin: 0 0 10px 0; color: #856404;">Update Conditions:</h4>
+                <div class="condition-item">1. Set Product Type to: <strong>RAW MATERIAL</strong> (todos los registros)</div>
+                <div class="condition-item">2. Set Process Steps 1-18 to: <strong>yes</strong> (solo si Estatus = "Approved")</div>
+                <div class="condition-item">3. Set "PPAP overall status" to: <strong>Approved</strong> (solo si Estatus = "Approved")</div>
+                <div class="condition-item">4. Format "Comments(detalle)" to max 2 líneas (saltos automáticos)</div>
+                <div class="condition-item">5. Saltar registros que ya tienen las condiciones aplicadas</div>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                    <input type="checkbox" id="chk-set-raw" checked>
+                    <label for="chk-set-raw" style="font-weight: bold;">1. Set Product Type to: <span style="color: #3498db;">RAW MATERIAL</span></label>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                    <input type="checkbox" id="chk-set-process-yes" checked>
+                    <label for="chk-set-process-yes" style="font-weight: bold;">2. Set Process Steps 1-18 to: <span style="color: #27ae60;">yes</span> (minúsculas)</label>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                    <input type="checkbox" id="chk-set-overall-approved" checked>
+                    <label for="chk-set-overall-approved" style="font-weight: bold;">3. Set "PPAP overall status" to: <span style="color: #8e44ad;">Approved</span></label>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                    <input type="checkbox" id="chk-format-comments" checked>
+                    <label for="chk-format-comments" style="font-weight: bold;">4. Format "Comments(detalle)" (max 2 líneas)</label>
+                </div>
+                
+                <div style="font-size: 12px; color: #666; background: #f0f7ff; padding: 10px; border-radius: 5px;">
+                    <strong>Note:</strong> 
+                    <ul style="margin: 5px 0; padding-left: 15px;">
+                        <li>Steps 2-3 solo aplican si Estatus = "Approved"</li>
+                        <li>Step 1 aplica a TODOS los registros</li>
+                        <li>Los registros que ya cumplen las condiciones serán saltados</li>
+                        <li>"yes" en minúsculas, "RAW MATERIAL" en mayúsculas</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="progress-container" id="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="progress-text" id="progress-text">Processing...</div>
+        </div>
+        
+        <div style="display: flex; justify-content: center; gap: 15px; margin: 30px 0;">
+            <button id="btnExportCSV" class="btn-export btn-csv">📥 EXPORT TO CSV</button>
+            <button id="btnUpdateAll" class="btn-update">🔄 APPLY BULK UPDATES</button>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h3 style="color: #2c3e50; margin: 0;">Records Found: <span id="record-count" class="count-badge">0</span></h3>
+            <div style="font-size: 12px; color: #7f8c8d;">
+                <span class="status-indicator status-approved"></span> Approved items
+            </div>
+        </div>
+        
+        <div class="results-section" id="results-section">
+            <div style="text-align: center; padding: 30px; color: #7f8c8d;">
+                Select filters and click "LOAD RECORDS"
+            </div>
+        </div>
+    </div>
+
+    <!-- CORPORATE FOOTER -->
+    <div class="corporate-footer">
+        <strong>SMP Engine Management, S. de R.L. de C.V</strong> | PPAP Master Track System v2.0<br>
+        <span style="font-size: 11px;">© 2024 - All rights reserved</span>
+    </div>
+
+    <script type="module">
+        import { db, checkAuth } from './config.js';
+        import { collection, query, where, getDocs, writeBatch, doc, serverTimestamp, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Show current date
+        const now = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
+        
+        // Show current user
+        const user = checkAuth();
+        if(user) {
+            document.getElementById('current-user-display').textContent = `👤 ${user.usuario}`;
+        }
+
+        // Only admin can access this page
+        if(!user || user.usuario !== 'admin') {
+            alert("Access denied. Admin only.");
+            window.location.href = "index.html";
+        }
+
+        let currentRecords = [];
+        
+        // Process field names (1-18 as in your database)
+        const processFields = [
+            "1 Design records",
+            "2\nECN document",
+            "3\nCustomer eng approval",
+            "4\nDesign FMEA",
+            "5\nProcess Flow Diagram",
+            "6\nPFMEA",
+            "7\nControl Plan",
+            "8\nMSA Studies",
+            "9\nDimensional results",
+            "10\nMaterial, performance test result",
+            "11\nInitial Process Studies",
+            "12\nQualify Lab Documentation",
+            "13\nAppereance Approval Report",
+            "14\nSample product",
+            "15\nChecking Aids",
+            "16\nRecord of compliance",
+            "17\nBulk material checklist",
+            "18\nPSW\n(Full or Interim)"
+        ];
+
+        // Function to format comments to max 2 lines
+        function formatComments(comments) {
+            if (!comments || comments.trim() === '') {
+                return '';
+            }
+            
+            // Split by existing line breaks
+            const lines = comments.split(/\r\n|\r|\n/);
+            
+            // Take only first 2 lines
+            const firstTwoLines = lines.slice(0, 2);
+            
+            // Join with line break
+            return firstTwoLines.join('\n');
+        }
+
+        // Function to check if a record already meets conditions
+        function recordAlreadyMeetsConditions(record, options) {
+            const conditions = [];
+            
+            // Check Product Type condition
+            if (options.setRawMaterial && record['Product type'] === 'RAW MATERIAL') {
+                conditions.push('Product Type');
+            }
+            
+            // Only check process steps if record is Approved
+            if (record.Estatus === 'Approved' && options.setProcessYes) {
+                const allProcessYes = processFields.every(field => 
+                    record[field] && record[field].toLowerCase() === 'yes'
+                );
+                if (allProcessYes) {
+                    conditions.push('Process Steps');
+                }
+            }
+            
+            // Check PPAP overall status if record is Approved
+            if (record.Estatus === 'Approved' && options.setOverallApproved) {
+                if (record['PPAP overall status'] === 'Approved') {
+                    conditions.push('PPAP Overall Status');
+                }
+            }
+            
+            // Check comments formatting
+            if (options.formatComments) {
+                const currentComments = record['Comments(detalle)'] || '';
+                const formattedComments = formatComments(currentComments);
+                if (currentComments === formattedComments || 
+                    (!currentComments && !formattedComments)) {
+                    conditions.push('Comments Format');
+                }
+            }
+            
+            return {
+                meetsAll: conditions.length === Object.keys(options).filter(k => options[k]).length,
+                conditionsMet: conditions
+            };
+        }
+
+        // Load records based on filters
+        document.getElementById('btnLoad').onclick = async () => {
+            const statusFilter = document.getElementById('filter-status').value;
+            const typeFilter = document.getElementById('filter-type').value;
+            
+            try {
+                // Start with base query
+                let q;
+                
+                if (statusFilter === 'All') {
+                    q = query(collection(db, "productos"));
+                } else {
+                    q = query(collection(db, "productos"), where("Estatus", "==", statusFilter));
+                }
+                
+                const snap = await getDocs(q);
+                currentRecords = [];
+                
+                snap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const id = docSnap.id;
+                    
+                    // Apply product type filter
+                    if (typeFilter !== 'All' && data['Product type'] !== typeFilter) {
+                        return;
+                    }
+                    
+                    currentRecords.push({
+                        id: id,
+                        ...data
+                    });
+                });
+                
+                // Update record count
+                document.getElementById('record-count').textContent = currentRecords.length;
+                
+                // Display records
+                displayRecords(currentRecords);
+                
+            } catch (error) {
+                console.error("Error loading records:", error);
+                alert("Error loading records: " + error.message);
+            }
+        };
+
+        function displayRecords(records) {
+            const resultsSection = document.getElementById('results-section');
+            
+            if (records.length === 0) {
+                resultsSection.innerHTML = `
+                    <div style="text-align: center; padding: 30px; color: #7f8c8d;">
+                        No records found with the selected filters
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            records.forEach((record, index) => {
+                const isApproved = record.Estatus === 'Approved';
+                const statusColor = isApproved ? '#27ae60' : 
+                                  record.Estatus === 'Pending' ? '#f39c12' : 
+                                  record.Estatus === 'Rejected' ? '#e74c3c' : '#3498db';
+                
+                const currentOptions = {
+                    setRawMaterial: true,
+                    setProcessYes: true,
+                    setOverallApproved: true,
+                    formatComments: true
+                };
+                
+                const conditionsCheck = recordAlreadyMeetsConditions(record, currentOptions);
+                
+                html += `
+                    <div class="record-item">
+                        <div style="flex: 1;">
+                            <strong style="color: #2c3e50;">${record['Item #'] || 'N/A'}</strong>
+                            <div style="font-size: 11px; color: #666;">
+                                <span style="color: ${statusColor}; font-weight: bold;">${record.Estatus || 'No status'}</span> | 
+                                ${record['PPAP Part Number'] || 'No PPAP'} | 
+                                <span style="color: #7f8c8d; ${record['Product type'] === 'RAW MATERIAL' ? 'font-weight: bold; color: #3498db;' : ''}">
+                                    ${record['Product type'] || 'No type'}
+                                </span>
+                            </div>
+                            <div class="comments-preview ${(record['Comments(detalle)'] || '').includes('\n') ? 'multiline' : ''}">
+                                ${record['Comments(detalle)'] ? '💬 ' + record['Comments(detalle)'].substring(0, 50) + (record['Comments(detalle)'].length > 50 ? '...' : '') : 'No comments'}
+                            </div>
+                        </div>
+                        <div style="font-size: 10px; text-align: right;">
+                            <div style="color: #95a5a6; margin-bottom: 3px;">
+                                Steps: ${getProcessStepCount(record)}
+                            </div>
+                            <div style="color: #9b59b6;">
+                                Overall: ${record['PPAP overall status'] || 'None'}
+                            </div>
+                            ${conditionsCheck.conditionsMet.length > 0 ? 
+                                `<div class="skip-indicator">Skips: ${conditionsCheck.conditionsMet.length}</div>` : 
+                                ''}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            resultsSection.innerHTML = html;
+        }
+
+        function getProcessStepCount(record) {
+            let count = 0;
+            processFields.forEach(field => {
+                if (record[field] && record[field].toLowerCase() === 'yes') count++;
+            });
+            return `${count}/18`;
+        }
+
+        // Export to CSV
+        document.getElementById('btnExportCSV').onclick = () => {
+            if (currentRecords.length === 0) {
+                alert("No records to export. Load records first.");
+                return;
+            }
+            
+            // Define CSV headers
+            const headers = [
+                'Item #',
+                'PPAP Part Number',
+                'Estatus',
+                'Product type',
+                'Component description',
+                'Validation date',
+                'Programmer',
+                'Quality Lead',
+                'PPAP overall status',
+                'Comments(detalle)'
+            ];
+            
+            // Add process steps to headers
+            processFields.forEach(field => {
+                headers.push(field.replace(/\n/g, ' '));
+            });
+            
+            // Create CSV content
+            let csvContent = headers.join(',') + '\n';
+            
+            currentRecords.forEach(record => {
+                const row = [
+                    record['Item #'] || '',
+                    record['PPAP Part Number'] || '',
+                    record.Estatus || '',
+                    record['Product type'] || '',
+                    record['Component description'] || '',
+                    record['Validation date'] || '',
+                    record.Programmer || '',
+                    record['Quality Lead'] || '',
+                    record['PPAP overall status'] || '',
+                    `"${(record['Comments(detalle)'] || '').replace(/"/g, '""')}"`
+                ];
+                
+                // Add process steps
+                processFields.forEach(field => {
+                    row.push(record[field] || 'No');
+                });
+                
+                csvContent += row.map(cell => typeof cell === 'string' && cell.startsWith('"') ? cell : `"${cell}"`).join(',') + '\n';
+            });
+            
+            // Create download link
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', `ppap_export_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            alert(`Exported ${currentRecords.length} records to CSV`);
+        };
+
+        // Bulk update records
+        document.getElementById('btnUpdateAll').onclick = async () => {
+            if (currentRecords.length === 0) {
+                alert("No records to update. Load records first.");
+                return;
+            }
+            
+            const setRawMaterial = document.getElementById('chk-set-raw').checked;
+            const setProcessYes = document.getElementById('chk-set-process-yes').checked;
+            const setOverallApproved = document.getElementById('chk-set-overall-approved').checked;
+            const formatComments = document.getElementById('chk-format-comments').checked;
+            
+            if (!setRawMaterial && !setProcessYes && !setOverallApproved && !formatComments) {
+                alert("Please select at least one update option.");
+                return;
+            }
+            
+            const selectedOptions = { setRawMaterial, setProcessYes, setOverallApproved, formatComments };
+            
+            if (!confirm(`Are you sure you want to update ${currentRecords.length} records?\n\nThis will:` + 
+                        (setRawMaterial ? "\n• Set ALL Product Types to 'RAW MATERIAL'" : "") +
+                        (setProcessYes ? "\n• Set Process Steps 1-18 to 'yes' (only for Approved items)" : "") +
+                        (setOverallApproved ? "\n• Set 'PPAP overall status' to 'Approved' (only for Approved items)" : "") +
+                        (formatComments ? "\n• Format 'Comments(detalle)' to max 2 lines" : "") +
+                        "\n\nRecords that already meet conditions will be skipped.")) {
+                return;
+            }
+            
+            // Show progress bar
+            const progressContainer = document.getElementById('progress-container');
+            const progressFill = document.getElementById('progress-fill');
+            const progressText = document.getElementById('progress-text');
+            
+            progressContainer.style.display = 'block';
+            progressFill.style.width = '0%';
+            progressText.textContent = 'Analyzing records...';
+            
+            try {
+                let updatedCount = 0;
+                let skippedCount = 0;
+                let needsUpdateCount = 0;
+                
+                // First, analyze which records need updates
+                const recordsToUpdate = [];
+                
+                currentRecords.forEach(record => {
+                    const conditionsCheck = recordAlreadyMeetsConditions(record, selectedOptions);
+                    
+                    if (conditionsCheck.meetsAll) {
+                        skippedCount++;
+                    } else {
+                        recordsToUpdate.push(record);
+                        needsUpdateCount++;
+                    }
+                });
+                
+                progressText.textContent = `Updating ${needsUpdateCount} records (${skippedCount} will be skipped)...`;
+                
+                // Process in batches
+                const BATCH_SIZE = 500;
+                for (let batchStart = 0; batchStart < recordsToUpdate.length; batchStart += BATCH_SIZE) {
+                    const batchEnd = Math.min(batchStart + BATCH_SIZE, recordsToUpdate.length);
+                    const currentBatch = recordsToUpdate.slice(batchStart, batchEnd);
+                    
+                    const batch = writeBatch(db);
+                    
+                    for (let i = 0; i < currentBatch.length; i++) {
+                        const record = currentBatch[i];
+                        const docRef = doc(db, "productos", record.id);
+                        
+                        const updates = {};
+                        
+                        // Apply RAW MATERIAL to ALL records if selected
+                        if (setRawMaterial && record['Product type'] !== 'RAW MATERIAL') {
+                            updates['Product type'] = 'RAW MATERIAL';
+                        }
+                        
+                        // Apply process steps and overall status only if record is Approved
+                        if (record.Estatus === 'Approved') {
+                            // Apply process steps
+                            if (setProcessYes) {
+                                processFields.forEach(field => {
+                                    const currentValue = record[field] || '';
+                                    if (currentValue.toLowerCase() !== 'yes') {
+                                        updates[field] = 'yes';
+                                    }
+                                });
+                            }
+                            
+                            // Apply PPAP overall status
+                            if (setOverallApproved && record['PPAP overall status'] !== 'Approved') {
+                                updates['PPAP overall status'] = 'Approved';
+                            }
+                        }
+                        
+                        // Format comments if selected
+                        if (formatComments) {
+                            const currentComments = record['Comments(detalle)'] || '';
+                            const formattedComments = formatComments(currentComments);
+                            if (currentComments !== formattedComments) {
+                                updates['Comments(detalle)'] = formattedComments;
+                            }
+                        }
+                        
+                        // Only add to batch if there are updates
+                        if (Object.keys(updates).length > 0) {
+                            batch.update(docRef, updates);
+                            updatedCount++;
+                        } else {
+                            skippedCount++;
+                        }
+                        
+                        // Update progress
+                        const totalProcessed = batchStart + i + 1;
+                        const progress = Math.round((totalProcessed / recordsToUpdate.length) * 100);
+                        progressFill.style.width = `${progress}%`;
+                        progressText.textContent = `Processing: ${totalProcessed}/${recordsToUpdate.length} (${progress}%)`;
+                    }
+                    
+                    // Commit batch if there are updates
+                    if (batch._mutations.length > 0) {
+                        await batch.commit();
+                        
+                        // Small delay between batches to avoid rate limiting
+                        if (batchEnd < recordsToUpdate.length) {
+                            await new Promise(resolve => setTimeout(resolve, 100));
+                        }
+                    }
+                }
+                
+                // Hide progress bar
+                progressContainer.style.display = 'none';
+                
+                // Log the bulk update
+                await addDoc(collection(db, "movimientos"), {
+                    usuario: user.usuario,
+                    accion: "Bulk Update",
+                    detalle: `Updated ${updatedCount} records | Raw Material: ${setRawMaterial} | Process Steps: ${setProcessYes} | Overall Status: ${setOverallApproved} | Comments: ${formatComments}`,
+                    fecha: serverTimestamp(),
+                    stats: {
+                        total: currentRecords.length,
+                        updated: updatedCount,
+                        skipped: skippedCount
+                    }
+                });
+                
+                let message = `✅ Update completed!\n\n`;
+                message += `• Total records: ${currentRecords.length}\n`;
+                message += `• Updated: ${updatedCount}\n`;
+                message += `• Skipped (already met conditions): ${skippedCount}\n\n`;
+                
+                if (setRawMaterial) message += `• Product Type set to: RAW MATERIAL\n`;
+                if (setProcessYes) message += `• Process Steps set to: yes (for Approved items)\n`;
+                if (setOverallApproved) message += `• PPAP overall status set to: Approved (for Approved items)\n`;
+                if (formatComments) message += `• Comments formatted to max 2 lines\n`;
+                
+                alert(message);
+                
+                // Reload records to show changes
+                document.getElementById('btnLoad').click();
+                
+            } catch (error) {
+                console.error("Error updating records:", error);
+                alert("Error updating records: " + error.message);
+                progressContainer.style.display = 'none';
+            }
+        };
+
+        // Load default records on page load (Approved status)
+        window.addEventListener('load', () => {
+            document.getElementById('btnLoad').click();
+        });
+    </script>
+</body>
+</html>
