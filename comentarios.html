@@ -445,13 +445,13 @@
                 }, { merge: true });
                 
                 // Record in history
-                await addDoc(collection(db, "movimientos"), {
+               /* await addDoc(collection(db, "movimientos"), {
                     usuario: user.usuario,
                     accion: "Comments Edit",
                     detalle: `Item: ${itemActual}`,
                     comentario: nuevoComentario.substring(0, 100) + (nuevoComentario.length > 100 ? "..." : ""),
                     fecha: serverTimestamp()
-                });
+                });*/
                 
                 alert("✅ Comments updated successfully");
                 // Reload data to see changes
